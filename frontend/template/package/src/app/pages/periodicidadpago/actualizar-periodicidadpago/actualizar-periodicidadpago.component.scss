@@ -1,0 +1,63 @@
+/* Estilos modernos para los campos del formulario */
+.field-container {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+::ng-deep .modern-input {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 8px 16px;
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #e0e0e0;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-start,
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-end,
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-gap {
+  border-width: 1px;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-label {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+}
+
+::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  color: #1976d2;
+}
+
+::ng-deep .mat-form-field {
+  width: 100%;
+}
+
+::ng-deep .mat-form-field-flex {
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+::ng-deep .mat-form-field-wrapper {
+  padding-bottom: 0.5em;
+}
+
+.page-container {
+  padding: 24px;
+  background-color: #f5f5f5;
+}
+
+.mat-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-bottom: 24px;
+}
