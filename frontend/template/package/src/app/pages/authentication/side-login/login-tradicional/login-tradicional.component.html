@@ -7,6 +7,8 @@
       El nombre de usuario es requerido y debe tener al menos 4 caracteres.
     </mat-error>
   </mat-form-field>
+  <br>
+  <br>
 
   <mat-label class="mat-subtitle-2 f-s-14 f-w-600 m-b-12 d-block">Contraseña</mat-label>
   <mat-form-field appearance="outline" class="w-100" color="primary">
@@ -15,13 +17,6 @@
       La contraseña es requerida.
     </mat-error>
   </mat-form-field>
-
-  <div class="d-flex align-items-center m-b-12">
-    <mat-checkbox color="primary">Recordar este dispositivo</mat-checkbox>
-    <a [routerLink]="['/forgot-password']" class="text-primary f-w-600 text-decoration-none m-l-auto f-s-14">
-      ¿Olvidaste tu contraseña?
-    </a>
-  </div>
 
   <button mat-flat-button color="primary" class="w-100" type="submit" [disabled]="form.invalid">
     Iniciar sesión
