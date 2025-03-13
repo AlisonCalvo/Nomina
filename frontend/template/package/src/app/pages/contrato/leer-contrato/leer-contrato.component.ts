@@ -40,6 +40,8 @@ import { DateTime } from 'luxon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
+import {AuthService} from "../../../services/auth-service.service";
+
 @Component({
   selector: 'app-leer-contrato',
   templateUrl: './leer-contrato.component.html',
@@ -115,7 +117,9 @@ export class LeerContratoComponent implements OnInit {
     private router: Router,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private authService: AuthService
+
   ) {
     this.customizePaginator();
   }
@@ -165,18 +169,39 @@ export class LeerContratoComponent implements OnInit {
    * Configura el datasource, paginador y ordenamiento
    */
   loadData(): void {
-    this.contratoService.findAll().subscribe({
-      next: data => {
-        this.dataSource.data = data.map(item => Object.assign(new ContratoComponent(this.contratoService), item));
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-    },
-       error: error => {
-        console.error('Error al obtener contratos:', error);
-      this.errorMessage = 'Error al cargar los datos.';
+    if (this.authService.isGerente()) {
+      this.contratoService.findAll().subscribe({
+        next: data => {
+          this.dataSource.data = data.map(item => Object.assign(new ContratoComponent(this.contratoService), item));
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
+        },
+        error: error => {
+          console.error('Error al obtener todos los contratos:', error);
+          this.errorMessage = 'Error al cargar los datos.';
+        }
+      });
+    } else {
+      const personaId = this.authService.getPersonaId();
+      if (!personaId) {
+        console.error('No se pudo obtener el ID de la persona asociada.');
+        return;
       }
-    });
+
+      this.contratoService.findVisibles(personaId).subscribe({
+        next: data => {
+          this.dataSource.data = data;
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
+        },
+        error: error => {
+          console.error('Error al obtener contratos visibles:', error);
+          this.errorMessage = 'Error al cargar los datos.';
+        }
+      });
+    }
   }
+
 
   /**
    * Personaliza los textos del paginador a español

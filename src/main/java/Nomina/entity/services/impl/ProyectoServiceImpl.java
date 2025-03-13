@@ -129,4 +129,10 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
         return repository.findByInforme(informe);
     }
 
+    @Override
+    public List<Proyecto> obtenerProyectosVisibles(Long personaId) {
+        return repository.findByPersonaId(personaId);
+    }
+
+
 }
