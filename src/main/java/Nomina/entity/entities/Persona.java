@@ -5,6 +5,7 @@
 
 package Nomina.entity.entities;
 
+import Nomina.seguridad.persistence.entities.Usuario;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -96,6 +97,9 @@ public class Persona implements Serializable {
     @Column(name="telefono", nullable=false)
     private int telefono;
 
+    @OneToOne(mappedBy = "persona", cascade = CascadeType.ALL)
+    private Usuario usuario;
+
     /**
      * fecha expedicion del documento de identidad de la persona
      * 
@@ -158,6 +162,8 @@ public class Persona implements Serializable {
     @ManyToOne
 	@JoinColumn(name = "tipoDocumento")
     private TipoDocumento tipoDocumento;
+
+    private boolean necesitaAcceso;
 
     /**
      * Constructor con parámetros.
