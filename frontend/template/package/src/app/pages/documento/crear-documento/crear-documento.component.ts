@@ -260,7 +260,7 @@ export class CrearDocumentoComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'cargo'
+          labelProp: 'valorTotalContrato'
         }
       }
     ];

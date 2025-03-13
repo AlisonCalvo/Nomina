@@ -1,6 +1,6 @@
 /**
  * Informe.java
- * Generado automáticamente el 12/03/2025 11:45:41
+ * Generado automáticamente el 13/03/2025 16:31:54
  */
 
 package Nomina.entity.entities;
@@ -49,15 +49,6 @@ public class Informe implements Serializable {
     private long id;
 
     /**
-     * contenido del informe
-     * 
-     * Restricciones:
-     */
-    @FilePath(type = "text")
-    @Column(name="contenido", nullable=false)
-    private String contenido;
-
-    /**
      * fecha del informe
      * 
      * Restricciones:
@@ -65,15 +56,6 @@ public class Informe implements Serializable {
     @Temporal(TemporalType.DATE)
     @Column(name="fecha", nullable=false)
     private LocalDate fecha;
-
-    /**
-     * actividades del contratista
-     * 
-     * Restricciones:
-     */
-    @FilePath(type = "text")
-    @Column(name="actividades", nullable=false)
-    private String actividades;
 
     /**
      * cliente al que se realiza las actividades
@@ -90,6 +72,15 @@ public class Informe implements Serializable {
      */
     @Column(name="cargo", nullable=false)
     private String cargo;
+
+    /**
+     * informe de la cuenta de cobro
+     * 
+     * Restricciones:
+     */
+    @FilePath(type = "file")
+    @Column(name="informePDF")
+    private String informePDF;
 
     /**
      * Columna que representa el creador de la entidad.
@@ -124,26 +115,23 @@ public class Informe implements Serializable {
      * Constructor con parámetros.
      * Inicializa una nueva instancia de Informe con los valores especificados.
      *
-     * @param contenido contenido del informe
      * @param fecha fecha del informe
-     * @param actividades actividades del contratista
      * @param cliente cliente al que se realiza las actividades
      * @param cargo cargo del contratista
+     * @param informePDF informe de la cuenta de cobro
      * @param cuentaCobro 
      * @param proyecto 
      * @param contrato 
      * @param creador Columna que representa el creador de la entidad.
      */
-    public Informe(String contenido, LocalDate fecha, String actividades, String cliente, String cargo, CuentaCobro cuentaCobro, Proyecto proyecto, Contrato contrato, String creador) {
-        this.contenido = contenido;
+    public Informe(LocalDate fecha, String cliente, String cargo, String informePDF, CuentaCobro cuentaCobro, Proyecto proyecto, Contrato contrato, String creador) {
         this.fecha = fecha;
-        this.actividades = actividades;
         this.cliente = cliente;
         this.cargo = cargo;
+        this.informePDF = informePDF;
         this.cuentaCobro = cuentaCobro;
         this.proyecto = proyecto;
         this.contrato = contrato;
         this.creador = creador;
     }
-
 }

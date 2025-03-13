@@ -14,19 +14,9 @@ import Nomina.entity.entities.*;
 public class InformeDTO {
 
     /**
-     * Campo que representa contenido
-     */
-    private String contenido;
-
-    /**
      * Campo que representa fecha
      */
     private LocalDate fecha;
-
-    /**
-     * Campo que representa actividades
-     */
-    private String actividades;
 
     /**
      * Campo que representa cliente
@@ -37,6 +27,11 @@ public class InformeDTO {
      * Campo que representa cargo
      */
     private String cargo;
+
+    /**
+     * Campo que representa informePDF
+     */
+    private String informePDF;
 
     /**
      * Representa la relación  con la entidad cuentaCobro
@@ -57,5 +52,4 @@ public class InformeDTO {
      * Campo que representa el creador del registro.
      */
     private String creador;
-
 }

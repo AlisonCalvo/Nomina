@@ -85,7 +85,7 @@ import { CommonModule } from '@angular/common';
 })
 export class LeerInformeComponent implements OnInit {
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'contenido', 'fecha', 'actividades', 'cliente', 'cargo', 'creador', 'cuentaCobro', 'proyecto', 'contrato', 'acciones'];
+  displayedColumns: string[] = ['id', 'fecha', 'cliente', 'cargo', 'informePDF', 'creador', 'cuentaCobro', 'proyecto', 'contrato', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   informes: InformeComponent[] = [];

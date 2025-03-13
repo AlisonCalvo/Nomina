@@ -108,4 +108,10 @@ public class ProyectoController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("/visibles")
+    public ResponseEntity<List<Proyecto>> obtenerProyectosVisibles(@RequestParam Long personaId) {
+        List<Proyecto> proyectos = service.obtenerProyectosVisibles(personaId);
+        return ResponseEntity.ok(proyectos);
+    }
+
 }
