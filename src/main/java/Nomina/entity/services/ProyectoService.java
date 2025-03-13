@@ -77,4 +77,6 @@ public interface ProyectoService {
      */
     List<Proyecto> findByInforme(Informe informe);
 
+    List<Proyecto> obtenerProyectosVisibles(Long personaId);
+
 }
