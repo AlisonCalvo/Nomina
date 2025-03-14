@@ -40,6 +40,8 @@ import { PeriodicidadPagoService } from '../../../services/PeriodicidadPagoServi
 interface ContratoModel {
   /** id de la entidad */
   id: number;
+  /** numeroContrato de la entidad */
+  numeroContrato: string;
   /** cargo de la entidad */
   cargo: string;
   /** valorTotalContrato de la entidad */
@@ -169,6 +171,7 @@ export class ActualizarContratoComponent implements OnInit {
         // Inicializar modelo con los datos recibidos
         this.model = {
           id: this.data.id,
+          numeroContrato: this.data.numeroContrato,
           cargo: this.data.cargo,
           valorTotalContrato: this.data.valorTotalContrato,
           numeroPagos: this.data.numeroPagos,
@@ -187,6 +190,7 @@ export class ActualizarContratoComponent implements OnInit {
         // Copia del modelo original para detectar cambios
         this.originalModel = {
           id: this.data.id,
+          numeroContrato: this.data.numeroContrato,
           cargo: this.data.cargo,
           valorTotalContrato: this.data.valorTotalContrato,
           numeroPagos: this.data.numeroPagos,
@@ -312,6 +316,21 @@ export class ActualizarContratoComponent implements OnInit {
    */
   generateFormFields() {
     this.fields = [
+      {
+        key: 'numeroContrato',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'NumeroContrato',
+          placeholder: 'Ingrese numeroContrato',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          }
+        }
+      },
       {
         key: 'cargo',
         type: 'input',

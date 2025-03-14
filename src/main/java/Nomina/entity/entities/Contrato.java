@@ -47,6 +47,13 @@ public class Contrato implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="contrato_id", nullable=false)
     private long id;
+    /**
+     * numero del contrato
+     *
+     * Restricciones:
+     */
+    @Column(name="numeroContrato", nullable=false)
+    private String numeroContrato;
 
     /**
      * cargo del contratista
@@ -194,7 +201,8 @@ public class Contrato implements Serializable {
      * @param periodicidadPago 
      * @param creador Columna que representa el creador de la entidad.
      */
-    public Contrato(String cargo, long valorTotalContrato, int numeroPagos, LocalDate fechaInicioContrato, LocalDate fechaFinContrato, boolean estado, String rutaArchivo, boolean firmado, Proyecto proyecto, Persona persona, TipoContrato tipoContrato, PeriodicidadPago periodicidadPago, String creador) {
+    public Contrato(String numeroContrato,String cargo, long valorTotalContrato, int numeroPagos, LocalDate fechaInicioContrato, LocalDate fechaFinContrato, boolean estado, String rutaArchivo, boolean firmado, Proyecto proyecto, Persona persona, TipoContrato tipoContrato, PeriodicidadPago periodicidadPago, String creador) {
+        this.numeroContrato = numeroContrato;
         this.cargo = cargo;
         this.valorTotalContrato = valorTotalContrato;
         this.numeroPagos = numeroPagos;
