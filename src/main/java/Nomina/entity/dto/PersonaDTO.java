@@ -101,5 +101,12 @@ public class PersonaDTO {
      */
     private Set<Long> roles;
 
+    private String tipoPersona;
+
+    // Campos específicos de cada tipo de persona
+    private String experienciaProfesional; // Para Gerente y Contratista
+    private String numeroTarjetaProfesional; // Para Contratista y Contador
+    private int telefonoAdicional; // Solo para Contratista
+    private String firmaDigital; // Solo para Contratista
 
 }
