@@ -113,4 +113,11 @@ export class ProyectoService {
     return this.httpClient.delete<void>(url, {headers});
   }
 
+  // Método para obtener los proyectos visibles para el usuario autenticado
+  findVisibles(personaId: number): Observable<Proyecto[]> {
+    const url = `${this.baseUrl}/proyectos/visibles?personaId=${personaId}`;
+    const headers = new HttpHeaders().set('Accion', 'findAll').set('Objeto', 'Proyecto');
+    return this.httpClient.get<Proyecto[]>(url, { headers });
+  }
+
 }

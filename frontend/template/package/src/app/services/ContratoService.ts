@@ -121,4 +121,12 @@ export class ContratoService {
     return this.httpClient.delete<void>(url, {headers});
   }
 
+  // Método para obtener los contratos visibles para el usuario autenticado
+  findVisibles(usuarioId: number): Observable<Contrato[]> {
+    const url = `${this.baseUrl}/contratos/visibles?usuarioId=${usuarioId}`;
+    const headers = new HttpHeaders().set('Accion', 'findAll').set('Objeto', 'Contrato');
+    return this.httpClient.get<Contrato[]>(url, { headers });
+  }
+
+
 }

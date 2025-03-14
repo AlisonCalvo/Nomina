@@ -1,5 +1,7 @@
 package Nomina.seguridad.persistence.entities;
 
+import Nomina.entity.entities.Persona;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,9 +34,10 @@ public class Usuario {
     @Column(nullable = false)
     private Boolean activo = true;
 
-    /*@ManyToOne
-    @JoinColumn(name = "rol_id")
-    private Rol rol;*/
+    @JsonIgnore
+    @OneToOne
+    @JoinColumn(name = "persona_id")
+    private Persona persona;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(

@@ -108,4 +108,9 @@ public class ContratoController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("/visibles")
+    public ResponseEntity<List<Contrato>> obtenerContratosVisibles(@RequestParam Long usuarioId) {
+        List<Contrato> contratos = service.obtenerContratosVisibles(usuarioId);
+        return ResponseEntity.ok(contratos);
+    }
 }
