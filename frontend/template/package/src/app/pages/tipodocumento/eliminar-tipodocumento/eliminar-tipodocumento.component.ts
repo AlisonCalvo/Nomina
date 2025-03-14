@@ -7,7 +7,7 @@ import { FormGroup, FormsModule } from '@angular/forms';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { Router, RouterModule } from '@angular/router';
 import { TipoDocumentoService } from '../../../services/TipoDocumentoService';
-import { TipoDocumentoComponent } from '../../tipodocumento/tipodocumento.component';
+import { TipoDocumentoComponent } from '../tipodocumento.component';
 import { CommonModule, DatePipe  } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';

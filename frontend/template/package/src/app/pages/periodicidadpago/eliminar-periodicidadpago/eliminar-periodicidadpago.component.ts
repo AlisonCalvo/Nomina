@@ -7,7 +7,7 @@ import { FormGroup, FormsModule } from '@angular/forms';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { Router, RouterModule } from '@angular/router';
 import { PeriodicidadPagoService } from '../../../services/PeriodicidadPagoService';
-import { PeriodicidadPagoComponent } from '../../periodicidadpago/periodicidadpago.component';
+import { PeriodicidadPagoComponent } from '../periodicidadpago.component';
 import { CommonModule, DatePipe  } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';

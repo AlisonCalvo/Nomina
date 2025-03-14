@@ -9,9 +9,9 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { ProyectoService } from '../../../services/ProyectoService';
-import { ProyectoComponent } from '../../proyecto/proyecto.component';
-import { ActualizarProyectoComponent } from '../../proyecto/actualizar-proyecto/actualizar-proyecto.component';
-import { CrearProyectoComponent } from '../../proyecto/crear-proyecto/crear-proyecto.component';
+import { ProyectoComponent } from '../proyecto.component';
+import { ActualizarProyectoComponent } from '../actualizar-proyecto/actualizar-proyecto.component';
+import { CrearProyectoComponent } from '../crear-proyecto/crear-proyecto.component';
 import {environment} from '../../../../environments/environment';
 
 import { MatButtonModule } from '@angular/material/button';
