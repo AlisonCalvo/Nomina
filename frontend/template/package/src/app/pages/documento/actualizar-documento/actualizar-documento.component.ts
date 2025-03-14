@@ -295,8 +295,10 @@ export class ActualizarDocumentoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
-          }
-        }
+          },
+          disabled: true
+        },
+
       },
       {
         key: 'estado',

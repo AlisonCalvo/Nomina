@@ -199,7 +199,7 @@ export class CrearContratoComponent implements OnInit {
         }
       },
       {
-        key: 'fecha de inicio del contrato',
+        key: 'fechaInicioContrato',
         type: 'datepicker',
         className: 'field-container',
         templateOptions: {
@@ -215,11 +215,11 @@ export class CrearContratoComponent implements OnInit {
         validators: {
           dateValidation: {
             expression: (control: AbstractControl): boolean => {
-              const fechaInicio = this.model.fechaInicioContrato;
-              const fechaFin = control.value;
+              const fechaInicio = control.value;
+              const fechaFin = this.model.fechaFinContrato;
               return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
             },
-            message: (field: FormlyFieldConfig): string => `La fecha de finalización del contrato debe ser posterior o igual a la fecha de inicio.`
+            message: (field: FormlyFieldConfig): string => `La fecha de inicio del contrato debe ser anterior o igual a la fecha de finalización.`
           }
         }
       },
@@ -235,6 +235,16 @@ export class CrearContratoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validators: {
+          dateValidation: {
+            expression: (control: AbstractControl): boolean => {
+              const fechaInicio = this.model.fechaInicioContrato;
+              const fechaFin = control.value;
+              return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
+            },
+            message: (field: FormlyFieldConfig): string => `La fecha de finalización del contrato debe ser posterior o igual a la fecha de inicio.`
           }
         }
       },

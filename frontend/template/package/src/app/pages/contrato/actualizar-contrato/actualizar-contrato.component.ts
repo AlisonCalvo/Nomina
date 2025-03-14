@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {AbstractControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
@@ -387,13 +387,23 @@ export class ActualizarContratoComponent implements OnInit {
         type: 'datepicker',
         className: 'field-container',
         templateOptions: {
-          label: 'FechaInicioContrato',
-          placeholder: 'Ingrese fechaInicioContrato',
+          label: 'Fecha de inicio del contrato',
+          placeholder: 'Ingrese la fecha de inicio del contrato',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validators: {
+          dateValidation: {
+            expression: (control: AbstractControl): boolean => {
+              const fechaInicio = control.value;
+              const fechaFin = this.model.fechaFinContrato;
+              return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
+            },
+            message: (field: FormlyFieldConfig): string => `La fecha de inicio del contrato debe ser anterior o igual a la fecha de finalización.`
           }
         }
       },
@@ -402,13 +412,23 @@ export class ActualizarContratoComponent implements OnInit {
         type: 'datepicker',
         className: 'field-container',
         templateOptions: {
-          label: 'FechaFinContrato',
-          placeholder: 'Ingrese fechaFinContrato',
+          label: 'Fecha de finalización del contrato',
+          placeholder: 'Ingrese la fecha de finalización del contrato',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validators: {
+          dateValidation: {
+            expression: (control: AbstractControl): boolean => {
+              const fechaInicio = this.model.fechaInicioContrato;
+              const fechaFin = control.value;
+              return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
+            },
+            message: (field: FormlyFieldConfig): string => `La fecha de finalización del contrato debe ser posterior o igual a la fecha de inicio.`
           }
         }
       },
