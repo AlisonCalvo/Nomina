@@ -1,16 +1,25 @@
 package Nomina.entity.controllers;
 
-import org.springframework.http.HttpStatus;
-import java.util.List;
+import java.nio.file.Files;
 import Nomina.entity.services.InformeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import java.util.Optional;
 import Nomina.entity.entities.Informe;
 import Nomina.entity.services.impl.NotificacionEmailServiceImpl;
+import java.io.IOException;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Objects;
+import org.springframework.http.HttpStatus;
+import java.util.List;
+import java.nio.file.Paths;
+import java.util.Optional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.web.bind.annotation.*;
 import Nomina.entity.dto.InformeDTO;
+import java.nio.file.Path;
+import org.springframework.util.StringUtils;
 
 /**
  * Controlador REST para la gestión de entidades Informe.
@@ -106,6 +115,48 @@ public class InformeController {
         }
         service.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * Sube uno o varios archivos al servidor local.
+     *
+     * @param files Lista de archivos a subir (MultipartFile)
+     * @return ResponseEntity con la lista de rutas de archivo subidas,
+     *         o un INTERNAL_SERVER_ERROR si ocurre un problema.
+     */
+    @PostMapping("/upload")
+    public ResponseEntity<List<String>> uploadFiles(@RequestParam("files") List<MultipartFile> files) {
+        // Lista donde guardaremos las rutas resultantes de cada archivo
+        List<String> filePaths = new ArrayList<>();
+
+        String uploadDir = "uploads"; // Carpeta local donde se suben los archivos
+        Path uploadPath = Paths.get(uploadDir);
+
+        try {
+            // Crear carpeta si no existe
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            // Guardar cada archivo
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    String originalFilename = StringUtils.cleanPath(
+                            Objects.requireNonNull(file.getOriginalFilename())
+                    );
+                    Path destinationFilePath = uploadPath.resolve(originalFilename);
+                    Files.copy(file.getInputStream(), destinationFilePath, StandardCopyOption.REPLACE_EXISTING);
+                    // Agregamos la ruta donde quedó almacenado el archivo
+                    filePaths.add(destinationFilePath.toString());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        // Retornamos las rutas de todos los archivos subidos
+        return ResponseEntity.ok(filePaths);
     }
 
 }

@@ -51,7 +51,6 @@ import {AuthService} from "../../../services/auth-service.service";
     FormsModule,
     CommonModule,
     MatPaginator,
-    RouterLink,
     MatSort,
     MatTableModule,
     MatFormFieldModule,
@@ -201,7 +200,6 @@ export class LeerProyectoComponent implements OnInit {
       });
     }
   }
-
 
   /**
    * Personaliza los textos del paginador a español

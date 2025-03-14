@@ -78,20 +78,17 @@ export class InformeComponent {
   /** id - Campo de tipo number */
   id: number;
 
-  /** contenido - Campo de tipo string */
-  contenido: string;
-
   /** fecha - Campo de tipo Date */
   fecha: Date;
-
-  /** actividades - Campo de tipo string */
-  actividades: string;
 
   /** cliente - Campo de tipo string */
   cliente: string;
 
   /** cargo - Campo de tipo string */
   cargo: string;
+
+  /** informePDF - Campo de tipo string */
+  informePDF: string;
 
   /** creador - Campo de tipo string */
   creador: string;
@@ -112,11 +109,10 @@ export class InformeComponent {
   // DataSource para la tabla de atributos
   dataSourceAttributes = new MatTableDataSource([
     { name: 'id', type: 'long' },
-    { name: 'contenido', type: 'String' },
     { name: 'fecha', type: 'LocalDate' },
-    { name: 'actividades', type: 'String' },
     { name: 'cliente', type: 'String' },
     { name: 'cargo', type: 'String' },
+    { name: 'informePDF', type: 'String' },
     { name: 'creador', type: 'String' },
     { name: 'cuentaCobro', type: 'CuentaCobro' },
     { name: 'proyecto', type: 'Proyecto' },
@@ -137,9 +133,7 @@ export class InformeComponent {
   constructor(private service: InformeService) {
     // Inicialización de atributos con valores por defecto
     this.id = 0;
-    this.contenido = '';
     this.fecha = new Date();
-    this.actividades = '';
     this.cliente = '';
     this.cargo = '';
     this.creador = '';

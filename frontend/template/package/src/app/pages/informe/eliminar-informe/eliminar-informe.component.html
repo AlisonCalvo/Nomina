@@ -29,12 +29,6 @@
       <mat-cell *matCellDef="let row">{{row.cliente}}</mat-cell>
     </ng-container>
 
-    <!-- Columna contenido -->
-    <ng-container matColumnDef="contenido">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>Contenido</mat-header-cell>
-      <mat-cell *matCellDef="let row">{{row.contenido}}</mat-cell>
-    </ng-container>
-
     <!-- Columna creador -->
     <ng-container matColumnDef="creador">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Creador</mat-header-cell>
@@ -59,16 +53,16 @@
       <mat-cell *matCellDef="let row">{{row.contrato.nombre}}</mat-cell>
     </ng-container>
 
-    <!-- Columna actividades -->
-    <ng-container matColumnDef="actividades">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>Actividades</mat-header-cell>
-      <mat-cell *matCellDef="let row">{{row.actividades}}</mat-cell>
-    </ng-container>
-
     <!-- Columna cargo -->
     <ng-container matColumnDef="cargo">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Cargo</mat-header-cell>
       <mat-cell *matCellDef="let row">{{row.cargo}}</mat-cell>
+    </ng-container>
+
+    <!-- Columna informePDF -->
+    <ng-container matColumnDef="informePDF">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>InformePDF</mat-header-cell>
+      <mat-cell *matCellDef="let row">{{row.informePDF}}</mat-cell>
     </ng-container>
 
     <!-- Columna de acciones -->

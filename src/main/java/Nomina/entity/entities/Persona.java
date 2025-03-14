@@ -1,6 +1,6 @@
 /**
  * Persona.java
- * Generado automáticamente el 12/03/2025 11:45:41
+ * Generado automáticamente el 13/03/2025 16:31:54
  */
 
 package Nomina.entity.entities;
@@ -97,9 +97,6 @@ public class Persona implements Serializable {
     @Column(name="telefono", nullable=false)
     private int telefono;
 
-    @OneToOne(mappedBy = "persona", cascade = CascadeType.ALL)
-    private Usuario usuario;
-
     /**
      * fecha expedicion del documento de identidad de la persona
      * 
@@ -162,8 +159,6 @@ public class Persona implements Serializable {
     @ManyToOne
 	@JoinColumn(name = "tipoDocumento")
     private TipoDocumento tipoDocumento;
-
-    private boolean necesitaAcceso;
 
     /**
      * Constructor con parámetros.

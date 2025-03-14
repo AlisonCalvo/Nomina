@@ -329,7 +329,7 @@ export class ActualizarProyectoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          options: [{ value: true, label: 'Activo' }, { value: false, label: 'Inactivo' }]
+          options: [{ value: true, label: 'En curso' }, { value: false, label: 'Finalizado' }]
         }
       },
       {

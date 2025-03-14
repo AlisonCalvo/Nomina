@@ -84,7 +84,7 @@ export class EliminarInformeComponent implements OnInit {
   /** Configuración de campos */
   fields: FormlyFieldConfig[] = [];
   /** Columnas a mostrar en la tabla */
-  displayedColumns: string[] = ['fecha', 'cliente', 'contenido', 'creador', 'cuentaCobro', 'proyecto', 'contrato', 'id', 'actividades', 'cargo', 'actions'];
+  displayedColumns: string[] = ['fecha', 'cliente', 'creador', 'cuentaCobro', 'proyecto', 'contrato', 'id', 'cargo', 'informePDF', 'actions'];
 
   /**
    * Constructor del componente
