@@ -52,6 +52,7 @@ interface PersonaModel {
   proyecto: any;
   tipoDocumento: any;
   necesitaAcceso: boolean;
+  tipoPersona: any;
   roles?: any[];
 }
 
@@ -111,6 +112,7 @@ export class CrearPersonaComponent implements OnInit {
     proyecto: null,
     tipoDocumento: null,
     necesitaAcceso: false,
+    tipoPersona: null,
     roles: [],
   };
   fields: FormlyFieldConfig[] = [];
@@ -125,23 +127,50 @@ export class CrearPersonaComponent implements OnInit {
     private snackBar: MatSnackBar,
     private authService: AuthService,
     private permissionService: PermissionService
-  ) {}
+  ) {
+  }
+
+  rolesMap: { [key: string]: number } = {};
 
   ngOnInit() {
     const username = this.authService.getUsername();
     this.model.creador = username;
 
+    // Obtener y almacenar los roles dinámicamente con tipado explícito
     this.permissionService.getRoles().subscribe(
-      (roles) => {
+      (roles: { id: number; nombre: string; rolesHijos: any[] }[]) => {
+        roles.forEach((role) => {
+          this.rolesMap[role.nombre.toUpperCase()] = role.id; // Guardamos los roles en un mapa
+        });
+
+        // Asignar las opciones de roles al formulario si es necesario
         const field = this.fields.find(f => f.key === 'roles');
         if (field && field.templateOptions) {
-          field.templateOptions.options = roles;
+          field.templateOptions.options = roles.map(role => ({
+            value: role.id,
+            label: role.nombre
+          }));
         }
       },
       (error) => console.error('Error al cargar roles:', error)
     );
 
     this.fields = [
+      {
+        key: 'tipoPersona',
+        type: 'select',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Tipo de Persona',
+          placeholder: 'Seleccione el tipo',
+          required: true,
+          options: [
+            {value: 'GERENTE', label: 'Gerente'},
+            {value: 'CONTRATISTA', label: 'Contratista'},
+            {value: 'CONTADOR', label: 'Contador'},
+          ],
+        }
+      },
       {
         key: 'nombre',
         type: 'input',
@@ -175,60 +204,30 @@ export class CrearPersonaComponent implements OnInit {
         }
       },
       {
-        key: 'numeroDocumento',
-        type: 'number',
+        key: 'tipoDocumento',
+        type: 'select',
         className: 'field-container',
         templateOptions: {
-          label: 'NumeroDocumento',
-          placeholder: 'Ingrese numeroDocumento',
+          label: 'TipoDocumento',
+          placeholder: 'Seleccione tipoDocumento',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
           },
-          min: -2147483648,
-          max: 2147483647,
-          step: 1
+          options: [],
+          valueProp: 'id',
+          labelProp: 'nombreTipoDocumento'
         }
       },
       {
-        key: 'tituloProfesional',
-        type: 'input',
-        className: 'field-container',
-        templateOptions: {
-          label: 'TituloProfesional',
-          placeholder: 'Ingrese tituloProfesional',
-          required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          }
-        }
-      },
-      {
-        key: 'direccion',
-        type: 'input',
-        className: 'field-container',
-        templateOptions: {
-          label: 'Direccion',
-          placeholder: 'Ingrese direccion',
-          required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          }
-        }
-      },
-      {
-        key: 'telefono',
+        key: 'numeroDocumento',
         type: 'number',
         className: 'field-container',
         templateOptions: {
-          label: 'Telefono',
-          placeholder: 'Ingrese telefono',
+          label: 'NumeroDocumento',
+          placeholder: 'Ingrese numeroDocumento',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
@@ -271,6 +270,57 @@ export class CrearPersonaComponent implements OnInit {
         }
       },
       {
+        key: 'direccion',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Direccion',
+          placeholder: 'Ingrese direccion',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          }
+        }
+      },
+      {
+        key: 'telefono',
+        type: 'number',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Telefono',
+          placeholder: 'Ingrese telefono',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          min: -2147483648,
+          max: 2147483647,
+          step: 1
+        }
+      },
+      {
+        key: 'telefonoAdicional',
+        type: 'number',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Teléfono Adicional',
+          placeholder: 'Ingrese teléfono adicional',
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          min: -2147483648,
+          max: 2147483647,
+          step: 1
+        },
+        hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA'
+      },
+      {
         key: 'nacionalidad',
         type: 'input',
         className: 'field-container',
@@ -286,42 +336,80 @@ export class CrearPersonaComponent implements OnInit {
         }
       },
       {
-        key: 'tipoDocumento',
-        type: 'select',
+        key: 'tituloProfesional',
+        type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'TipoDocumento',
-          placeholder: 'Seleccione tipoDocumento',
+          label: 'TituloProfesional',
+          placeholder: 'Ingrese tituloProfesional',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
-          },
-          options: [],
-          valueProp: 'id',
-          labelProp: 'nombreTipoDocumento'
+          }
         }
+      },
+      {
+        key: 'experienciaProfesional',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Experiencia Profesional',
+          placeholder: 'Ingrese experiencia',
+          appearance: 'outline',
+          floatLabel: 'always'
+        },
+        hideExpression: (model) => model.tipoPersona !== 'GERENTE' && model.tipoPersona !== 'CONTRATISTA'
+      },
+      {
+        key: 'numeroTarjetaProfesional',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Número de Tarjeta Profesional',
+          placeholder: 'Ingrese número de tarjeta',
+          appearance: 'outline',
+          floatLabel: 'always'
+        },
+        hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA' && model.tipoPersona !== 'CONTADOR'
+      },
+      {
+        key: 'firmaDigital',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Firma Digital',
+          placeholder: 'Ingrese firma digital',
+          appearance: 'outline',
+          floatLabel: 'always'
+        },
+        hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA'
       },
       {
         key: 'necesitaAcceso',
         type: 'checkbox',
         templateOptions: {
           label: '¿Necesita acceso al sistema?',
+        },
+        hooks: {
+          onInit: (field) => {
+            if (!field || !field.formControl) return; // Verificamos que formControl exista
+
+            field.formControl.valueChanges.subscribe((value) => {
+              if (value) {
+                // Si necesita acceso, asignamos el rol dinámico
+                const tipoPersona = this.model.tipoPersona?.toUpperCase();
+                if (tipoPersona && this.rolesMap[tipoPersona]) {
+                  this.model.roles = [this.rolesMap[tipoPersona]];
+                }
+              } else {
+                this.model.roles = [];
+              }
+            });
+          }
         }
       },
-      {
-        key: 'roles',
-        type: 'select',
-        hideExpression: '!model.necesitaAcceso', // Se oculta si no necesita acceso
-        templateOptions: {
-          label: 'Roles',
-          multiple: true,
-          options: [],
-          valueProp: 'id',
-          labelProp: 'nombre'
-        }
-      }
     ];
 
     this.loadTipoDocumentoOptions();
@@ -348,18 +436,23 @@ export class CrearPersonaComponent implements OnInit {
     this.preCreate(this.model);
 
     // 2. Copiamos el modelo para no mutarlo directamente
-    this.preCreate(this.model);
-    const modelData = { ...this.model };
-    modelData.tipoDocumento = { id: this.model.tipoDocumento };
+    const modelData = {...this.model};
+    modelData.tipoDocumento = {id: this.model.tipoDocumento};
 
-    // Si necesita acceso, se mandan los roles
+    // Si necesita acceso, asignamos el rol dinámicamente
     if (this.model.necesitaAcceso) {
-      modelData.roles = this.model.roles;
+      const roleId = this.rolesMap[this.model.tipoPersona.toUpperCase()];
+
+      if (roleId) {
+        modelData.roles = [roleId]; // Asignamos el ID del rol correspondiente
+      } else {
+        console.error('Rol no encontrado para tipoPersona:', this.model.tipoPersona);
+        return;
+      }
     } else {
       delete modelData.roles;
     }
-
-    // Si no hay archivos a subir o no es un campo file, guardamos directo
+    // Guardamos la entidad con los roles correctos
     this.saveEntity(modelData);
   }
 

@@ -5,11 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import Nomina.entity.dto.PersonaDTO;
-import Nomina.entity.entities.Contrato;
-import Nomina.entity.entities.Documento;
-import Nomina.entity.entities.Persona;
-import Nomina.entity.entities.Proyecto;
-import Nomina.entity.entities.TipoDocumento;
+import Nomina.entity.entities.*;
 import Nomina.entity.repositories.PersonaRepository;
 import Nomina.entity.services.PersonaService;
 import Nomina.seguridad.Interceptor.HibernateFilterActivator;
@@ -79,6 +75,31 @@ public class PersonaServiceImpl implements PersonaService {
     @Transactional
     public Persona save(PersonaDTO dto) {
         Persona persona = new Persona();
+
+        // Crear la subclase correcta y asignar atributos específicos
+        switch (dto.getTipoPersona().toUpperCase()) {
+            case "GERENTE":
+                Gerente gerente = new Gerente();
+                gerente.setExperienciaProfesional(dto.getExperienciaProfesional());
+                persona = gerente;
+                break;
+            case "CONTRATISTA":
+                Contratista contratista = new Contratista();
+                contratista.setNumeroTarjetaProfesional(dto.getNumeroTarjetaProfesional());
+                contratista.setExperienciaProfesional(dto.getExperienciaProfesional());
+                contratista.setTelefonoAdicional(dto.getTelefonoAdicional());
+                contratista.setFirmaDigital(dto.getFirmaDigital());
+                persona = contratista;
+                break;
+            case "CONTADOR":
+                Contador contador = new Contador();
+                contador.setNumeroTarjetaProfesional(dto.getNumeroTarjetaProfesional());
+                persona = contador;
+                break;
+            default:
+                throw new IllegalArgumentException("Tipo de persona no válido: " + dto.getTipoPersona());
+        }
+
         persona.setNombre(dto.getNombre());
         persona.setCorreo(dto.getCorreo());
         persona.setNumeroDocumento(dto.getNumeroDocumento());

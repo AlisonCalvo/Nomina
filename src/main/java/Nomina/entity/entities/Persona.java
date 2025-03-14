@@ -36,6 +36,7 @@ import org.hibernate.annotations.ParamDef;
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Filter(name = "filtroCreador", condition = "creador = :creador")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Persona implements Serializable {
 
     /**
