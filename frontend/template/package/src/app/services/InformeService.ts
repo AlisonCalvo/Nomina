@@ -8,16 +8,14 @@ import {environment} from '../../environments/environment';
  * Interfaz que define la estructura de la entidad Informe
  */
 export interface Informe {
-  /** contenido - Campo de texto */
-  contenido: string;
   /** fecha - Campo de tipo LocalDate */
   fecha: Date;
-  /** actividades - Campo de texto */
-  actividades: string;
   /** cliente - Campo de texto */
   cliente: string;
   /** cargo - Campo de texto */
   cargo: string;
+  /** informePDF - Campo de texto */
+  informePDF: string;
   /** cuentaCobro - Campo de tipo CuentaCobro */
   cuentaCobro: any;
   /** proyecto - Campo de tipo Proyecto */
@@ -33,16 +31,14 @@ export interface Informe {
  * Utilizada para la transferencia de datos entre el frontend y backend
  */
 export interface InformeDTO {
-  /** contenido - Campo de texto */
-  contenido: string;
   /** fecha - Campo de tipo LocalDate */
   fecha: Date;
-  /** actividades - Campo de texto */
-  actividades: string;
   /** cliente - Campo de texto */
   cliente: string;
   /** cargo - Campo de texto */
   cargo: string;
+  /** informePDF - Campo de texto */
+  informePDF: string;
   /** cuentaCobro - Campo de tipo CuentaCobro */
   cuentaCobro: any;
   /** proyecto - Campo de tipo Proyecto */
@@ -105,4 +101,46 @@ export class InformeService {
     return this.httpClient.delete<void>(url, {headers});
   }
 
+
+  // Método para uploadFiles
+  uploadFiles(files: File[]): Observable<string[]> {
+    const url = `${this.baseUrl}/informes/upload`;
+    const formData: FormData = new FormData();
+
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    // Opcional: puedes ajustar headers
+    const headers = new HttpHeaders()
+      .set('Accion', 'save')
+      .set('Objeto', 'Informe');
+
+    // Observa que aquí esperamos un array de strings, según lo que el backend devuelve
+    return this.httpClient.post<string[]>(url, formData, { headers });
+  }
+
+  // Método para uploadFile
+  uploadFile(file: File): Observable<string> {
+    const url = `${this.baseUrl}/informes/upload`;
+    const formData: FormData = new FormData();
+    formData.append('files', file); // 'files' es el nombre del @RequestParam en el backend
+
+    const headers = new HttpHeaders()
+      .set('Accion', 'save')
+      .set('Objeto', 'Informe');
+
+    // Esperamos un array de rutas y tomamos la primera.
+    // Si el backend solo devuelve una ruta, ajusta en consecuencia.
+    return new Observable((observer) => {
+      this.httpClient.post<string[]>(url, formData, { headers })
+        .subscribe({
+          next: (paths: string[]) => {
+            observer.next(paths[0]);  // Tomamos la primera ruta
+            observer.complete();
+          },
+          error: (err) => observer.error(err)
+        });
+    });
+  }
 }

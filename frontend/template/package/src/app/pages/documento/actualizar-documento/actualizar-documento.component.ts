@@ -407,7 +407,7 @@ export class ActualizarDocumentoComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'cargo'
+          labelProp: 'numeroContrato'
         }
       }
     ];

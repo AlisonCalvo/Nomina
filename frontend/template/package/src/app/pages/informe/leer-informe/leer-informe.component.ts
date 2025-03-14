@@ -9,9 +9,9 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { InformeService } from '../../../services/InformeService';
-import { InformeComponent } from '../../informe/informe.component';
-import { ActualizarInformeComponent } from '../../informe/actualizar-informe/actualizar-informe.component';
-import { CrearInformeComponent } from '../../informe/crear-informe/crear-informe.component';
+import { InformeComponent } from '../informe.component';
+import { ActualizarInformeComponent } from '../actualizar-informe/actualizar-informe.component';
+import { CrearInformeComponent } from '../crear-informe/crear-informe.component';
 import {environment} from '../../../../environments/environment';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -85,7 +85,7 @@ import { CommonModule } from '@angular/common';
 })
 export class LeerInformeComponent implements OnInit {
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'contenido', 'fecha', 'actividades', 'cliente', 'cargo', 'creador', 'cuentaCobro', 'proyecto', 'contrato', 'acciones'];
+  displayedColumns: string[] = ['id', 'fecha', 'cliente', 'cargo', 'informePDF', 'creador', 'cuentaCobro', 'proyecto', 'contrato', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   informes: InformeComponent[] = [];

@@ -276,7 +276,7 @@ export class CrearCuentaCobroComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'cargo'
+          labelProp: 'numeroContrato'
         }
       }
     ];

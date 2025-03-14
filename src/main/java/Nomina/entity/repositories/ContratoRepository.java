@@ -74,4 +74,6 @@ public interface ContratoRepository extends JpaRepository<Contrato, Long> {
      */
     List<Contrato> findByInforme(Informe informe);
 
+    List<Contrato> findByPersonaId(Long personaId);
+
 }

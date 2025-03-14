@@ -357,7 +357,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          options: [{ value: true, label: 'Activo' }, { value: false, label: 'Inactivo' }]
+          options: [{ value: true, label: 'Realizado' }, { value: false, label: 'Pendiente' }]
         }
       },
       {
@@ -427,7 +427,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'cargo'
+          labelProp: 'numeroContrato'
         }
       }
     ];

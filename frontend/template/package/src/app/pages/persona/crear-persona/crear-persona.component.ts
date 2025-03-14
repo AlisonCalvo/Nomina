@@ -35,6 +35,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PersonaService } from '../../../services/PersonaService';
 import { ProyectoService } from '../../../services/ProyectoService';
 import { TipoDocumentoService } from '../../../services/TipoDocumentoService';
+import {PermissionService} from "../../authentication/services/PermissionService";
+
 
 interface PersonaModel {
   nombre: string;
@@ -49,6 +51,8 @@ interface PersonaModel {
   creador: string;
   proyecto: any;
   tipoDocumento: any;
+  necesitaAcceso: boolean;
+  roles?: any[];
 }
 
 @Component({
@@ -105,7 +109,9 @@ export class CrearPersonaComponent implements OnInit {
     nacionalidad: '',
     creador: '',
     proyecto: null,
-    tipoDocumento: null
+    tipoDocumento: null,
+    necesitaAcceso: false,
+    roles: [],
   };
   fields: FormlyFieldConfig[] = [];
 
@@ -117,12 +123,24 @@ export class CrearPersonaComponent implements OnInit {
     private tipoDocumentoService: TipoDocumentoService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private authService: AuthService
+    private authService: AuthService,
+    private permissionService: PermissionService
   ) {}
 
   ngOnInit() {
     const username = this.authService.getUsername();
     this.model.creador = username;
+
+    this.permissionService.getRoles().subscribe(
+      (roles) => {
+        const field = this.fields.find(f => f.key === 'roles');
+        if (field && field.templateOptions) {
+          field.templateOptions.options = roles;
+        }
+      },
+      (error) => console.error('Error al cargar roles:', error)
+    );
+
     this.fields = [
       {
         key: 'nombre',
@@ -274,7 +292,7 @@ export class CrearPersonaComponent implements OnInit {
         templateOptions: {
           label: 'TipoDocumento',
           placeholder: 'Seleccione tipoDocumento',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -283,6 +301,25 @@ export class CrearPersonaComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'nombreTipoDocumento'
+        }
+      },
+      {
+        key: 'necesitaAcceso',
+        type: 'checkbox',
+        templateOptions: {
+          label: '¿Necesita acceso al sistema?',
+        }
+      },
+      {
+        key: 'roles',
+        type: 'select',
+        hideExpression: '!model.necesitaAcceso', // Se oculta si no necesita acceso
+        templateOptions: {
+          label: 'Roles',
+          multiple: true,
+          options: [],
+          valueProp: 'id',
+          labelProp: 'nombre'
         }
       }
     ];
@@ -311,8 +348,17 @@ export class CrearPersonaComponent implements OnInit {
     this.preCreate(this.model);
 
     // 2. Copiamos el modelo para no mutarlo directamente
+    this.preCreate(this.model);
     const modelData = { ...this.model };
     modelData.tipoDocumento = { id: this.model.tipoDocumento };
+
+    // Si necesita acceso, se mandan los roles
+    if (this.model.necesitaAcceso) {
+      modelData.roles = this.model.roles;
+    } else {
+      delete modelData.roles;
+    }
+
     // Si no hay archivos a subir o no es un campo file, guardamos directo
     this.saveEntity(modelData);
   }

@@ -1,6 +1,6 @@
 /**
  * Proyecto.java
- * Generado automáticamente el 12/03/2025 11:45:41
+ * Generado automáticamente el 13/03/2025 16:31:54
  */
 
 package Nomina.entity.entities;

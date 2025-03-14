@@ -2,6 +2,8 @@ package Nomina.entity.dto;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+
 import lombok.*;
 import Nomina.entity.entities.*;
 
@@ -12,6 +14,8 @@ import Nomina.entity.entities.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class PersonaDTO {
 
     /**
@@ -86,5 +90,16 @@ public class PersonaDTO {
      * Campo que representa el creador del registro.
      */
     private String creador;
+
+    /**
+     * Campo que indica si la persona necesita acceso al sistema
+     */
+    private boolean necesitaAcceso;
+
+    /**
+     * Lista de IDs de roles asignados si la persona necesita acceso al sistema.
+     */
+    private Set<Long> roles;
+
 
 }

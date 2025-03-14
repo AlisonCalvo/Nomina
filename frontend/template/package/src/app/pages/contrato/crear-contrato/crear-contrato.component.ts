@@ -39,6 +39,7 @@ import { TipoContratoService } from '../../../services/TipoContratoService';
 import { PeriodicidadPagoService } from '../../../services/PeriodicidadPagoService';
 
 interface ContratoModel {
+  numeroContrato: string;
   cargo: string;
   valorTotalContrato: number;
   numeroPagos: number;
@@ -97,6 +98,7 @@ interface ContratoModel {
 export class CrearContratoComponent implements OnInit {
   form = new FormGroup({});
   model: ContratoModel = {
+    numeroContrato: '',
     cargo: '',
     valorTotalContrato: 0,
     numeroPagos: 0,
@@ -130,6 +132,21 @@ export class CrearContratoComponent implements OnInit {
     const username = this.authService.getUsername();
     this.model.creador = username;
     this.fields = [
+      {
+        key: 'numeroContrato',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'NumeroContrato',
+          placeholder: 'Ingrese numeroContrato',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          }
+        }
+      },
       {
         key: 'cargo',
         type: 'input',
@@ -224,7 +241,7 @@ export class CrearContratoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          options: [{ value: true, label: 'Finalizado' }, { value: false, label: 'En curso' }]
+          options: [{ value: true, label: 'En curso' }, { value: false, label: 'Finalizado' }]
         }
       },
       {

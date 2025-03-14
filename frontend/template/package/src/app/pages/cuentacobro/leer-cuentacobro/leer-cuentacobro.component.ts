@@ -9,9 +9,9 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { CuentaCobroService } from '../../../services/CuentaCobroService';
-import { CuentaCobroComponent } from '../../cuentacobro/cuentacobro.component';
-import { ActualizarCuentaCobroComponent } from '../../cuentacobro/actualizar-cuentacobro/actualizar-cuentacobro.component';
-import { CrearCuentaCobroComponent } from '../../cuentacobro/crear-cuentacobro/crear-cuentacobro.component';
+import { CuentaCobroComponent } from '../cuentacobro.component';
+import { ActualizarCuentaCobroComponent } from '../actualizar-cuentacobro/actualizar-cuentacobro.component';
+import { CrearCuentaCobroComponent } from '../crear-cuentacobro/crear-cuentacobro.component';
 import {environment} from '../../../../environments/environment';
 
 import { MatButtonModule } from '@angular/material/button';

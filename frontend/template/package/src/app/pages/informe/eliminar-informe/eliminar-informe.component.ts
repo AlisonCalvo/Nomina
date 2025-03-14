@@ -7,7 +7,7 @@ import { FormGroup, FormsModule } from '@angular/forms';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { Router, RouterModule } from '@angular/router';
 import { InformeService } from '../../../services/InformeService';
-import { InformeComponent } from '../../informe/informe.component';
+import { InformeComponent } from '../informe.component';
 import { CommonModule, DatePipe  } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
@@ -84,7 +84,7 @@ export class EliminarInformeComponent implements OnInit {
   /** Configuración de campos */
   fields: FormlyFieldConfig[] = [];
   /** Columnas a mostrar en la tabla */
-  displayedColumns: string[] = ['fecha', 'cliente', 'contenido', 'creador', 'cuentaCobro', 'proyecto', 'contrato', 'id', 'actividades', 'cargo', 'actions'];
+  displayedColumns: string[] = ['fecha', 'cliente', 'creador', 'cuentaCobro', 'proyecto', 'contrato', 'id', 'cargo', 'informePDF', 'actions'];
 
   /**
    * Constructor del componente
