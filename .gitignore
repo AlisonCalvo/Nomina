@@ -38,3 +38,11 @@ build/
 npm-debug.log
 yarn-error.log
 .angular
+# Ignorar directorios de Node
+node_modules/
+
+# Ignorar directorios específicos de Angular
+frontend/template/package/.angular/
+
+# Ignorar carpeta target
+target/

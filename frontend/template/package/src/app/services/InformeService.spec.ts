@@ -39,4 +39,8 @@ describe('InformeService', () => {
     // TODO: Implement test for deleteById
   });
 
+  it('should call uploadFiles', () => {
+    // TODO: Implement test for uploadFiles
+  });
+
 });

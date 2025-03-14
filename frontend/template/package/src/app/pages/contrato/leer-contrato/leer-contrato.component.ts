@@ -9,9 +9,9 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { ContratoService } from '../../../services/ContratoService';
-import { ContratoComponent } from '../../contrato/contrato.component';
-import { ActualizarContratoComponent } from '../../contrato/actualizar-contrato/actualizar-contrato.component';
-import { CrearContratoComponent } from '../../contrato/crear-contrato/crear-contrato.component';
+import { ContratoComponent } from '../contrato.component';
+import { ActualizarContratoComponent } from '../actualizar-contrato/actualizar-contrato.component';
+import { CrearContratoComponent } from '../crear-contrato/crear-contrato.component';
 import {environment} from '../../../../environments/environment';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -85,7 +85,7 @@ import {AuthService} from "../../../services/auth-service.service";
 })
 export class LeerContratoComponent implements OnInit {
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'cargo', 'valorTotalContrato', 'numeroPagos', 'fechaInicioContrato', 'fechaFinContrato', 'estado', 'rutaArchivo', 'firmado', 'creador', 'proyecto', 'persona', 'tipoContrato', 'periodicidadPago', 'acciones'];
+  displayedColumns: string[] = ['id','numeroContrato' ,'cargo', 'valorTotalContrato', 'numeroPagos', 'fechaInicioContrato', 'fechaFinContrato', 'estado', 'rutaArchivo', 'firmado', 'creador', 'proyecto', 'persona', 'tipoContrato', 'periodicidadPago', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   contratos: ContratoComponent[] = [];

@@ -9,9 +9,9 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { PeriodicidadPagoService } from '../../../services/PeriodicidadPagoService';
-import { PeriodicidadPagoComponent } from '../../periodicidadpago/periodicidadpago.component';
-import { ActualizarPeriodicidadPagoComponent } from '../../periodicidadpago/actualizar-periodicidadpago/actualizar-periodicidadpago.component';
-import { CrearPeriodicidadPagoComponent } from '../../periodicidadpago/crear-periodicidadpago/crear-periodicidadpago.component';
+import { PeriodicidadPagoComponent } from '../periodicidadpago.component';
+import { ActualizarPeriodicidadPagoComponent } from '../actualizar-periodicidadpago/actualizar-periodicidadpago.component';
+import { CrearPeriodicidadPagoComponent } from '../crear-periodicidadpago/crear-periodicidadpago.component';
 import {environment} from '../../../../environments/environment';
 
 import { MatButtonModule } from '@angular/material/button';

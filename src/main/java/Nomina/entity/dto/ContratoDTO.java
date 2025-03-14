@@ -15,6 +15,11 @@ import Nomina.entity.entities.*;
 public class ContratoDTO {
 
     /**
+     * Campo que representa numeroContrato
+     */
+    private String numeroContrato;
+
+    /**
      * Campo que representa cargo
      */
     private String cargo;
