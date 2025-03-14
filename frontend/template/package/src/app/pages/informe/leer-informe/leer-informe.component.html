@@ -55,7 +55,7 @@
       </ng-container>
       <ng-container matColumnDef="cuentaCobro">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>CuentaCobro</th>
-        <td mat-cell *matCellDef="let element">{{generateSummary(element.cuentaCobro) || 'Sin cuentaCobro'}}</td>
+        <td mat-cell *matCellDef="let element">{{element.cuentaCobro.id + "," + element.cuentaCobro.numeroCuenta || 'Sin cuentaCobro'}}</td>
       </ng-container>
       <ng-container matColumnDef="proyecto">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Proyecto</th>
