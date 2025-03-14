@@ -163,7 +163,8 @@ export class CrearDocumentoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
-          }
+          },
+          disabled: true
         }
       },
       {
@@ -260,7 +261,7 @@ export class CrearDocumentoComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'cargo'
+          labelProp: 'numeroContrato'
         }
       }
     ];

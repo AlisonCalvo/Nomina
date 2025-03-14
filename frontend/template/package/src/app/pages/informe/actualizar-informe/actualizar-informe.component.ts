@@ -6,6 +6,8 @@ import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormlyMatDatepickerModule } from '@ngx-formly/material/datepicker';
+import { Observable, forkJoin, of, throwError } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
@@ -39,16 +41,14 @@ import { ContratoService } from '../../../services/ContratoService';
 interface InformeModel {
   /** id de la entidad */
   id: number;
-  /** contenido de la entidad */
-  contenido: string;
   /** fecha de la entidad */
   fecha: Date;
-  /** actividades de la entidad */
-  actividades: string;
   /** cliente de la entidad */
   cliente: string;
   /** cargo de la entidad */
   cargo: string;
+  /** informePDF de la entidad */
+  informePDF: any;
   /** creador de la entidad */
   creador: string;
   /** cuentaCobro de la entidad */
@@ -118,6 +118,8 @@ export class ActualizarInformeComponent implements OnInit {
   model: InformeModel = {} as InformeModel;
   originalModel: InformeModel = {} as InformeModel;
   fields: FormlyFieldConfig[] = [];
+  /** Indicador de carga de archivos */
+  isLoading = false;
 
   /**
    * Constructor del componente
@@ -155,11 +157,10 @@ export class ActualizarInformeComponent implements OnInit {
         // Inicializar modelo con los datos recibidos
         this.model = {
           id: this.data.id,
-          contenido: this.data.contenido,
           fecha: this.data.fecha,
-          actividades: this.data.actividades,
           cliente: this.data.cliente,
           cargo: this.data.cargo,
+          informePDF: this.data.informePDF,
           creador: this.data.creador,
           cuentaCobro: this.data.cuentaCobro && this.data.cuentaCobro.id ? this.data.cuentaCobro.id : null,
           proyecto: this.data.proyecto && this.data.proyecto.id ? this.data.proyecto.id : null,
@@ -169,11 +170,10 @@ export class ActualizarInformeComponent implements OnInit {
         // Copia del modelo original para detectar cambios
         this.originalModel = {
           id: this.data.id,
-          contenido: this.data.contenido,
           fecha: this.data.fecha,
-          actividades: this.data.actividades,
           cliente: this.data.cliente,
           cargo: this.data.cargo,
+          informePDF: this.data.informePDF,
           creador: this.data.creador,
           cuentaCobro: this.data.cuentaCobro && this.data.cuentaCobro.id ? this.data.cuentaCobro.id : null,
           proyecto: this.data.proyecto && this.data.proyecto.id ? this.data.proyecto.id : null,
@@ -273,22 +273,6 @@ export class ActualizarInformeComponent implements OnInit {
   generateFormFields() {
     this.fields = [
       {
-        key: 'contenido',
-        type: 'textarea',
-        className: 'field-container',
-        templateOptions: {
-          label: 'Contenido',
-          placeholder: 'Ingrese contenido',
-          required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          },
-          rows: 5
-        }
-      },
-      {
         key: 'fecha',
         type: 'datepicker',
         className: 'field-container',
@@ -301,22 +285,6 @@ export class ActualizarInformeComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
-        }
-      },
-      {
-        key: 'actividades',
-        type: 'textarea',
-        className: 'field-container',
-        templateOptions: {
-          label: 'Actividades',
-          placeholder: 'Ingrese actividades',
-          required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          },
-          rows: 5
         }
       },
       {
@@ -350,6 +318,17 @@ export class ActualizarInformeComponent implements OnInit {
         }
       },
       {
+        key: 'informePDF',
+        type: 'file',
+        templateOptions: {
+          label: 'InformePDF',
+          placeholder: 'Seleccione informePDF',
+          multiple: true,
+          required: true,
+          accept: '.pdf,.doc,.docx'
+        }
+      },
+      {
         key: 'creador',
         type: 'input',
         className: 'field-container',
@@ -379,7 +358,7 @@ export class ActualizarInformeComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'montoCobrar'
+          labelProp: 'numeroCuenta'
         }
       },
       {
@@ -415,7 +394,7 @@ export class ActualizarInformeComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'cargo'
+          labelProp: 'numeroContrato'
         }
       }
     ];
@@ -426,6 +405,8 @@ export class ActualizarInformeComponent implements OnInit {
     this.preUpdate(this.model);
 
     const modelData = { ...this.model };
+
+    this.isLoading = true;
 
     if (modelData.cuentaCobro) {
       modelData.cuentaCobro = { id: modelData.cuentaCobro };
@@ -439,17 +420,71 @@ export class ActualizarInformeComponent implements OnInit {
       modelData.contrato = { id: modelData.contrato };
     }
 
-    // Si no se subieron archivos, procedemos a actualizar directamente
-    this.updateEntity(modelData);
+
+    const uploadOperations: Observable<void>[] = [];
+    const fileFields: (keyof InformeModel)[] = ['informePDF'];
+
+    const handleFileUpload = (field: keyof InformeModel) => {
+      const files = this.model[field];
+
+      if (Array.isArray(files) && files.length > 0) {
+        const upload$ = this.informeService.uploadFiles(files).pipe(
+          switchMap(rutas => {
+            // @ts-ignore
+            modelData[field] = rutas.join(',');
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      } else if (files instanceof File) {
+        const upload$ = this.informeService.uploadFile(files).pipe(
+          switchMap(ruta => {
+            // @ts-ignore
+            modelData[field] = ruta;
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      }
+    };
+
+    fileFields.forEach(field => handleFileUpload(field));
+
+    if (uploadOperations.length > 0) {
+      forkJoin(uploadOperations).subscribe({
+        next: () => this.updateEntity(modelData),
+        error: () => this.isLoading = false
+      });
+    } else {
+      this.updateEntity(modelData);
+    }
+  }
+
+  private handleUploadError(field: string, error: any) {
+    console.error(`Error subiendo archivos en ${field}:`, error);
+    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+    this.isLoading = false;
   }
 
   private updateEntity(modelData: any) {
-    // Asumimos que modelData.id existe en tu modelo para saber cuál actualizar.
     this.informeService.update(modelData.id, modelData).subscribe({
       next: (response) => {
+        this.isLoading = false;
         this.postUpdate(response);
       },
       error: (error) => {
+        this.isLoading = false;
         console.error('Error al actualizar Informe:', error);
         this.snackBar.open('Error al actualizar Informe', 'Cerrar', {
           duration: 3000,

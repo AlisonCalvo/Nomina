@@ -1,4 +1,10 @@
 <div class="page-container" style="max-height: calc(100vh - 100px); overflow-y: auto;">
+  <!-- Spinner de carga -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner></mat-spinner>
+    <p>Cargando, por favor espere...</p>
+  </div>
+
   <!-- Sección de encabezado o welcome -->
   <mat-card class="welcome-section">
     <mat-card-content>
@@ -11,10 +17,10 @@
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <formly-form [form]="form" [fields]="fields" [model]="model"></formly-form>
       <div class="button-container">
-        <button mat-raised-button color="primary" type="submit" [disabled]="!form.valid">
+        <button mat-raised-button color="primary" type="submit" [disabled]="!form.valid || isLoading">
           <mat-icon>save</mat-icon> Guardar
         </button>
-        <button mat-button color="warn" type="button" (click)="closeDialog()" >
+        <button mat-button color="warn" type="button" (click)="closeDialog()" [disabled]="isLoading">
           <mat-icon>cancel</mat-icon> Cancelar
         </button>
       </div>

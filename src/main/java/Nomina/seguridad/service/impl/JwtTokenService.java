@@ -57,6 +57,11 @@ public class JwtTokenService {
     private Map<String, Object> generateExtraClaims(Usuario usuario) {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("name", usuario.getName());
+        extraClaims.put("userId", usuario.getId());
+
+        if (usuario.getPersona() != null) {
+            extraClaims.put("personaId", usuario.getPersona().getId()); // Agregar ID de persona
+        }
 
         // Extraer nombres de roles principales y sus hijos, y verificar si alguno tiene esAdministrador = false
         List<String> rolesYRolesHijos = usuario.getRoles()

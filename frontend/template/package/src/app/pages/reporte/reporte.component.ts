@@ -296,11 +296,10 @@ export class ReporteComponent implements OnInit {
     // Atributos para la entidad Informe
     this.entityAttributesMap.set('Informe', [
       { name: 'id', type: 'long', selected: false },
-      { name: 'contenido', type: 'String', selected: false, isTextArea: true },
       { name: 'fecha', type: 'LocalDate', selected: false },
-      { name: 'actividades', type: 'String', selected: false, isTextArea: true },
       { name: 'cliente', type: 'String', selected: false },
       { name: 'cargo', type: 'String', selected: false },
+      { name: 'informePDF', type: 'String', selected: false },
       { name: 'creador', type: 'String', selected: false },
       { name: 'cuentaCobro', type: 'CuentaCobro', selected: false },
       { name: 'proyecto', type: 'Proyecto', selected: false },

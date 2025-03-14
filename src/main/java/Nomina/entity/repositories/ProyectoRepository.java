@@ -42,4 +42,8 @@ public interface ProyectoRepository extends JpaRepository<Proyecto, Long> {
      */
     List<Proyecto> findByInforme(Informe informe);
 
+    @Query("SELECT p FROM Proyecto p JOIN p.persona personas WHERE personas.id = :personaId")
+    List<Proyecto> findByPersonaId(@Param("personaId") Long personaId);
+
+
 }

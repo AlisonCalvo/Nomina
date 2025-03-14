@@ -76,4 +76,17 @@ export class AuthService {
     localStorage.removeItem('token');
     this.router.navigate(['/authentication/login']);
   }
+
+  getPersonaId(): number | null {
+    const decodedToken = this.getDecodedToken();
+    if (!decodedToken || !decodedToken.personaId) return null; // Asegurar que el token tenga este campo
+    return Number(decodedToken.personaId);
+  }
+
+  isGerente(): boolean {
+    const decodedToken = this.getDecodedToken();
+    if (!decodedToken || !decodedToken.roles) return false;
+
+    return decodedToken.roles.includes('ADMINISTRADOR') || decodedToken.roles.includes('GERENTE') || decodedToken.roles.includes('CONTADOR');
+  }
 }

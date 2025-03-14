@@ -165,4 +165,9 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
         return repository.findByInforme(informe);
     }
 
+    @Override
+    public List<Contrato> obtenerContratosVisibles(Long usuarioId) {
+        return repository.findByPersonaId(usuarioId);
+    }
+
 }

@@ -9,9 +9,9 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { ProyectoService } from '../../../services/ProyectoService';
-import { ProyectoComponent } from '../../proyecto/proyecto.component';
-import { ActualizarProyectoComponent } from '../../proyecto/actualizar-proyecto/actualizar-proyecto.component';
-import { CrearProyectoComponent } from '../../proyecto/crear-proyecto/crear-proyecto.component';
+import { ProyectoComponent } from '../proyecto.component';
+import { ActualizarProyectoComponent } from '../actualizar-proyecto/actualizar-proyecto.component';
+import { CrearProyectoComponent } from '../crear-proyecto/crear-proyecto.component';
 import {environment} from '../../../../environments/environment';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -41,6 +41,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PersonaService } from '../../../services/PersonaService';
 import { CommonModule } from '@angular/common';
+import {AuthService} from "../../../services/auth-service.service";
+
 @Component({
   selector: 'app-leer-proyecto',
   templateUrl: './leer-proyecto.component.html',
@@ -116,7 +118,8 @@ export class LeerProyectoComponent implements OnInit {
     private router: Router,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private authService: AuthService
   ) {
     this.customizePaginator();
   }
@@ -166,17 +169,37 @@ export class LeerProyectoComponent implements OnInit {
    * Configura el datasource, paginador y ordenamiento
    */
   loadData(): void {
-    this.proyectoService.findAll().subscribe({
-      next: data => {
-        this.dataSource.data = data.map(item => Object.assign(new ProyectoComponent(this.proyectoService), item));
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-    },
-       error: error => {
-        console.error('Error al obtener proyectos:', error);
-      this.errorMessage = 'Error al cargar los datos.';
+    if (this.authService.isGerente()) {
+      this.proyectoService.findAll().subscribe({
+        next: data => {
+          this.dataSource.data = data;
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
+        },
+        error: error => {
+          console.error('Error al obtener todos los proyectos:', error);
+          this.errorMessage = 'Error al cargar los datos.';
+        }
+      });
+    } else {
+      const personaId = this.authService.getPersonaId();
+      if (!personaId) {
+        console.error('No se pudo obtener el ID de la persona asociada.');
+        return;
       }
-    });
+
+      this.proyectoService.findVisibles(personaId).subscribe({
+        next: data => {
+          this.dataSource.data = data;
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
+        },
+        error: error => {
+          console.error('Error al obtener proyectos visibles:', error);
+          this.errorMessage = 'Error al cargar los datos.';
+        }
+      });
+    }
   }
 
   /**

@@ -109,4 +109,6 @@ public interface ContratoService {
      */
     List<Contrato> findByInforme(Informe informe);
 
+    List<Contrato> obtenerContratosVisibles(Long usuarioId);
+
 }
