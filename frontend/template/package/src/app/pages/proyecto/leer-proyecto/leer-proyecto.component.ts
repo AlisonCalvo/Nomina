@@ -202,6 +202,7 @@ export class LeerProyectoComponent implements OnInit {
     }
   }
 
+
   /**
    * Personaliza los textos del paginador a español
    */

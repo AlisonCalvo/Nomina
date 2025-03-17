@@ -32,6 +32,12 @@ build/
 ### VS Code ###
 .vscode/
 
+
+# Node
+**/node_modules/
+npm-debug.log
+yarn-error.log
+.angular
 # Ignorar directorios de Node
 node_modules/
 

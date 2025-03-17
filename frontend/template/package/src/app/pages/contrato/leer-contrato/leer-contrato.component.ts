@@ -202,6 +202,7 @@ export class LeerContratoComponent implements OnInit {
     }
   }
 
+
   /**
    * Personaliza los textos del paginador a español
    */
