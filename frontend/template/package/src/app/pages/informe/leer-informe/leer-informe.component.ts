@@ -9,9 +9,9 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { InformeService } from '../../../services/InformeService';
-import { InformeComponent } from '../informe.component';
-import { ActualizarInformeComponent } from '../actualizar-informe/actualizar-informe.component';
-import { CrearInformeComponent } from '../crear-informe/crear-informe.component';
+import { InformeComponent } from '../../informe/informe.component';
+import { ActualizarInformeComponent } from '../../informe/actualizar-informe/actualizar-informe.component';
+import { CrearInformeComponent } from '../../informe/crear-informe/crear-informe.component';
 import {environment} from '../../../../environments/environment';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -42,6 +42,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CuentaCobroService } from '../../../services/CuentaCobroService';
 import { ContratoService } from '../../../services/ContratoService';
 import { CommonModule } from '@angular/common';
+import {DownloadFileComponent} from "../../../downloadFile.component";
+import {FileService} from "../../../services/FileService";
 @Component({
   selector: 'app-leer-informe',
   templateUrl: './leer-informe.component.html',
@@ -50,7 +52,6 @@ import { CommonModule } from '@angular/common';
     FormsModule,
     CommonModule,
     MatPaginator,
-    RouterLink,
     MatSort,
     MatTableModule,
     MatFormFieldModule,
@@ -111,13 +112,15 @@ export class LeerInformeComponent implements OnInit {
    * @param snackBar Servicio para mostrar notificaciones
    * @param paginatorIntl Servicio para internacionalización del paginador
    * @param dialog Servicio para gestionar diálogos
+   * @param fileService
    */
   constructor(
     private informeService: InformeService,
     private router: Router,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private fileService: FileService
   ) {
     this.customizePaginator();
   }
@@ -263,6 +266,32 @@ export class LeerInformeComponent implements OnInit {
       console.error('Error en preDelete:', error);
       this.showMessage('Acción cancelada o error en preDelete', 'error');
     }
+  }
+
+  downloadFile() {
+    this.fileService.getFileList().subscribe(files => {
+      const dialogRef = this.dialog.open(DownloadFileComponent, {
+        width: '300px',
+        data: { files: files }
+      });
+
+      dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
+        // Validar que haya archivos seleccionados
+        if (selectedFiles && selectedFiles.length > 0) {
+          // Descargar cada archivo en un ciclo
+          selectedFiles.forEach(selectedFile => {
+            this.fileService.downloadFile(selectedFile).subscribe(blob => {
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = selectedFile;
+              a.click();
+              window.URL.revokeObjectURL(url);
+            });
+          });
+        }
+      });
+    });
   }
 
   /**
