@@ -36,11 +36,11 @@ public class PermisoInterceptor implements HandlerInterceptor {
         String requestURI = request.getRequestURI();
         if (requestURI.startsWith("/auth/") || requestURI.startsWith("/api/generacion")
                 || requestURI.equals("/proyectos") || requestURI.equals("/proyectos/eliminarProyecto")
-                || requestURI.equals("/authGitHub/github")) {
+                || requestURI.equals("/notificar") || requestURI.equals("/authGitHub/github")) {
             return true;
         }
 
-        if (requestURI.startsWith("/api/generacion")) {
+        if (requestURI.matches("/api/files/download") || requestURI.matches("/api/files")) {
             return true; // Permitir sin validaciones
         }
 

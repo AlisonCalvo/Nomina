@@ -22,9 +22,6 @@
     <button mat-raised-button color="accent" (click)="onCreate()">
       <mat-icon>add</mat-icon> <span>Crear Informe
     </span></button>
-    <button mat-raised-button color="accent" (click)="onAlerta()" matTooltip="Funcionalidad sin implementar. Descripción: notificacion">
-      <mat-icon>notifications</mat-icon> <span>alerta</span>
-    </button>
   </div>
 
   <div class="table-scroll">
@@ -68,6 +65,9 @@
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef>Acciones</th>
         <td mat-cell *matCellDef="let element">
+          <button mat-icon-button color="accent" (click)="downloadFile()" matTooltip="Descargar Archivos">
+            <mat-icon>file_download</mat-icon>
+          </button>
           <button mat-icon-button color="primary" (click)="onEdit(element)" matTooltip="Modificar">
             <mat-icon>edit</mat-icon>
           </button>

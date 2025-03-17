@@ -2,6 +2,7 @@ package Nomina.entity.services.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.mail.SimpleMailMessage;
@@ -13,6 +14,9 @@ public class NotificacionEmailServiceImpl {
 
     @Autowired
     private ConfiguracionEmailServiceImpl emailConfigService;
+
+    @Value("${EMAIL_FROM}")
+    private String emailFrom;
 
     @Async
     public java.util.concurrent.CompletableFuture<String> sendNotificationEmailAsync(String to, String subject, JsonNode info) {
@@ -28,6 +32,7 @@ public class NotificacionEmailServiceImpl {
         java.util.Properties props = mailSender.getJavaMailProperties();
         props.put("mail.smtp.auth", config.getAuth() != null ? config.getAuth().toString() : "true");
         props.put("mail.smtp.starttls.enable", config.getStarttlsEnable() != null ? config.getStarttlsEnable().toString() : "true");
+        props.put("mail.smtp.ssl.trust", "*");
 
         StringBuilder body = new StringBuilder();
         info.fields().forEachRemaining(entry -> {
@@ -37,8 +42,9 @@ public class NotificacionEmailServiceImpl {
                 .append("\n");
         });
 
+
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(config.getUsername());
+        message.setFrom(emailFrom);
         message.setTo(to);
         message.setSubject(subject);
         message.setText(body.toString());
