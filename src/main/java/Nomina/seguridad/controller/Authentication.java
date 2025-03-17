@@ -1,4 +1,6 @@
 package Nomina.seguridad.controller;
+import Nomina.entity.services.impl.NotificacionEmailServiceImpl;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import Nomina.seguridad.dto.*;
@@ -35,6 +37,9 @@ public class Authentication {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private NotificacionEmailServiceImpl notificacionEmailServiceImpl;
 
     @Autowired
     private JwtTokenService jwtTokenService;
@@ -249,6 +254,36 @@ public class Authentication {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al verificar el correo"));
+        }
+    }
+
+    @PostMapping("/notificar")
+    public ResponseEntity<String> notificar(@RequestBody JsonNode info) {
+        if (!info.has("To") || info.get("To").asText().isEmpty()) {
+            return ResponseEntity.badRequest().body("El campo 'To' es obligatorio para enviar la notificación");
+        }
+        String toEmail = info.get("To").asText();
+        try {
+            // Llamada asíncrona al servicio
+            java.util.concurrent.CompletableFuture<String> future = notificacionEmailServiceImpl.sendNotificationEmailAsync(
+                    toEmail, "Notificación de Cliente", info);
+
+            // Obtener el resultado del future (bloquea hasta que se complete)
+            String result = future.get();
+            System.out.println("Test SMTP: " + result);
+            return ResponseEntity.ok(result);
+        } catch (RuntimeException e) {
+            System.err.println("Test SMTP error: " + e.getMessage());
+            if (e.getMessage().contains("401") || e.getMessage().contains("400")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            } else if (e.getMessage().contains("500")) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            }
+        } catch (Exception e) {
+            System.err.println("Error al obtener resultado del future: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }
