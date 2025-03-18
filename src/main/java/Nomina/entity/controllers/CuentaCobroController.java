@@ -151,6 +151,7 @@ public class CuentaCobroController {
                     String originalFilename = StringUtils.cleanPath(
                             Objects.requireNonNull(file.getOriginalFilename())
                     );
+                    // Generar un número aleatorio de 5 dígitos
                     int randomNumber = (int) (Math.random() * 90000) + 10000;
                     String newFilename = randomNumber + "_" + originalFilename;
                     Path destinationFilePath = uploadPath.resolve(newFilename);
@@ -202,32 +203,13 @@ public class CuentaCobroController {
      * @return Nombre del archivo sin la ruta
      */
     private String extractFileName(String path) {
-        // First extract filename from path
         int lastBackslash = path.lastIndexOf('\\');
         int lastSlash = path.lastIndexOf('/');
         int lastSeparator = Math.max(lastBackslash, lastSlash);
-
-        String fileName;
-        if (lastSeparator == -1) {
-            fileName = path;
-        } else {
-            fileName = path.substring(lastSeparator + 1);
-        }
-
-        return fileName.replaceFirst("^\\d+_", "");
+        if (lastSeparator == -1) {return path;}
+        return path.substring(lastSeparator + 1);
     }
 
-    // Endpoint para descargar un archivo
-    @GetMapping("/download")
-    public ResponseEntity<Resource> downloadFile(@RequestParam("file") String fileName) throws MalformedURLException {
-        Path filePath = Paths.get("uploads").resolve(fileName).normalize();
-        Resource resource = new UrlResource(filePath.toUri());
-        String originalFilename = fileName.replaceFirst("^\\d+_", "");
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + originalFilename + "\"")
-                .body(resource);
-    }
 
 
 }
