@@ -17,7 +17,6 @@ public class Contratista extends Persona {
     private String numeroTarjetaProfesional;
     private String experienciaProfesional;
     private int telefonoAdicional;
-    @FilePath(type = "file")
     private String firmaDigital;
 
     public Contratista() {}
