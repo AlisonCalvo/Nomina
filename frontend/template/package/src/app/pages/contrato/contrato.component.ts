@@ -78,6 +78,9 @@ export class ContratoComponent {
   /** id - Campo de tipo number */
   id: number;
 
+  /** numeroContrato - Campo de tipo string */
+  numeroContrato: string;
+
   /** cargo - Campo de tipo string */
   cargo: string;
 
@@ -133,6 +136,7 @@ export class ContratoComponent {
   // DataSource para la tabla de atributos
   dataSourceAttributes = new MatTableDataSource([
     { name: 'id', type: 'long' },
+    { name: 'numeroContrato', type: 'String' },
     { name: 'cargo', type: 'String' },
     { name: 'valorTotalContrato', type: 'long' },
     { name: 'numeroPagos', type: 'int' },
@@ -169,6 +173,7 @@ export class ContratoComponent {
   constructor(private service: ContratoService) {
     // Inicialización de atributos con valores por defecto
     this.id = 0;
+    this.numeroContrato = '';
     this.cargo = '';
     this.valorTotalContrato = 0;
     this.numeroPagos = 0;

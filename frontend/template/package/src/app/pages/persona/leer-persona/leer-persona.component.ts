@@ -9,9 +9,9 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { PersonaService } from '../../../services/PersonaService';
-import { PersonaComponent } from '../../persona/persona.component';
-import { ActualizarPersonaComponent } from '../../persona/actualizar-persona/actualizar-persona.component';
-import { CrearPersonaComponent } from '../../persona/crear-persona/crear-persona.component';
+import { PersonaComponent } from '../persona.component';
+import { ActualizarPersonaComponent } from '../actualizar-persona/actualizar-persona.component';
+import { CrearPersonaComponent } from '../crear-persona/crear-persona.component';
 import {environment} from '../../../../environments/environment';
 
 import { MatButtonModule } from '@angular/material/button';

@@ -394,7 +394,7 @@ export class ActualizarInformeComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'cargo'
+          labelProp: 'numeroContrato'
         }
       }
     ];

@@ -1,6 +1,6 @@
 import { Component, OnInit,Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {AbstractControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
@@ -253,13 +253,23 @@ export class CrearProyectoComponent implements OnInit {
         type: 'datepicker',
         className: 'field-container',
         templateOptions: {
-          label: 'FechaInicio',
-          placeholder: 'Ingrese fechaInicio',
+          label: 'Fecha de inicio del proyecto',
+          placeholder: 'Ingrese la fecha de inicio del proyecto',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validators: {
+          dateValidation: {
+            expression: (control: AbstractControl): boolean => {
+              const fechaInicio = control.value;
+              const fechaFin = this.model.fechaFin;
+              return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
+            },
+            message: (field: FormlyFieldConfig): string => `La fecha de inicio del proyecto debe ser anterior o igual a la fecha de finalización.`
           }
         }
       },
@@ -268,13 +278,23 @@ export class CrearProyectoComponent implements OnInit {
         type: 'datepicker',
         className: 'field-container',
         templateOptions: {
-          label: 'FechaFin',
-          placeholder: 'Ingrese fechaFin',
+          label: 'Fecha de finalización del proyecto',
+          placeholder: 'Ingrese fecha de finalización del proyecto',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validators: {
+          dateValidation: {
+            expression: (control: AbstractControl): boolean => {
+              const fechaInicio = this.model.fechaInicio;
+              const fechaFin = control.value;
+              return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
+            },
+            message: (field: FormlyFieldConfig): string => `La fecha de finalización del proyecto debe ser posterior o igual a la fecha de inicio.`
           }
         }
       },

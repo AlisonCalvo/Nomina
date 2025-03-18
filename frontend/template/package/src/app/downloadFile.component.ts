@@ -26,7 +26,7 @@ import { NgForOf } from "@angular/common";
   template: `
     <h1 mat-dialog-title>Selecciona uno o varios archivos</h1>
     <div mat-dialog-content>
-      <mat-form-field appearance="fill">
+      <mat-form-field appearance="fill" style="width: 100%">
         <mat-label>Archivos</mat-label>
         <mat-select [(value)]="selectedFiles" multiple>
           <mat-option *ngFor="let file of files" [value]="file">

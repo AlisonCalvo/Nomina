@@ -1,6 +1,6 @@
 import { Component, OnInit,Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {AbstractControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
@@ -39,6 +39,7 @@ import { TipoContratoService } from '../../../services/TipoContratoService';
 import { PeriodicidadPagoService } from '../../../services/PeriodicidadPagoService';
 
 interface ContratoModel {
+  numeroContrato: string;
   cargo: string;
   valorTotalContrato: number;
   numeroPagos: number;
@@ -97,6 +98,7 @@ interface ContratoModel {
 export class CrearContratoComponent implements OnInit {
   form = new FormGroup({});
   model: ContratoModel = {
+    numeroContrato: '',
     cargo: '',
     valorTotalContrato: 0,
     numeroPagos: 0,
@@ -130,6 +132,21 @@ export class CrearContratoComponent implements OnInit {
     const username = this.authService.getUsername();
     this.model.creador = username;
     this.fields = [
+      {
+        key: 'numeroContrato',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'NumeroContrato',
+          placeholder: 'Ingrese numeroContrato',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          }
+        }
+      },
       {
         key: 'cargo',
         type: 'input',
@@ -186,13 +203,23 @@ export class CrearContratoComponent implements OnInit {
         type: 'datepicker',
         className: 'field-container',
         templateOptions: {
-          label: 'FechaInicioContrato',
-          placeholder: 'Ingrese fechaInicioContrato',
+          label: 'Fecha de inicio del contrato',
+          placeholder: 'Ingrese la fecha de inicio del contrato',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validators: {
+          dateValidation: {
+            expression: (control: AbstractControl): boolean => {
+              const fechaInicio = control.value;
+              const fechaFin = this.model.fechaFinContrato;
+              return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
+            },
+            message: (field: FormlyFieldConfig): string => `La fecha de inicio del contrato debe ser anterior o igual a la fecha de finalización.`
           }
         }
       },
@@ -201,13 +228,23 @@ export class CrearContratoComponent implements OnInit {
         type: 'datepicker',
         className: 'field-container',
         templateOptions: {
-          label: 'FechaFinContrato',
-          placeholder: 'Ingrese fechaFinContrato',
+          label: 'Fecha de finalizacion del contrato',
+          placeholder: 'Ingrese la fecha de finalizacion del contrato',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validators: {
+          dateValidation: {
+            expression: (control: AbstractControl): boolean => {
+              const fechaInicio = this.model.fechaInicioContrato;
+              const fechaFin = control.value;
+              return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
+            },
+            message: (field: FormlyFieldConfig): string => `La fecha de finalización del contrato debe ser posterior o igual a la fecha de inicio.`
           }
         }
       },

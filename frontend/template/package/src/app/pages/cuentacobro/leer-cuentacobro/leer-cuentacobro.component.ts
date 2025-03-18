@@ -36,10 +36,10 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTabsModule } from '@angular/material/tabs';
+import { DateTime } from 'luxon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DownloadFileComponent } from '../../../downloadFile.component';
-import { FileService } from '../../../services/FileService';
 
 import { CommonModule } from '@angular/common';
 @Component({
@@ -110,14 +110,12 @@ export class LeerCuentaCobroComponent implements OnInit {
    * @param snackBar Servicio para mostrar notificaciones
    * @param paginatorIntl Servicio para internacionalización del paginador
    * @param dialog Servicio para gestionar diálogos
-   * @param fileService
    */
   constructor(
     private cuentacobroService: CuentaCobroService,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
-    private dialog: MatDialog,
-    private fileService: FileService
+    private dialog: MatDialog
   ) {
     this.customizePaginator();
   }
@@ -191,32 +189,36 @@ export class LeerCuentaCobroComponent implements OnInit {
     this.paginatorIntl.lastPageLabel = 'Última página';
   }
 
-  downloadFile() {
-    this.fileService.getFileList().subscribe(files => {
-      const dialogRef = this.dialog.open(DownloadFileComponent, {
-        width: '300px',
-        data: { files: files }
-      });
-
-      dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
-        // Validar que haya archivos seleccionados
-        if (selectedFiles && selectedFiles.length > 0) {
-          // Descargar cada archivo en un ciclo
-          selectedFiles.forEach(selectedFile => {
-            this.fileService.downloadFile(selectedFile).subscribe(blob => {
-              const url = window.URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = selectedFile;
-              a.click();
-              window.URL.revokeObjectURL(url);
-            });
+  onDownload(element: any) {
+    this.cuentacobroService.getFilesByCuentaCobroId(element.id)
+      .subscribe({
+        next: (files) => {
+          const dialogRef = this.dialog.open(DownloadFileComponent, {
+            maxWidth: 'none',
+            width: '500px',
+            data: { files: files }
           });
+          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
+            if (selectedFiles && selectedFiles.length > 0) {
+              selectedFiles.forEach(selectedFile => {
+                this.cuentacobroService.downloadFile(selectedFile).subscribe(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = selectedFile;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                });
+              });
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error al obtener archivos:', err);
+          this.showMessage('Error al obtener archivos del servidor.', 'error');
         }
       });
-    });
   }
-
 
   /**
    * Aplica el filtro de búsqueda a la tabla

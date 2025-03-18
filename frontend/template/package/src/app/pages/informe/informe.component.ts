@@ -136,6 +136,7 @@ export class InformeComponent {
     this.fecha = new Date();
     this.cliente = '';
     this.cargo = '';
+    this.informePDF = '';
     this.creador = '';
     this.cuentaCobro = null;
     this.proyecto = null;

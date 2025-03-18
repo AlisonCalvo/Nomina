@@ -427,7 +427,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'valorTotalContrato'
+          labelProp: 'numeroContrato'
         }
       }
     ];

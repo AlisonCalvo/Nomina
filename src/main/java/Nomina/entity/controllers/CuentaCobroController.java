@@ -1,5 +1,6 @@
 package Nomina.entity.controllers;
 
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import org.springframework.beans.factory.annotation.Autowired;
 import Nomina.entity.services.impl.NotificacionEmailServiceImpl;
@@ -8,11 +9,17 @@ import Nomina.entity.dto.CuentaCobroDTO;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Objects;
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import java.util.List;
 import Nomina.entity.services.CuentaCobroService;
 import java.nio.file.Paths;
 import java.util.Optional;
+
+import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.ResponseEntity;
 import Nomina.entity.entities.CuentaCobro;
@@ -51,7 +58,7 @@ public class CuentaCobroController {
      * Obtiene todas las entidades CuentaCobro disponibles.
      *
      * @return ResponseEntity con la lista de entidades si existen,
-     *         o una lista vacía si no hay registros
+     * o una lista vacía si no hay registros
      */
     @GetMapping
     public ResponseEntity<List<CuentaCobro>> findAll() {
@@ -64,7 +71,7 @@ public class CuentaCobroController {
      *
      * @param id Identificador único de la entidad
      * @return ResponseEntity con la entidad si existe,
-     *         o ResponseEntity.notFound si no existe
+     * o ResponseEntity.notFound si no existe
      */
     @GetMapping("/{id}")
     public ResponseEntity<CuentaCobro> findById(@PathVariable Long id) {
@@ -87,10 +94,10 @@ public class CuentaCobroController {
     /**
      * Actualiza una entidad CuentaCobro existente.
      *
-     * @param id Identificador de la entidad a actualizar
+     * @param id  Identificador de la entidad a actualizar
      * @param dto DTO con los nuevos datos de la entidad
      * @return ResponseEntity con la entidad actualizada,
-     *         o ResponseEntity.notFound si la entidad no existe
+     * o ResponseEntity.notFound si la entidad no existe
      */
     @PutMapping("/{id}")
     public ResponseEntity<CuentaCobro> update(@PathVariable Long id, @RequestBody CuentaCobroDTO dto) {
@@ -106,7 +113,7 @@ public class CuentaCobroController {
      *
      * @param id Identificador de la entidad a eliminar
      * @return ResponseEntity con estado HTTP 204 (No Content) si se eliminó correctamente,
-     *         o ResponseEntity.notFound si la entidad no existe
+     * o ResponseEntity.notFound si la entidad no existe
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
@@ -122,7 +129,7 @@ public class CuentaCobroController {
      *
      * @param files Lista de archivos a subir (MultipartFile)
      * @return ResponseEntity con la lista de rutas de archivo subidas,
-     *         o un INTERNAL_SERVER_ERROR si ocurre un problema.
+     * o un INTERNAL_SERVER_ERROR si ocurre un problema.
      */
     @PostMapping("/upload")
     public ResponseEntity<List<String>> uploadFiles(@RequestParam("files") List<MultipartFile> files) {
@@ -138,13 +145,15 @@ public class CuentaCobroController {
                 Files.createDirectories(uploadPath);
             }
 
-            // Guardar cada archivo
+            // Guardar cada archivo con un número aleatorio de 4 dígitos en su nombre
             for (MultipartFile file : files) {
                 if (!file.isEmpty()) {
                     String originalFilename = StringUtils.cleanPath(
                             Objects.requireNonNull(file.getOriginalFilename())
                     );
-                    Path destinationFilePath = uploadPath.resolve(originalFilename);
+                    int randomNumber = (int) (Math.random() * 90000) + 10000;
+                    String newFilename = randomNumber + "_" + originalFilename;
+                    Path destinationFilePath = uploadPath.resolve(newFilename);
                     Files.copy(file.getInputStream(), destinationFilePath, StandardCopyOption.REPLACE_EXISTING);
                     // Agregamos la ruta donde quedó almacenado el archivo
                     filePaths.add(destinationFilePath.toString());
@@ -158,5 +167,67 @@ public class CuentaCobroController {
         // Retornamos las rutas de todos los archivos subidos
         return ResponseEntity.ok(filePaths);
     }
+
+    @GetMapping("/{id}/files")
+    public ResponseEntity<List<String>> listarArchivosPorId(@PathVariable Long id) {
+        Optional<CuentaCobro> optionalEntity = service.findById(id);
+        if (optionalEntity.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        CuentaCobro cuentaCobro = optionalEntity.get();
+        List<String> archivos = new ArrayList<>();
+
+        if (cuentaCobro.getFirmaContratista() != null) {
+            String[] contratistaPaths = cuentaCobro.getFirmaContratista().split(",");
+            for (String path : contratistaPaths) {
+                String fileName = extractFileName(path.trim());
+                archivos.add(fileName);
+            }
+        }
+        if (cuentaCobro.getFirmaGerente() != null) {
+            String[] gerentePaths = cuentaCobro.getFirmaGerente().split(",");
+            for (String path : gerentePaths) {
+                String fileName = extractFileName(path.trim());
+                archivos.add(fileName);
+            }
+        }
+
+        return ResponseEntity.ok(archivos);
+    }
+
+    /**
+     * Extrae el nombre del archivo de una ruta completa
+     * @param path Ruta completa del archivo
+     * @return Nombre del archivo sin la ruta
+     */
+    private String extractFileName(String path) {
+        // First extract filename from path
+        int lastBackslash = path.lastIndexOf('\\');
+        int lastSlash = path.lastIndexOf('/');
+        int lastSeparator = Math.max(lastBackslash, lastSlash);
+
+        String fileName;
+        if (lastSeparator == -1) {
+            fileName = path;
+        } else {
+            fileName = path.substring(lastSeparator + 1);
+        }
+
+        return fileName.replaceFirst("^\\d+_", "");
+    }
+
+    // Endpoint para descargar un archivo
+    @GetMapping("/download")
+    public ResponseEntity<Resource> downloadFile(@RequestParam("file") String fileName) throws MalformedURLException {
+        Path filePath = Paths.get("uploads").resolve(fileName).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+        String originalFilename = fileName.replaceFirst("^\\d+_", "");
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + originalFilename + "\"")
+                .body(resource);
+    }
+
 
 }

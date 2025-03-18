@@ -87,6 +87,6 @@ export class AuthService {
     const decodedToken = this.getDecodedToken();
     if (!decodedToken || !decodedToken.roles) return false;
 
-    return decodedToken.roles.includes('ADMINISTRADOR');
+    return decodedToken.roles.includes('ADMINISTRADOR') || decodedToken.roles.includes('GERENTE') || decodedToken.roles.includes('CONTADOR');
   }
 }
