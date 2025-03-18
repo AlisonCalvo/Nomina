@@ -376,13 +376,13 @@ export class CrearPersonaComponent implements OnInit {
       },
       {
         key: 'firmaDigital',
-        type: 'file',
+        type: 'input',
+        className: 'field-container',
         templateOptions: {
           label: 'firmaDigital',
-          placeholder: 'Seleccione firma',
-          multiple: true,
-          required: true,
-          accept: '.pdf,.doc,.xls,.ppt'
+          placeholder: 'Ingrese firmaDigital',
+          appearance: 'outline',
+          floatLabel: 'always'
         },
         hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA'
       },
