@@ -197,15 +197,19 @@ public class InformeController {
      * @return Nombre del archivo sin la ruta
      */
     private String extractFileName(String path) {
+        // First extract filename from path
         int lastBackslash = path.lastIndexOf('\\');
         int lastSlash = path.lastIndexOf('/');
         int lastSeparator = Math.max(lastBackslash, lastSlash);
 
+        String fileName;
         if (lastSeparator == -1) {
-            return path;
+            fileName = path;
+        } else {
+            fileName = path.substring(lastSeparator + 1);
         }
 
-        return path.substring(lastSeparator + 1);
+        return fileName.replaceFirst("^\\d+_", "");
     }
 
     // Endpoint para descargar un archivo
