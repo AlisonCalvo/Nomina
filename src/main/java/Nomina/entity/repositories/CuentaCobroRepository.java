@@ -34,4 +34,18 @@ public interface CuentaCobroRepository extends JpaRepository<CuentaCobro, Long> 
      */
     List<CuentaCobro> findByInforme(Informe informe);
 
+    @Query("SELECT c FROM CuentaCobro c WHERE " +
+            "(CASE WHEN :esAdminGerente = true THEN true ELSE false END = true OR " +
+            "c.creador = :usuario OR " +
+            "(:esContador = true AND c.estado = true))")
+    List<CuentaCobro> findByUsuario(@Param("usuario") String usuario,
+                                    @Param("esContador") boolean esContador,
+                                    @Param("esAdminGerente") boolean esAdminGerente);
+
+
+
+
+
+
+
 }
