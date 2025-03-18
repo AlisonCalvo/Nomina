@@ -1,5 +1,6 @@
 package Nomina.entity.entities;
 
+import Nomina.entity.annotations.FilePath;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -16,6 +17,7 @@ public class Contratista extends Persona {
     private String numeroTarjetaProfesional;
     private String experienciaProfesional;
     private int telefonoAdicional;
+    @FilePath(type = "file")
     private String firmaDigital;
 
     public Contratista() {}
