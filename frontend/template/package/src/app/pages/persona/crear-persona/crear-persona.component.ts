@@ -379,8 +379,8 @@ export class CrearPersonaComponent implements OnInit {
         type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'Firma Digital',
-          placeholder: 'Ingrese firma digital',
+          label: 'firmaDigital',
+          placeholder: 'Ingrese firmaDigital',
           appearance: 'outline',
           floatLabel: 'always'
         },
