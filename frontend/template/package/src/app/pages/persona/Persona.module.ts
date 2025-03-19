@@ -15,7 +15,7 @@ import { FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { RouterModule } from '@angular/router';
 import { PersonaComponent } from './persona.component';
-import { PersonaService } from '../services/PersonaService';
+import { PersonaService } from '../../services/PersonaService';
 
 @NgModule({
   imports: [
