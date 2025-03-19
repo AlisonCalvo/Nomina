@@ -85,7 +85,7 @@ export class PersonaComponent {
   correo: string;
 
   /** numeroDocumento - Campo de tipo number */
-  numeroDocumento: number;
+  numeroDocumento: string;
 
   /** tituloProfesional - Campo de tipo string */
   tituloProfesional: string;
@@ -94,7 +94,7 @@ export class PersonaComponent {
   direccion: string;
 
   /** telefono - Campo de tipo number */
-  telefono: number;
+  telefono: string;
 
   /** fechaExpedicion - Campo de tipo Date */
   fechaExpedicion: Date;
@@ -129,10 +129,10 @@ export class PersonaComponent {
     { name: 'id', type: 'long' },
     { name: 'nombre', type: 'String' },
     { name: 'correo', type: 'String' },
-    { name: 'numeroDocumento', type: 'int' },
+    { name: 'numeroDocumento', type: 'String' },
     { name: 'tituloProfesional', type: 'String' },
     { name: 'direccion', type: 'String' },
-    { name: 'telefono', type: 'int' },
+    { name: 'telefono', type: 'String' },
     { name: 'fechaExpedicion', type: 'LocalDate' },
     { name: 'fechaNacimiento', type: 'LocalDate' },
     { name: 'nacionalidad', type: 'String' },
@@ -160,10 +160,10 @@ export class PersonaComponent {
     this.id = 0;
     this.nombre = '';
     this.correo = '';
-    this.numeroDocumento = 0;
+    this.numeroDocumento = '';
     this.tituloProfesional = '';
     this.direccion = '';
-    this.telefono = 0;
+    this.telefono = '';
     this.fechaExpedicion = new Date();
     this.fechaNacimiento = new Date();
     this.nacionalidad = '';

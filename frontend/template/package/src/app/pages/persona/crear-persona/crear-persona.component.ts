@@ -41,10 +41,10 @@ import {PermissionService} from "../../authentication/services/PermissionService
 interface PersonaModel {
   nombre: string;
   correo: string;
-  numeroDocumento: number;
+  numeroDocumento: string;
   tituloProfesional: string;
   direccion: string;
-  telefono: number;
+  telefono: string;
   fechaExpedicion: Date;
   fechaNacimiento: Date;
   nacionalidad: string;
@@ -101,10 +101,10 @@ export class CrearPersonaComponent implements OnInit {
   model: PersonaModel = {
     nombre: '',
     correo: '',
-    numeroDocumento: 0,
+    numeroDocumento: '',
     tituloProfesional: '',
     direccion: '',
-    telefono: 0,
+    telefono: '',
     fechaExpedicion: new Date(),
     fechaNacimiento: new Date(),
     nacionalidad: '',
@@ -223,20 +223,24 @@ export class CrearPersonaComponent implements OnInit {
       },
       {
         key: 'numeroDocumento',
-        type: 'number',
+        type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'NumeroDocumento',
-          placeholder: 'Ingrese numeroDocumento',
+          label: 'Numero de Documento',
+          placeholder: 'Ingrese el número de documento',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
-            'class': 'modern-input'
+            class: 'modern-input'
           },
-          min: -2147483648,
-          max: 2147483647,
-          step: 1
+          pattern: /^[0-9]*$/,
+          maxLength: 20
+        },
+        validation: {
+          messages: {
+            pattern: 'Solo se permiten números en este campo.'
+          }
         }
       },
       {
@@ -286,25 +290,29 @@ export class CrearPersonaComponent implements OnInit {
       },
       {
         key: 'telefono',
-        type: 'number',
+        type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'Telefono',
-          placeholder: 'Ingrese telefono',
+          label: 'Teléfono',
+          placeholder: 'Ingrese teléfono',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
-            'class': 'modern-input'
+            class: 'modern-input'
           },
-          min: -2147483648,
-          max: 2147483647,
-          step: 1
+          pattern: /^[0-9]*$/,
+          maxLength: 20
+        },
+        validation: {
+          messages: {
+            pattern: 'Solo se permiten números en este campo.'
+          }
         }
       },
       {
         key: 'telefonoAdicional',
-        type: 'number',
+        type: 'input',
         className: 'field-container',
         templateOptions: {
           label: 'Teléfono Adicional',
@@ -314,9 +322,13 @@ export class CrearPersonaComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          min: -2147483648,
-          max: 2147483647,
-          step: 1
+          pattern: /^[0-9]*$/,
+          maxLength: 20
+        },
+        validation: {
+          messages: {
+            pattern: 'Solo se permiten números en este campo.'
+          }
         },
         hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA'
       },

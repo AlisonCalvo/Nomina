@@ -31,7 +31,7 @@ public class PersonaDTO {
     /**
      * Campo que representa numeroDocumento
      */
-    private int numeroDocumento;
+    private String numeroDocumento;
 
     /**
      * Campo que representa tituloProfesional
@@ -46,7 +46,7 @@ public class PersonaDTO {
     /**
      * Campo que representa telefono
      */
-    private int telefono;
+    private String telefono;
 
     /**
      * Campo que representa fechaExpedicion
@@ -106,7 +106,7 @@ public class PersonaDTO {
     // Campos específicos de cada tipo de persona
     private String experienciaProfesional; // Para Gerente y Contratista
     private String numeroTarjetaProfesional; // Para Contratista y Contador
-    private int telefonoAdicional; // Solo para Contratista
+    private String telefonoAdicional; // Solo para Contratista
     private String firmaDigital; // Solo para Contratista
 
 }
