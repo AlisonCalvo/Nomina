@@ -72,7 +72,7 @@ public class Persona implements Serializable {
      * Restricciones:
      */
     @Column(name="numeroDocumento", nullable=false)
-    private int numeroDocumento;
+    private String numeroDocumento;
 
     /**
      * titulo profesional de la persona
@@ -96,7 +96,7 @@ public class Persona implements Serializable {
      * Restricciones:
      */
     @Column(name="telefono", nullable=false)
-    private int telefono;
+    private String telefono;
 
     @OneToOne(mappedBy = "persona", cascade = CascadeType.ALL)
     private Usuario usuario;
@@ -183,7 +183,7 @@ public class Persona implements Serializable {
      * @param tipoDocumento 
      * @param creador Columna que representa el creador de la entidad.
      */
-    public Persona(String nombre, String correo, int numeroDocumento, String tituloProfesional, String direccion, int telefono, LocalDate fechaExpedicion, LocalDate fechaNacimiento, String nacionalidad, TipoDocumento tipoDocumento, String creador) {
+    public Persona(String nombre, String correo, String numeroDocumento, String tituloProfesional, String direccion, String telefono, LocalDate fechaExpedicion, LocalDate fechaNacimiento, String nacionalidad, TipoDocumento tipoDocumento, String creador) {
         this.nombre = nombre;
         this.correo = correo;
         this.numeroDocumento = numeroDocumento;
