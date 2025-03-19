@@ -1,6 +1,9 @@
 package Nomina.entity.controllers;
 
+import java.net.MalformedURLException;
 import java.nio.file.Files;
+
+import Nomina.entity.entities.CuentaCobro;
 import Nomina.entity.services.InformeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import Nomina.entity.entities.Informe;
@@ -9,10 +12,16 @@ import java.io.IOException;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Objects;
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import java.util.List;
 import java.nio.file.Paths;
 import java.util.Optional;
+
+import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -144,7 +153,9 @@ public class InformeController {
                     String originalFilename = StringUtils.cleanPath(
                             Objects.requireNonNull(file.getOriginalFilename())
                     );
-                    Path destinationFilePath = uploadPath.resolve(originalFilename);
+                    int randomNumber = (int) (Math.random() * 90000) + 10000;
+                    String newFilename = randomNumber + "_" + originalFilename;
+                    Path destinationFilePath = uploadPath.resolve(newFilename);
                     Files.copy(file.getInputStream(), destinationFilePath, StandardCopyOption.REPLACE_EXISTING);
                     // Agregamos la ruta donde quedó almacenado el archivo
                     filePaths.add(destinationFilePath.toString());
@@ -159,4 +170,48 @@ public class InformeController {
         return ResponseEntity.ok(filePaths);
     }
 
+    @GetMapping("/{id}/files")
+    public ResponseEntity<List<String>> listarArchivosPorId(@PathVariable Long id) {
+        Optional<Informe> optionalEntity = service.findById(id);
+        if (optionalEntity.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Informe informe = optionalEntity.get();
+        List<String> archivos = new ArrayList<>();
+
+        if (informe.getInformePDF() != null) {
+            String[] contratistaPaths = informe.getInformePDF().split(",");
+            for (String path : contratistaPaths) {
+                String fileName = extractFileName(path.trim());
+                archivos.add(fileName);
+            }
+        }
+
+        return ResponseEntity.ok(archivos);
+    }
+
+    /**
+     * Extrae el nombre del archivo de una ruta completa
+     * @param path Ruta completa del archivo
+     * @return Nombre del archivo sin la ruta
+     */
+    private String extractFileName(String path) {
+        int lastBackslash = path.lastIndexOf('\\');
+        int lastSlash = path.lastIndexOf('/');
+        int lastSeparator = Math.max(lastBackslash, lastSlash);
+        if (lastSeparator == -1) {return path;}
+        return path.substring(lastSeparator + 1);
+    }
+
+    // Endpoint para descargar un archivo
+    @GetMapping("/download")
+    public ResponseEntity<Resource> downloadFile(@RequestParam("file") String fileName) throws MalformedURLException {
+        Path filePath = Paths.get("uploads").resolve(fileName).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .body(resource);
+    }
 }

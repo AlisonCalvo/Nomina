@@ -43,7 +43,6 @@ import { CuentaCobroService } from '../../../services/CuentaCobroService';
 import { ContratoService } from '../../../services/ContratoService';
 import { CommonModule } from '@angular/common';
 import {DownloadFileComponent} from "../../../downloadFile.component";
-import {FileService} from "../../../services/FileService";
 @Component({
   selector: 'app-leer-informe',
   templateUrl: './leer-informe.component.html',
@@ -112,15 +111,13 @@ export class LeerInformeComponent implements OnInit {
    * @param snackBar Servicio para mostrar notificaciones
    * @param paginatorIntl Servicio para internacionalización del paginador
    * @param dialog Servicio para gestionar diálogos
-   * @param fileService
    */
   constructor(
     private informeService: InformeService,
     private router: Router,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
-    private dialog: MatDialog,
-    private fileService: FileService
+    private dialog: MatDialog
   ) {
     this.customizePaginator();
   }
@@ -268,30 +265,35 @@ export class LeerInformeComponent implements OnInit {
     }
   }
 
-  downloadFile() {
-    this.fileService.getFileList().subscribe(files => {
-      const dialogRef = this.dialog.open(DownloadFileComponent, {
-        width: '300px',
-        data: { files: files }
-      });
-
-      dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
-        // Validar que haya archivos seleccionados
-        if (selectedFiles && selectedFiles.length > 0) {
-          // Descargar cada archivo en un ciclo
-          selectedFiles.forEach(selectedFile => {
-            this.fileService.downloadFile(selectedFile).subscribe(blob => {
-              const url = window.URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = selectedFile;
-              a.click();
-              window.URL.revokeObjectURL(url);
-            });
+  onDownload(element: any) {
+    this.informeService.getFilesByInformeServiceId(element.id)
+      .subscribe({
+        next: (files) => {
+          const dialogRef = this.dialog.open(DownloadFileComponent, {
+            maxWidth: 'none',
+            width: '500px',
+            data: { files: files }
           });
+          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
+            if (selectedFiles && selectedFiles.length > 0) {
+              selectedFiles.forEach(selectedFile => {
+                this.informeService.downloadFile(selectedFile).subscribe(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = selectedFile;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                });
+              });
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error al obtener archivos:', err);
+          this.showMessage('Error al obtener archivos del servidor.', 'error');
         }
       });
-    });
   }
 
   /**

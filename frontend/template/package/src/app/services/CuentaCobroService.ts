@@ -160,4 +160,14 @@ export class CuentaCobroService {
         });
     });
   }
+
+  getFilesByCuentaCobroId(id: number): Observable<string[]> {
+    const url = `${this.baseUrl}/cuentacobros/${id}/files`;
+    return this.httpClient.get<string[]>(url);
+  }
+
+  downloadFile(fileName: string): Observable<Blob> {
+    const url = `${this.baseUrl}/cuentacobros/download?file=${fileName}`;
+    return this.httpClient.get(url, { responseType: 'blob' });
+  }
 }

@@ -44,7 +44,7 @@ public class NotificacionEmailServiceImpl {
 
 
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(emailFrom);
+        message.setFrom(config.getUsername());
         message.setTo(to);
         message.setSubject(subject);
         message.setText(body.toString());

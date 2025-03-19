@@ -143,4 +143,15 @@ export class InformeService {
         });
     });
   }
+
+  getFilesByInformeServiceId(id: number): Observable<string[]> {
+    const url = `${this.baseUrl}/informes/${id}/files`;
+    return this.httpClient.get<string[]>(url);
+  }
+
+  downloadFile(fileName: string): Observable<Blob> {
+    const url = `${this.baseUrl}/informes/download?file=${fileName}`;
+    return this.httpClient.get(url, { responseType: 'blob' });
+  }
+
 }
