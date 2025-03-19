@@ -150,7 +150,7 @@ export class CrearProyectoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          min: -9007199254740991,
+          min: 0,
           max: 9007199254740991,
           step: 1
         }

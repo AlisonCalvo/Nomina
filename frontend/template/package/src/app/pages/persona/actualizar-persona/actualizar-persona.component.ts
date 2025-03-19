@@ -305,7 +305,7 @@ export class ActualizarPersonaComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          min: -2147483648,
+          min: 0,
           max: 2147483647,
           step: 1
         }
@@ -353,7 +353,7 @@ export class ActualizarPersonaComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          min: -2147483648,
+          min: 0,
           max: 2147483647,
           step: 1
         }
