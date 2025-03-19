@@ -34,7 +34,7 @@ import org.hibernate.annotations.ParamDef;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Filter(name = "filtroCreador", condition = "creador = :creador")
+//@Filter(name = "filtroCreador", condition = "creador = :creador")
 public class Proyecto implements Serializable {
 
     /**

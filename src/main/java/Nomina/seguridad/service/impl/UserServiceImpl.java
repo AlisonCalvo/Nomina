@@ -1,5 +1,6 @@
 package Nomina.seguridad.service.impl;
 
+import Nomina.entity.services.impl.NotificacionEmailServiceImpl;
 import Nomina.seguridad.dto.AccionObjetoDTO;
 import Nomina.seguridad.dto.SaveUser;
 import Nomina.seguridad.dto.SaveUsuarioRol;
@@ -11,6 +12,8 @@ import Nomina.seguridad.persistence.repository.PrivilegioRepository;
 import Nomina.seguridad.persistence.repository.UserRepository;
 import Nomina.seguridad.service.RoleService;
 import Nomina.seguridad.service.UserService;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -32,6 +36,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private RoleService roleService;
+
+    @Autowired
+    private NotificacionEmailServiceImpl notificacionEmailService;
 
     @Override
     public Optional<Usuario> findByUsername(String username) {
@@ -74,8 +81,33 @@ public class UserServiceImpl implements UserService {
         // Asignar roles al usuario
         user.setRoles(roles);
 
+        // Enviar correo con credenciales
+        enviarCorreoCredenciales(user.getCorreo(), user.getName(), user.getUsername(), user.getPassword());
+
         // Guardar el usuario en la base de datos
         return userRepository.save(user);
+
+    }
+
+    /**
+     * Método para enviar un correo con las credenciales del usuario
+     */
+    private void enviarCorreoCredenciales(String email, String nombre, String username, String password) {
+        ObjectNode emailInfo = JsonNodeFactory.instance.objectNode();
+        emailInfo.put("To", email);
+        emailInfo.put("subject", "Credenciales de acceso al sistema");
+        emailInfo.put("message", "Hola " + nombre +
+                ",\n\nSe ha creado tu cuenta en el sistema.\n\nUsuario: " + username +
+                "\nContraseña: " + password + "\n\n");
+
+        try {
+            CompletableFuture<String> future = notificacionEmailService.sendNotificationEmailAsync(
+                    email, "Credenciales de acceso al sistema", emailInfo);
+            String result = future.get(); // Esperamos la respuesta del email
+            System.out.println("Correo enviado: " + result);
+        } catch (Exception e) {
+            System.err.println("Error al enviar correo: " + e.getMessage());
+        }
     }
 
     @Override

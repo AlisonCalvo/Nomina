@@ -1,5 +1,6 @@
 package Nomina.entity.entities;
 
+import Nomina.entity.annotations.FilePath;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

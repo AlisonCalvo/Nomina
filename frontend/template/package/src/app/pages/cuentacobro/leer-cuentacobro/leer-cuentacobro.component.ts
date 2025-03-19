@@ -220,6 +220,7 @@ export class LeerCuentaCobroComponent implements OnInit {
       });
   }
 
+
   /**
    * Aplica el filtro de búsqueda a la tabla
    * @param filterValue Texto a buscar

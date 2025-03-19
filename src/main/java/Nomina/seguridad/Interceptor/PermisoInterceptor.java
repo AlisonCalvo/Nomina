@@ -83,11 +83,21 @@ public class PermisoInterceptor implements HandlerInterceptor {
             }
 
             String userName = jwtTokenService.obtenerUsername(token);
+            List<String> rolesUsuario = jwtTokenService.obtenerRoles(token); // Obtener lista de roles
+            securityContextPersonalizado.setRoles(rolesUsuario);
             boolean tieneRolNoAdministrador = (boolean) jwtTokenService.extractAllClaims(token).get("tieneRolNoAdministrador");
 
-            // 🔥 Guardar en el contexto de seguridad
+            //Verificar si el usuario tiene el rol "CONTADOR"
+            boolean esContador = rolesUsuario.contains("CONTADOR");
+            // Verificar si es Admin o Gerente
+            boolean esAdminGerente = rolesUsuario.contains("ADMINISTRADOR") || rolesUsuario.contains("GERENTE");
+
+            //Guardar en el contexto de seguridad
             securityContextPersonalizado.setUsuarioActual(userName);
             securityContextPersonalizado.setTieneRolNoAdministrador(tieneRolNoAdministrador);
+            securityContextPersonalizado.setEsContador(esContador);
+            securityContextPersonalizado.setEsAdminGerente(esAdminGerente);
+
 
             boolean tienePermiso = authenticationService.verificarPermiso(userName, jwtTokenService.obtenerRoles(token), accion, objeto);
             if (!tienePermiso) {
@@ -109,7 +119,12 @@ public class PermisoInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-        securityContextPersonalizado.limpiar();
+        String requestURI = request.getRequestURI();
+
+        // Si la petición NO es a la API, limpiar el contexto
+        if (!requestURI.startsWith("/api/")) {
+            securityContextPersonalizado.limpiar();
+        }
     }
 
 }

@@ -204,4 +204,14 @@ public class InformeController {
         return path.substring(lastSeparator + 1);
     }
 
+    // Endpoint para descargar un archivo
+    @GetMapping("/download")
+    public ResponseEntity<Resource> downloadFile(@RequestParam("file") String fileName) throws MalformedURLException {
+        Path filePath = Paths.get("uploads").resolve(fileName).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .body(resource);
+    }
 }

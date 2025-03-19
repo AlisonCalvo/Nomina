@@ -10,9 +10,11 @@ import Nomina.entity.dto.CuentaCobroDTO;
 import Nomina.entity.entities.Contrato;
 import Nomina.entity.entities.CuentaCobro;
 import Nomina.entity.entities.Informe;
+import Nomina.entity.entities.Persona;
 import Nomina.entity.repositories.CuentaCobroRepository;
 import Nomina.entity.services.CuentaCobroService;
 import Nomina.seguridad.Interceptor.HibernateFilterActivator;
+import Nomina.seguridad.Interceptor.SecurityContextPersonalizado;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,9 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
 private HibernateFilterActivator filterActivator;     /** Repositorio para acceder a los datos de la entidad */
     private final CuentaCobroRepository repository;
 
+    @Autowired
+    private SecurityContextPersonalizado securityContextPersonalizado;
+
     /**
      * Constructor que inicializa el servicio con su repositorio correspondiente.
      * @param repository Repositorio para la entidad CuentaCobro
@@ -43,11 +48,25 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
     /**
      * {@inheritDoc}
      */
-    @Override
+
     public List<CuentaCobro> findAll() {
-        filterActivator.activarFiltro(CuentaCobro.class);
-        return repository.findAll();
+        String usuarioActual = securityContextPersonalizado.getUsuarioActual();
+        boolean esContador = securityContextPersonalizado.isEsContador();
+
+        // Verificar si el usuario tiene rol ADMINISTRADOR o GERENTE
+        List<String> rolesUsuario = securityContextPersonalizado.getRoles();
+        boolean esAdminGerente = rolesUsuario.contains("ADMINISTRADOR") || rolesUsuario.contains("GERENTE");
+
+        // Si es ADMINISTRADOR o GERENTE, devolver todas las cuentas
+        if (esAdminGerente) {
+            filterActivator.activarFiltro(Persona.class);
+            return repository.findAll();
+        }
+
+        //Si no es ADMIN/GERENTE, aplicar filtros
+       return repository.findByUsuario(usuarioActual, esContador, esAdminGerente);
     }
+
 
     /**
      * {@inheritDoc}
