@@ -305,7 +305,7 @@ export class CrearProyectoComponent implements OnInit {
         templateOptions: {
           label: 'Personas',
           placeholder: 'Seleccione personas',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {

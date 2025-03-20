@@ -235,7 +235,7 @@ export class CrearDocumentoComponent implements OnInit {
         templateOptions: {
           label: 'Persona',
           placeholder: 'Seleccione persona',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -253,7 +253,7 @@ export class CrearDocumentoComponent implements OnInit {
         templateOptions: {
           label: 'Contrato',
           placeholder: 'Seleccione contrato',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {

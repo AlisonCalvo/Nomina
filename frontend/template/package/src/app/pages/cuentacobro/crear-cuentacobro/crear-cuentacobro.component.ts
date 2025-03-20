@@ -268,7 +268,7 @@ export class CrearCuentaCobroComponent implements OnInit {
         templateOptions: {
           label: 'Contrato',
           placeholder: 'Seleccione contrato',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
