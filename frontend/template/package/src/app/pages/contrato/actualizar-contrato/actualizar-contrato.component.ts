@@ -532,7 +532,8 @@ export class ActualizarContratoComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'nombre'
+          labelProp: 'nombre',
+          filter: true
         }
       },
       {

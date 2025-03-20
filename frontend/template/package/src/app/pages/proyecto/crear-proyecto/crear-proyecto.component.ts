@@ -314,7 +314,8 @@ export class CrearProyectoComponent implements OnInit {
           multiple: true,
           options: [],
           valueProp: 'id',
-          labelProp: 'nombre'
+          labelProp: 'nombre',
+          filter: true
         }
       }
     ];
