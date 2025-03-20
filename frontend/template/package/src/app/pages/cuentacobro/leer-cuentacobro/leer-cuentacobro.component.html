@@ -87,7 +87,7 @@
           <button mat-icon-button color="primary" (click)="onEdit(element)" matTooltip="Modificar">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button color="warn" (click)="onDelete(element.id)" matTooltip="Eliminar">
+          <button *ngIf="mostrarBotonEliminar" mat-icon-button color="warn" (click)="onDelete(element.id)" matTooltip="Eliminar">
             <mat-icon>delete</mat-icon>
           </button>
         </td>

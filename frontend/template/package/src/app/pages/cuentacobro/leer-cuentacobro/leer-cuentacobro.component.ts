@@ -9,10 +9,9 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { CuentaCobroService } from '../../../services/CuentaCobroService';
-import { CuentaCobroComponent } from '../../cuentacobro/cuentacobro.component';
-import { ActualizarCuentaCobroComponent } from '../../cuentacobro/actualizar-cuentacobro/actualizar-cuentacobro.component';
-import { CrearCuentaCobroComponent } from '../../cuentacobro/crear-cuentacobro/crear-cuentacobro.component';
-import {environment} from '../../../../environments/environment';
+import { CuentaCobroComponent } from '../cuentacobro.component';
+import { ActualizarCuentaCobroComponent } from '../actualizar-cuentacobro/actualizar-cuentacobro.component';
+import { CrearCuentaCobroComponent } from '../crear-cuentacobro/crear-cuentacobro.component';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
@@ -42,6 +41,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DownloadFileComponent } from '../../../downloadFile.component';
 
 import { CommonModule } from '@angular/common';
+import {AuthService} from "../../../services/auth-service.service";
 @Component({
   selector: 'app-leer-cuentacobro',
   templateUrl: './leer-cuentacobro.component.html',
@@ -83,6 +83,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./leer-cuentacobro.component.scss']
 })
 export class LeerCuentaCobroComponent implements OnInit {
+  mostrarBotonEliminar: boolean;
   // Columnas que se mostrarán en la tabla
   displayedColumns: string[] = ['id', 'montoCobrar', 'fecha', 'estado', 'numeroCuenta', 'detalle', 'pago', 'notificacionPago', 'firmaGerente', 'firmaContratista', 'creador', 'contrato', 'acciones'];
 
@@ -115,8 +116,10 @@ export class LeerCuentaCobroComponent implements OnInit {
     private cuentacobroService: CuentaCobroService,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+  private authService: AuthService
   ) {
+    this.mostrarBotonEliminar = this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']);
     this.customizePaginator();
   }
 
