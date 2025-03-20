@@ -314,7 +314,8 @@ export class CrearProyectoComponent implements OnInit {
           multiple: true,
           options: [],
           valueProp: 'id',
-          labelProp: 'nombre'
+          labelProp: 'nombre',
+          filter: true
         }
       }
     ];
@@ -325,6 +326,8 @@ export class CrearProyectoComponent implements OnInit {
   private loadPersonaOptions() {
     this.personaService.findAll().subscribe(
       data => {
+        // Ordenar alfabéticamente por nombre
+        data.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
         const field = this.fields.find(f => f.key === 'persona');
         if (field && field.templateOptions) {
           field.templateOptions.options = data;
@@ -333,6 +336,7 @@ export class CrearProyectoComponent implements OnInit {
       error => console.error('Error al cargar persona:', error)
     );
   }
+
 
   closeDialog(): void {
     this.dialogRef.close();

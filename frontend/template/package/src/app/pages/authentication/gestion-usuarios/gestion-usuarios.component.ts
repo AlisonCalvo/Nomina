@@ -188,8 +188,6 @@ export class GestionUsuariosComponent implements OnInit {
           required: true,
           minLength: 1,
           maxLength: 255,
-          pattern: '^[a-zA-Z0-9\\s\\-_\\.]*$',
-          patternError: 'Caracteres no válidos'
         }
       }
     ];
