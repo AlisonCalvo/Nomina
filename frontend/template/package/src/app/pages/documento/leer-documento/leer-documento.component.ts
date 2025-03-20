@@ -41,6 +41,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ContratoService } from '../../../services/ContratoService';
 import { CommonModule } from '@angular/common';
+import {DownloadFileComponent} from "../../../downloadFile.component";
 @Component({
   selector: 'app-leer-documento',
   templateUrl: './leer-documento.component.html',
@@ -84,7 +85,7 @@ import { CommonModule } from '@angular/common';
 })
 export class LeerDocumentoComponent implements OnInit {
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'nombre', 'descripcion', 'fechaCarga', 'estado', 'formato', 'etiqueta', 'rutaArchivo', 'creador', 'persona', 'contrato', 'acciones'];
+  displayedColumns: string[] = ['id', 'nombre', 'descripcion', 'fechaCarga', 'estado', 'formato', 'etiqueta', 'archivo', 'creador', 'persona', 'contrato', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   documentos: DocumentoComponent[] = [];
@@ -263,6 +264,37 @@ export class LeerDocumentoComponent implements OnInit {
       console.error('Error en preDelete:', error);
       this.showMessage('Acción cancelada o error en preDelete', 'error');
     }
+  }
+
+  onDownload(element: any) {
+    this.documentoService.getFilesByDocumentoServiceId(element.id)
+      .subscribe({
+        next: (files) => {
+          const dialogRef = this.dialog.open(DownloadFileComponent, {
+            maxWidth: 'none',
+            width: '500px',
+            data: { files: files }
+          });
+          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
+            if (selectedFiles && selectedFiles.length > 0) {
+              selectedFiles.forEach(selectedFile => {
+                this.documentoService.downloadFile(selectedFile).subscribe(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = selectedFile;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                });
+              });
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error al obtener archivos:', err);
+          this.showMessage('Error al obtener archivos del servidor.', 'error');
+        }
+      });
   }
 
   /**

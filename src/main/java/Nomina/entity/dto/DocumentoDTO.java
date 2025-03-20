@@ -44,9 +44,9 @@ public class DocumentoDTO {
     private String etiqueta;
 
     /**
-     * Campo que representa rutaArchivo
+     * Campo que representa archivo
      */
-    private String rutaArchivo;
+    private String archivo;
 
     /**
      * Representa la relación  con la entidad persona
