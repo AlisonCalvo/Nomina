@@ -131,7 +131,12 @@ export class LeerCuentaCobroComponent implements OnInit {
     // Configurar la lógica de filtrado personalizada
     this.dataSource.filterPredicate = (data, filter) => {
       const searchText = filter.trim().toLowerCase();
-      const combinedValues = this.getCombinedValuesForFilter(data);
+
+      const estadoText = data.estado ? 'aprobada' : 'no aprobada';
+      const pagoText = data.pago ? 'realizado' : 'pendiente';
+
+      const combinedValues = this.getCombinedValuesForFilter(data) + ' ' + estadoText + ' ' + pagoText;
+
       return combinedValues.includes(searchText);
     };
   }
@@ -351,7 +356,13 @@ export class LeerCuentaCobroComponent implements OnInit {
       const exportData = this.dataSource.filteredData.map(row => {
         const formattedRow: any = {};
         displayedColumns.forEach(column => {
-          if (Array.isArray(row[column])) {
+          if (column === 'estado') {
+
+            formattedRow[column] = row[column] ? 'Aprobada' : 'No aprobada';
+          } else if (column === 'pago') {
+
+            formattedRow[column] = row[column] ? 'Realizado' : 'Pendiente';
+          } else if (Array.isArray(row[column])) {
             // Procesar colecciones con getCollectionSummary
             formattedRow[column] = this.getCollectionSummary(row[column]);
           } else if (typeof row[column] === 'object' && row[column] !== null) {
