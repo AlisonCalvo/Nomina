@@ -141,6 +141,8 @@ export class LeerContratoComponent implements OnInit {
     // Configurar la lógica de filtrado personalizada
     this.dataSource.filterPredicate = (data, filter) => {
       const searchText = filter.trim().toLowerCase();
+      const estadoText = data.estado ? 'en curso' : 'finalizado';
+      const firmadoText = data.firmado ? 'firmado' : 'pendiente';
       const combinedValues = this.getCombinedValuesForFilter(data);
       return combinedValues.includes(searchText);
     };
@@ -349,7 +351,11 @@ export class LeerContratoComponent implements OnInit {
       const exportData = this.dataSource.filteredData.map(row => {
         const formattedRow: any = {};
         displayedColumns.forEach(column => {
-          if (Array.isArray(row[column])) {
+          if (column === 'estado') {
+            formattedRow[column] = row[column] ? 'curso' : 'Finalizado';
+          } else if (column === 'firmado') {
+            formattedRow[column] = row[column] ? 'Firmado' : 'Pendiente';
+          } else if (Array.isArray(row[column])) {
             // Procesar colecciones con getCollectionSummary
             formattedRow[column] = this.getCollectionSummary(row[column]);
           } else if (typeof row[column] === 'object' && row[column] !== null) {
