@@ -36,6 +36,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CuentaCobroService } from '../../../services/CuentaCobroService';
 import { ContratoService } from '../../../services/ContratoService';
 import { InformeService } from '../../../services/InformeService';
+import {AuthService} from "../../../services/auth-service.service";
 
 interface CuentaCobroModel {
   /** id de la entidad */
@@ -143,7 +144,8 @@ export class ActualizarCuentaCobroComponent implements OnInit {
     private router: Router,
     private snackBar: MatSnackBar,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private dialogRef: MatDialogRef<ActualizarCuentaCobroComponent>
+    private dialogRef: MatDialogRef<ActualizarCuentaCobroComponent>,
+    private authService: AuthService
   ) {}
 
   /** Inicialización del componente */
@@ -307,10 +309,11 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
+          disabled: !this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']),
           attributes: {
             'class': 'modern-input'
           },
-          options: [{ value: true, label: 'Activo' }, { value: false, label: 'Inactivo' }]
+          options: [{ value: true, label: 'Aprobada' }, { value: false, label: 'No aprobada' }]
         }
       },
       {
@@ -354,6 +357,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
+          disabled: !this.authService.tieneRoles(['ADMINISTRADOR', 'CONTADOR']),
           attributes: {
             'class': 'modern-input'
           },
@@ -407,6 +411,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           required: false,
           appearance: 'outline',
           floatLabel: 'always',
+          disabled: true,
           attributes: {
             'class': 'modern-input'
           }

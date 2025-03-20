@@ -185,7 +185,7 @@ export class CrearInformeComponent implements OnInit {
         templateOptions: {
           label: 'CuentaCobro',
           placeholder: 'Seleccione cuentaCobro',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -203,7 +203,7 @@ export class CrearInformeComponent implements OnInit {
         templateOptions: {
           label: 'Proyecto',
           placeholder: 'Seleccione proyecto',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -221,7 +221,7 @@ export class CrearInformeComponent implements OnInit {
         templateOptions: {
           label: 'Contrato',
           placeholder: 'Seleccione contrato',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {

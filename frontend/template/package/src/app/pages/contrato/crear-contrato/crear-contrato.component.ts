@@ -286,7 +286,7 @@ export class CrearContratoComponent implements OnInit {
         templateOptions: {
           label: 'Firmado',
           placeholder: 'Ingrese firmado',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -302,7 +302,7 @@ export class CrearContratoComponent implements OnInit {
         templateOptions: {
           label: 'Proyecto',
           placeholder: 'Seleccione proyecto',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -320,7 +320,7 @@ export class CrearContratoComponent implements OnInit {
         templateOptions: {
           label: 'Persona',
           placeholder: 'Seleccione persona',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -338,7 +338,7 @@ export class CrearContratoComponent implements OnInit {
         templateOptions: {
           label: 'TipoContrato',
           placeholder: 'Seleccione tipoContrato',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -356,7 +356,7 @@ export class CrearContratoComponent implements OnInit {
         templateOptions: {
           label: 'PeriodicidadPago',
           placeholder: 'Seleccione periodicidadPago',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
