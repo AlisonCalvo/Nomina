@@ -390,6 +390,8 @@ export class CrearContratoComponent implements OnInit {
   private loadPersonaOptions() {
     this.personaService.findAll().subscribe(
       data => {
+        // Ordenar alfabéticamente por nombre
+        data.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
         const field = this.fields.find(f => f.key === 'persona');
         if (field && field.templateOptions) {
           field.templateOptions.options = data;
