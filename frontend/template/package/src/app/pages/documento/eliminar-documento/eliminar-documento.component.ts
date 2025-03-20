@@ -83,7 +83,7 @@ export class EliminarDocumentoComponent implements OnInit {
   /** Configuración de campos */
   fields: FormlyFieldConfig[] = [];
   /** Columnas a mostrar en la tabla */
-  displayedColumns: string[] = ['descripcion', 'etiqueta', 'fechaCarga', 'estado', 'rutaArchivo', 'creador', 'persona', 'formato', 'contrato', 'id', 'nombre', 'actions'];
+  displayedColumns: string[] = ['descripcion', 'etiqueta', 'fechaCarga', 'estado', 'archivo', 'creador', 'persona', 'formato', 'contrato', 'id', 'nombre', 'actions'];
 
   /**
    * Constructor del componente
