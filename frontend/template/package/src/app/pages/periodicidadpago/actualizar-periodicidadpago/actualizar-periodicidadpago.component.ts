@@ -193,6 +193,7 @@ export class ActualizarPeriodicidadPagoComponent implements OnInit {
           required: false,
           appearance: 'outline',
           floatLabel: 'always',
+          disabled: true,
           attributes: {
             'class': 'modern-input'
           }
