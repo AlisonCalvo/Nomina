@@ -286,7 +286,7 @@ export class CrearContratoComponent implements OnInit {
         templateOptions: {
           label: 'Firmado',
           placeholder: 'Ingrese firmado',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -302,7 +302,7 @@ export class CrearContratoComponent implements OnInit {
         templateOptions: {
           label: 'Proyecto',
           placeholder: 'Seleccione proyecto',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -320,7 +320,7 @@ export class CrearContratoComponent implements OnInit {
         templateOptions: {
           label: 'Persona',
           placeholder: 'Seleccione persona',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -328,7 +328,8 @@ export class CrearContratoComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'nombre'
+          labelProp: 'nombre',
+          filter: true
         }
       },
       {
@@ -338,7 +339,7 @@ export class CrearContratoComponent implements OnInit {
         templateOptions: {
           label: 'TipoContrato',
           placeholder: 'Seleccione tipoContrato',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -356,7 +357,7 @@ export class CrearContratoComponent implements OnInit {
         templateOptions: {
           label: 'PeriodicidadPago',
           placeholder: 'Seleccione periodicidadPago',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -390,6 +391,8 @@ export class CrearContratoComponent implements OnInit {
   private loadPersonaOptions() {
     this.personaService.findAll().subscribe(
       data => {
+        // Ordenar alfabéticamente por nombre
+        data.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
         const field = this.fields.find(f => f.key === 'persona');
         if (field && field.templateOptions) {
           field.templateOptions.options = data;

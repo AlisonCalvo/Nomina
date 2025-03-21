@@ -41,6 +41,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ContratoService } from '../../../services/ContratoService';
 import { CommonModule } from '@angular/common';
+import {DownloadFileComponent} from "../../../downloadFile.component";
 @Component({
   selector: 'app-leer-documento',
   templateUrl: './leer-documento.component.html',
@@ -84,7 +85,7 @@ import { CommonModule } from '@angular/common';
 })
 export class LeerDocumentoComponent implements OnInit {
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'nombre', 'descripcion', 'fechaCarga', 'estado', 'formato', 'etiqueta', 'rutaArchivo', 'creador', 'persona', 'contrato', 'acciones'];
+  displayedColumns: string[] = ['id', 'nombre', 'descripcion', 'fechaCarga', 'estado', 'formato', 'etiqueta', 'archivo', 'creador', 'persona', 'contrato', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   documentos: DocumentoComponent[] = [];
@@ -132,6 +133,7 @@ export class LeerDocumentoComponent implements OnInit {
     // Configurar la lógica de filtrado personalizada
     this.dataSource.filterPredicate = (data, filter) => {
       const searchText = filter.trim().toLowerCase();
+      const estadoText = data.estado ? 'activo' : 'inactivo';
       const combinedValues = this.getCombinedValuesForFilter(data);
       return combinedValues.includes(searchText);
     };
@@ -264,6 +266,37 @@ export class LeerDocumentoComponent implements OnInit {
     }
   }
 
+  onDownload(element: any) {
+    this.documentoService.getFilesByDocumentoServiceId(element.id)
+      .subscribe({
+        next: (files) => {
+          const dialogRef = this.dialog.open(DownloadFileComponent, {
+            maxWidth: 'none',
+            width: '500px',
+            data: { files: files }
+          });
+          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
+            if (selectedFiles && selectedFiles.length > 0) {
+              selectedFiles.forEach(selectedFile => {
+                this.documentoService.downloadFile(selectedFile).subscribe(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = selectedFile;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                });
+              });
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error al obtener archivos:', err);
+          this.showMessage('Error al obtener archivos del servidor.', 'error');
+        }
+      });
+  }
+
   /**
    * Método de validación previo a la eliminación
    * @param {number} id - ID del registro a validar
@@ -320,7 +353,10 @@ export class LeerDocumentoComponent implements OnInit {
       const exportData = this.dataSource.filteredData.map(row => {
         const formattedRow: any = {};
         displayedColumns.forEach(column => {
-          if (Array.isArray(row[column])) {
+          if (column === 'estado') {
+
+            formattedRow[column] = row[column] ? 'Activo' : 'Inactivo';
+          } else if (Array.isArray(row[column])) {
             // Procesar colecciones con getCollectionSummary
             formattedRow[column] = this.getCollectionSummary(row[column]);
           } else if (typeof row[column] === 'object' && row[column] !== null) {

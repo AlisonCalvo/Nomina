@@ -40,13 +40,10 @@ public class PermisoInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        if (requestURI.matches("^/api/[^/]+/download$")|| requestURI.matches("^/api/[^/]+/[^/]+/files$")  ) {
+        if (requestURI.matches("/api/[^/]+/download") || requestURI.matches("^/api/[^/]+/[^/]+/files$")) {
             return true; // Permitir sin validaciones
         }
 
-        if (requestURI.matches("^/api/[^/]+/[^/]+/files/[^/]+$")) {
-            return true; // Permitir sin validaciones
-        }
 
         if (requestURI.matches("^/api/[^/]+/notificar$")) {
             return true; // Permitir sin validaciones

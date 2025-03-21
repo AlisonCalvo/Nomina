@@ -241,8 +241,12 @@ export class ActualizarContratoComponent implements OnInit {
   private loadPersonaOptions() {
     this.personaService.findAll().subscribe(
       data => {
-        this.personas = data;
-        this.updateFieldOptions('persona', data);
+        // Ordenar alfabéticamente por nombre
+        data.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
+        const field = this.fields.find(f => f.key === 'persona');
+        if (field && field.templateOptions) {
+          field.templateOptions.options = data;
+        }
       },
       error => console.error('Error al cargar persona:', error)
     );
@@ -476,7 +480,7 @@ export class ActualizarContratoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          options: [{ value: true, label: 'Activo' }, { value: false, label: 'Inactivo' }]
+          options: [{ value: true, label: 'Firmado' }, { value: false, label: 'Pendiente' }]
         }
       },
       {
@@ -489,6 +493,7 @@ export class ActualizarContratoComponent implements OnInit {
           required: false,
           appearance: 'outline',
           floatLabel: 'always',
+          disabled: true,
           attributes: {
             'class': 'modern-input'
           }
@@ -527,7 +532,8 @@ export class ActualizarContratoComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'nombre'
+          labelProp: 'nombre',
+          filter: true
         }
       },
       {

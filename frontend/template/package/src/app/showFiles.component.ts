@@ -19,13 +19,7 @@ import {MatSelect} from "@angular/material/select";
     MatIconModule,
     MatButtonModule,
     MatListModule,
-    NgForOf,
-    MatDialogClose,
-    MatLine,
-    MatFormField,
-    MatLabel,
-    MatOption,
-    MatSelect
+    NgForOf
   ],
   template: `
     <h1 mat-dialog-title>Archivos disponibles</h1>

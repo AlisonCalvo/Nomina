@@ -89,4 +89,10 @@ export class AuthService {
 
     return decodedToken.roles.includes('ADMINISTRADOR') || decodedToken.roles.includes('GERENTE') || decodedToken.roles.includes('CONTADOR');
   }
+
+  tieneRoles(rolesRequeridos: string[]): boolean {
+    const token = this.getDecodedToken();
+    if (!token || !token.roles) return false;
+    return rolesRequeridos.some(role => token.roles.includes(role));
+  }
 }

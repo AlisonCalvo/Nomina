@@ -34,6 +34,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DocumentoService } from '../../../services/DocumentoService';
 import { PersonaService } from '../../../services/PersonaService';
 import { ContratoService } from '../../../services/ContratoService';
+import { Observable, forkJoin, of, throwError } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 
 interface DocumentoModel {
   /** id de la entidad */
@@ -50,8 +52,8 @@ interface DocumentoModel {
   formato: string;
   /** etiqueta de la entidad */
   etiqueta: string;
-  /** rutaArchivo de la entidad */
-  rutaArchivo: string;
+  /** archivo de la entidad */
+  archivo: any;
   /** creador de la entidad */
   creador: string;
   /** persona de la entidad */
@@ -117,6 +119,8 @@ export class ActualizarDocumentoComponent implements OnInit {
   model: DocumentoModel = {} as DocumentoModel;
   originalModel: DocumentoModel = {} as DocumentoModel;
   fields: FormlyFieldConfig[] = [];
+  /** Indicador de carga de archivos */
+  isLoading = false;
 
   /**
    * Constructor del componente
@@ -157,7 +161,7 @@ export class ActualizarDocumentoComponent implements OnInit {
           estado: this.data.estado,
           formato: this.data.formato,
           etiqueta: this.data.etiqueta,
-          rutaArchivo: this.data.rutaArchivo,
+          archivo: this.data.archivo,
           creador: this.data.creador,
           persona: this.data.persona && this.data.persona.id ? this.data.persona.id : null,
           contrato: this.data.contrato && this.data.contrato.id ? this.data.contrato.id : null
@@ -172,7 +176,7 @@ export class ActualizarDocumentoComponent implements OnInit {
           estado: this.data.estado,
           formato: this.data.formato,
           etiqueta: this.data.etiqueta,
-          rutaArchivo: this.data.rutaArchivo,
+          archivo: this.data.archivo,
           creador: this.data.creador,
           persona: this.data.persona && this.data.persona.id ? this.data.persona.id : null,
           contrato: this.data.contrato && this.data.contrato.id ? this.data.contrato.id : null
@@ -347,18 +351,14 @@ export class ActualizarDocumentoComponent implements OnInit {
         }
       },
       {
-        key: 'rutaArchivo',
-        type: 'input',
-        className: 'field-container',
+        key: 'archivo',
+        type: 'file',
         templateOptions: {
-          label: 'RutaArchivo',
-          placeholder: 'Ingrese rutaArchivo',
+          label: 'Archivo',
+          placeholder: 'Seleccione archivo',
+          multiple: true,
           required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          }
+          accept: '.pdf,.doc,.docx'
         }
       },
       {
@@ -371,6 +371,7 @@ export class ActualizarDocumentoComponent implements OnInit {
           required: false,
           appearance: 'outline',
           floatLabel: 'always',
+          disabled: true,
           attributes: {
             'class': 'modern-input'
           }
@@ -428,9 +429,60 @@ export class ActualizarDocumentoComponent implements OnInit {
     if (modelData.contrato) {
       modelData.contrato = { id: modelData.contrato };
     }
+    const uploadOperations: Observable<void>[] = [];
+    const fileFields: (keyof DocumentoModel)[] = ['archivo'];
 
-    // Si no se subieron archivos, procedemos a actualizar directamente
-    this.updateEntity(modelData);
+    const handleFileUpload = (field: keyof DocumentoModel) => {
+      const files = this.model[field];
+
+      if (Array.isArray(files) && files.length > 0) {
+        const upload$ = this.documentoService.uploadFiles(files).pipe(
+          switchMap(rutas => {
+            // @ts-ignore
+            modelData[field] = rutas.join(',');
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      } else if (files instanceof File) {
+        const upload$ = this.documentoService.uploadFile(files).pipe(
+          switchMap(ruta => {
+            // @ts-ignore
+            modelData[field] = ruta;
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      }
+    };
+
+    fileFields.forEach(field => handleFileUpload(field));
+
+    if (uploadOperations.length > 0) {
+      forkJoin(uploadOperations).subscribe({
+        next: () => this.updateEntity(modelData),
+        error: () => this.isLoading = false
+      });
+    } else {
+      this.updateEntity(modelData);
+    }
+  }
+
+  private handleUploadError(field: string, error: any) {
+    console.error(`Error subiendo archivos en ${field}:`, error);
+    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+    this.isLoading = false;
   }
 
   private updateEntity(modelData: any) {

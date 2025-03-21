@@ -9,10 +9,9 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import * as XLSX from 'xlsx';
 import { CuentaCobroService } from '../../../services/CuentaCobroService';
-import { CuentaCobroComponent } from '../../cuentacobro/cuentacobro.component';
-import { ActualizarCuentaCobroComponent } from '../../cuentacobro/actualizar-cuentacobro/actualizar-cuentacobro.component';
-import { CrearCuentaCobroComponent } from '../../cuentacobro/crear-cuentacobro/crear-cuentacobro.component';
-import {environment} from '../../../../environments/environment';
+import { CuentaCobroComponent } from '../cuentacobro.component';
+import { ActualizarCuentaCobroComponent } from '../actualizar-cuentacobro/actualizar-cuentacobro.component';
+import { CrearCuentaCobroComponent } from '../crear-cuentacobro/crear-cuentacobro.component';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
@@ -42,8 +41,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DownloadFileComponent } from '../../../downloadFile.component';
 import { ShowFilesListComponent } from '../../../showFiles.component';
 
-
 import { CommonModule } from '@angular/common';
+import {AuthService} from "../../../services/auth-service.service";
 @Component({
   selector: 'app-leer-cuentacobro',
   templateUrl: './leer-cuentacobro.component.html',
@@ -80,12 +79,12 @@ import { CommonModule } from '@angular/common';
     MatMenuModule,
     MatTabsModule,
     MatProgressBarModule,
-    MatProgressSpinnerModule,
-    ShowFilesListComponent
+    MatProgressSpinnerModule
   ],
   styleUrls: ['./leer-cuentacobro.component.scss']
 })
 export class LeerCuentaCobroComponent implements OnInit {
+  mostrarBotonEliminar: boolean;
   // Columnas que se mostrarán en la tabla
   displayedColumns: string[] = ['id', 'montoCobrar', 'fecha', 'estado', 'numeroCuenta', 'detalle', 'pago', 'notificacionPago', 'firmaGerente', 'firmaContratista', 'creador', 'contrato', 'acciones'];
 
@@ -118,8 +117,10 @@ export class LeerCuentaCobroComponent implements OnInit {
     private cuentacobroService: CuentaCobroService,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+  private authService: AuthService
   ) {
+    this.mostrarBotonEliminar = this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']);
     this.customizePaginator();
   }
 
@@ -134,7 +135,12 @@ export class LeerCuentaCobroComponent implements OnInit {
     // Configurar la lógica de filtrado personalizada
     this.dataSource.filterPredicate = (data, filter) => {
       const searchText = filter.trim().toLowerCase();
-      const combinedValues = this.getCombinedValuesForFilter(data);
+
+      const estadoText = data.estado ? 'aprobada' : 'no aprobada';
+      const pagoText = data.pago ? 'realizado' : 'pendiente';
+
+      const combinedValues = this.getCombinedValuesForFilter(data) + ' ' + estadoText + ' ' + pagoText;
+
       return combinedValues.includes(searchText);
     };
   }
@@ -171,12 +177,12 @@ export class LeerCuentaCobroComponent implements OnInit {
     this.cuentacobroService.findAll().subscribe({
       next: data => {
         this.dataSource.data = data.map(item => Object.assign(new CuentaCobroComponent(this.cuentacobroService), item));
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
-      },
-      error: error => {
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
+    },
+       error: error => {
         console.error('Error al obtener cuentacobros:', error);
-        this.errorMessage = 'Error al cargar los datos.';
+      this.errorMessage = 'Error al cargar los datos.';
       }
     });
   }
@@ -199,7 +205,7 @@ export class LeerCuentaCobroComponent implements OnInit {
           const dialogRef = this.dialog.open(DownloadFileComponent, {
             maxWidth: 'none',
             width: '500px',
-            data: {files: files}
+            data: { files: files }
           });
           dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
             if (selectedFiles && selectedFiles.length > 0) {
@@ -354,7 +360,13 @@ export class LeerCuentaCobroComponent implements OnInit {
       const exportData = this.dataSource.filteredData.map(row => {
         const formattedRow: any = {};
         displayedColumns.forEach(column => {
-          if (Array.isArray(row[column])) {
+          if (column === 'estado') {
+
+            formattedRow[column] = row[column] ? 'Aprobada' : 'No aprobada';
+          } else if (column === 'pago') {
+
+            formattedRow[column] = row[column] ? 'Realizado' : 'Pendiente';
+          } else if (Array.isArray(row[column])) {
             // Procesar colecciones con getCollectionSummary
             formattedRow[column] = this.getCollectionSummary(row[column]);
           } else if (typeof row[column] === 'object' && row[column] !== null) {
@@ -447,7 +459,7 @@ export class LeerCuentaCobroComponent implements OnInit {
       return defaultText;
     }
     return collection.map(item => this.generateSummary(item)).join('; ');
-  }
+ }
 
   onAlerta() {
     // Implementar funcionalidad

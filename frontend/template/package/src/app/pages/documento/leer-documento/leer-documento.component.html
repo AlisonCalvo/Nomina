@@ -43,8 +43,12 @@
         <td mat-cell *matCellDef="let element">{{element.fechaCarga}}</td>
       </ng-container>
       <ng-container matColumnDef="estado">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
-        <td mat-cell *matCellDef="let element">{{element.estado}}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Estado </th>
+        <td mat-cell *matCellDef="let element">
+    <span [ngClass]="{'status-approved': element.estado, 'status-rejected': !element.estado}">
+      {{ element.estado ? 'Activo' : 'Inactivo' }}
+    </span>
+        </td>
       </ng-container>
       <ng-container matColumnDef="formato">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Formato</th>
@@ -54,9 +58,9 @@
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Etiqueta</th>
         <td mat-cell *matCellDef="let element">{{element.etiqueta}}</td>
       </ng-container>
-      <ng-container matColumnDef="rutaArchivo">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>RutaArchivo</th>
-        <td mat-cell *matCellDef="let element">{{element.rutaArchivo}}</td>
+      <ng-container matColumnDef="archivo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>archivo</th>
+        <td mat-cell *matCellDef="let element">{{element.archivo}}</td>
       </ng-container>
       <ng-container matColumnDef="creador">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Creador</th>

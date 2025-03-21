@@ -81,8 +81,7 @@ import {ShowFilesListComponent} from "../../../showFiles.component";
     MatMenuModule,
     MatTabsModule,
     MatProgressBarModule,
-    MatProgressSpinnerModule,
-    ShowFilesListComponent
+    MatProgressSpinnerModule
   ],
   styleUrls: ['./leer-informe.component.scss']
 })

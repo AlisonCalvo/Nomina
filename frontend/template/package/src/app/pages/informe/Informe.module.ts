@@ -15,7 +15,7 @@ import { FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { RouterModule } from '@angular/router';
 import { InformeComponent } from './informe.component';
-import { InformeService } from '../services/InformeService';
+import { InformeService } from '../../services/InformeService';
 
 @NgModule({
   imports: [
