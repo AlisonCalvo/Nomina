@@ -15,7 +15,7 @@ import { FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { RouterModule } from '@angular/router';
 import { DocumentoComponent } from './documento.component';
-import { DocumentoService } from '../services/DocumentoService';
+import { DocumentoService } from '../../services/DocumentoService';
 
 @NgModule({
   imports: [

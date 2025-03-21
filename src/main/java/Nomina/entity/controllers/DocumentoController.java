@@ -1,16 +1,33 @@
 package Nomina.entity.controllers;
 
+import Nomina.entity.entities.CuentaCobro;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Objects;
 import java.util.Optional;
 import Nomina.entity.services.DocumentoService;
 import Nomina.entity.services.impl.NotificacionEmailServiceImpl;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import Nomina.entity.entities.Documento;
 import Nomina.entity.dto.DocumentoDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Controlador REST para la gestión de entidades Documento.
@@ -106,6 +123,93 @@ public class DocumentoController {
         }
         service.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * Sube uno o varios archivos al servidor local.
+     *
+     * @param files Lista de archivos a subir (MultipartFile)
+     * @return ResponseEntity con la lista de rutas de archivo subidas,
+     *         o un INTERNAL_SERVER_ERROR si ocurre un problema.
+     */
+    @PostMapping("/upload")
+    public ResponseEntity<List<String>> uploadFiles(@RequestParam("files") List<MultipartFile> files) {
+        // Lista donde guardaremos las rutas resultantes de cada archivo
+        List<String> filePaths = new ArrayList<>();
+
+        String uploadDir = "uploads"; // Carpeta local donde se suben los archivos
+        Path uploadPath = Paths.get(uploadDir);
+
+        try {
+            // Crear carpeta si no existe
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            // Guardar cada archivo
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    String originalFilename = StringUtils.cleanPath(
+                            Objects.requireNonNull(file.getOriginalFilename())
+                    );
+                    int randomNumber = (int) (Math.random() * 90000) + 10000;
+                    String newFilename = randomNumber + "_" + originalFilename;
+                    Path destinationFilePath = uploadPath.resolve(newFilename);
+                    Files.copy(file.getInputStream(), destinationFilePath, StandardCopyOption.REPLACE_EXISTING);
+                    // Agregamos la ruta donde quedó almacenado el archivo
+                    filePaths.add(destinationFilePath.toString());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        // Retornamos las rutas de todos los archivos subidos
+        return ResponseEntity.ok(filePaths);
+    }
+    @GetMapping("/{id}/files")
+    public ResponseEntity<List<String>> listarArchivosPorId(@PathVariable Long id) {
+        Optional<Documento> optionalEntity = service.findById(id);
+        if (optionalEntity.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Documento documento = optionalEntity.get();
+        List<String> archivos = new ArrayList<>();
+
+        if (documento.getArchivo() != null) {
+            String[] contratistaPaths = documento.getArchivo().split(",");
+            for (String path : contratistaPaths) {
+                String fileName = extractFileName(path.trim());
+                archivos.add(fileName);
+            }
+        }
+        return ResponseEntity.ok(archivos);
+    }
+
+    /**
+     * Extrae el nombre del archivo de una ruta completa
+     * @param path Ruta completa del archivo
+     * @return Nombre del archivo sin la ruta
+     */
+    private String extractFileName(String path) {
+        int lastBackslash = path.lastIndexOf('\\');
+        int lastSlash = path.lastIndexOf('/');
+        int lastSeparator = Math.max(lastBackslash, lastSlash);
+        if (lastSeparator == -1) {return path;}
+        return path.substring(lastSeparator + 1);
+    }
+
+    // Endpoint para descargar un archivo
+    @GetMapping("/download")
+    public ResponseEntity<Resource> downloadFile(@RequestParam("file") String fileName) throws MalformedURLException {
+        Path filePath = Paths.get("uploads").resolve(fileName).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .body(resource);
     }
 
 }
