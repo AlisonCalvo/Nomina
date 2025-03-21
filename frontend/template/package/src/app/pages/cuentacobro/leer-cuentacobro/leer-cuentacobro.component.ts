@@ -39,6 +39,7 @@ import { DateTime } from 'luxon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DownloadFileComponent } from '../../../downloadFile.component';
+import { ShowFilesListComponent } from '../../../showFiles.component';
 
 import { CommonModule } from '@angular/common';
 import {AuthService} from "../../../services/auth-service.service";
@@ -464,4 +465,47 @@ export class LeerCuentaCobroComponent implements OnInit {
     this.showMessage('Funcionalidad no implementada', 'error');
   }
 
-   }
+  onShowFirmaGerente(element: any) {
+    const rawPaths = element.firmaGerente;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos de FirmaGerente.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: { files: files }
+    });
+  }
+
+
+
+  onShowFirmaContratista(element: any) {
+    const rawPaths = element.firmaContratista;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos de FirmaContratista.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: { files: files }
+    });
+  }
+
+
+  private extractFileName(fullPath: string): string {
+    const lastBackslash = fullPath.lastIndexOf('\\');
+    const lastSlash = fullPath.lastIndexOf('/');
+    const lastSeparator = Math.max(lastBackslash, lastSlash);
+    if (lastSeparator === -1) {
+      return fullPath;
+    }
+    return fullPath.substring(lastSeparator + 1);
+  }
+
+
+}
