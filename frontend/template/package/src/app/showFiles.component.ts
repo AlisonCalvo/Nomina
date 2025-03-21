@@ -30,13 +30,12 @@ import {MatSelect} from "@angular/material/select";
   template: `
     <h1 mat-dialog-title>Archivos disponibles</h1>
     <div mat-dialog-content>
-      <mat-form-field appearance="fill" style="width: 100%">
-        <mat-label>Archivos</mat-label>
-          <mat-option *ngFor="let file of files" [value]="file">
-            <mat-icon matListIcon>insert_drive_file</mat-icon>
-            {{ file }}
-          </mat-option>
-      </mat-form-field>
+      <mat-list>
+        <mat-list-item *ngFor="let file of files">
+          <mat-icon matListItemIcon>insert_drive_file</mat-icon>
+          <span matListItemTitle>{{ file }}</span>
+        </mat-list-item>
+      </mat-list>
     </div>
     <div mat-dialog-actions>
       <button mat-button (click)="onCancel()">Cancelar</button>
