@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterModule , ActivatedRoute} from '@angular/router';
 import { CommonModule, NgIf } from '@angular/common';
 import {LoginTradicionalComponent} from "./login-tradicional/login-tradicional.component";
-import{FooterComponent} from "../../../components/footer/footer.component";
+
 import {
   SocialAuthService,
   GoogleLoginProvider,
@@ -17,8 +17,8 @@ import {PermissionService} from "../services/PermissionService";
     CommonModule,
     RouterModule,
     MatCardModule,
-    LoginTradicionalComponent,
-    FooterComponent
+    LoginTradicionalComponent
+
   ],
   templateUrl: './side-login.component.html',
   providers: [

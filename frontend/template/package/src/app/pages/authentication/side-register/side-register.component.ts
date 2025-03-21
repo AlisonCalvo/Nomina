@@ -14,7 +14,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { MaterialModule } from '../../../material.module';
 import { NgIf } from '@angular/common';
 import Swal from 'sweetalert2';
-import {FooterComponent} from "../../../components/footer/footer.component";
+
 import {environment} from "../../../../environments/environment";
 
 
@@ -27,8 +27,8 @@ import {environment} from "../../../../environments/environment";
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule, // Importamos para solicitudes HTTP
-    NgIf,
-    FooterComponent,
+    NgIf
+
     // Asegúrate de incluir NgIf aquí
   ],
   templateUrl: './side-register.component.html',
