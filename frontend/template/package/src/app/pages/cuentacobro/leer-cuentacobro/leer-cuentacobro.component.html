@@ -60,11 +60,18 @@
       </ng-container>
       <ng-container matColumnDef="firmaGerente">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>FirmaGerente</th>
-        <td mat-cell *matCellDef="let element">{{element.firmaGerente}}</td>
+        <td mat-cell *matCellDef="let element">
+        <button mat-icon-button color="accent" (click)="onShowFirmaGerente(element)" matTooltip="Ver archivos de FirmaGerente">
+          <mat-icon>folder</mat-icon>
+        </button></td>
       </ng-container>
       <ng-container matColumnDef="firmaContratista">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>FirmaContratista</th>
-        <td mat-cell *matCellDef="let element">{{element.firmaContratista}}</td>
+        <td mat-cell *matCellDef="let element">
+          <button mat-icon-button color="accent" (click)="onShowFirmaContratista(element)" matTooltip="Ver archivos de FirmaContratista">
+            <mat-icon>folder</mat-icon>
+          </button>
+        </td>
       </ng-container>
       <ng-container matColumnDef="creador">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Creador</th>

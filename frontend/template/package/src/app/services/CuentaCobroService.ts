@@ -170,4 +170,5 @@ export class CuentaCobroService {
     const url = `${this.baseUrl}/cuentacobros/download?file=${fileName}`;
     return this.httpClient.get(url, { responseType: 'blob' });
   }
+
 }

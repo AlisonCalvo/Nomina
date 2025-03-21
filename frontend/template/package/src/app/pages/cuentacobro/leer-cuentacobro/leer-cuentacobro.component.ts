@@ -40,6 +40,8 @@ import { DateTime } from 'luxon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DownloadFileComponent } from '../../../downloadFile.component';
+import { ShowFilesListComponent } from '../../../showFiles.component';
+
 
 import { CommonModule } from '@angular/common';
 @Component({
@@ -78,7 +80,8 @@ import { CommonModule } from '@angular/common';
     MatMenuModule,
     MatTabsModule,
     MatProgressBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    ShowFilesListComponent
   ],
   styleUrls: ['./leer-cuentacobro.component.scss']
 })
@@ -168,12 +171,12 @@ export class LeerCuentaCobroComponent implements OnInit {
     this.cuentacobroService.findAll().subscribe({
       next: data => {
         this.dataSource.data = data.map(item => Object.assign(new CuentaCobroComponent(this.cuentacobroService), item));
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-    },
-       error: error => {
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+      },
+      error: error => {
         console.error('Error al obtener cuentacobros:', error);
-      this.errorMessage = 'Error al cargar los datos.';
+        this.errorMessage = 'Error al cargar los datos.';
       }
     });
   }
@@ -196,7 +199,7 @@ export class LeerCuentaCobroComponent implements OnInit {
           const dialogRef = this.dialog.open(DownloadFileComponent, {
             maxWidth: 'none',
             width: '500px',
-            data: { files: files }
+            data: {files: files}
           });
           dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
             if (selectedFiles && selectedFiles.length > 0) {
@@ -425,6 +428,7 @@ export class LeerCuentaCobroComponent implements OnInit {
       panelClass: type === 'error' ? ['error-snackbar'] : ['success-snackbar']
     });
   }
+
   generateSummary(value: any, defaultText: string = 'Sin datos'): string {
     if (!value || typeof value !== 'object') {
       return defaultText;
@@ -443,11 +447,54 @@ export class LeerCuentaCobroComponent implements OnInit {
       return defaultText;
     }
     return collection.map(item => this.generateSummary(item)).join('; ');
- }
+  }
 
   onAlerta() {
     // Implementar funcionalidad
     this.showMessage('Funcionalidad no implementada', 'error');
   }
 
-   }
+  onShowFirmaGerente(element: any) {
+    const rawPaths = element.firmaGerente;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos de FirmaGerente.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: { files: files }
+    });
+  }
+
+
+
+  onShowFirmaContratista(element: any) {
+    const rawPaths = element.firmaContratista;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos de FirmaContratista.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: { files: files }
+    });
+  }
+
+
+  private extractFileName(fullPath: string): string {
+    const lastBackslash = fullPath.lastIndexOf('\\');
+    const lastSlash = fullPath.lastIndexOf('/');
+    const lastSeparator = Math.max(lastBackslash, lastSlash);
+    if (lastSeparator === -1) {
+      return fullPath;
+    }
+    return fullPath.substring(lastSeparator + 1);
+  }
+
+
+}
