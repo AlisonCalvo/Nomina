@@ -135,6 +135,11 @@ export class CrearInformeComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
+        },
+        validation: {
+          messages: {
+            required: 'La fecha del informe es obligatoria.'
+          }
         }
       },
       {
@@ -149,6 +154,14 @@ export class CrearInformeComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          minLength:3,
+          maxLength: 100
+        },
+        validation: {
+          messages: {
+            required: 'El nombre del cliente es obligatorio.',
+            minLength: 'El nombre del cliente debe tener al menos 3 caracteres.'
           }
         }
       },
@@ -164,6 +177,16 @@ export class CrearInformeComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          minLength:3,
+          maxLength:50,
+          pattern:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/
+        },
+        validation: {
+          messages: {
+            required: 'El cargo es obligatorio.',
+            minLength: 'El cargo debe tener al menos 3 caracteres.',
+            pattern: 'El cargo solo puede contener letras y espacios.'
           }
         }
       },
@@ -194,6 +217,11 @@ export class CrearInformeComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'numeroCuenta'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar una cuenta de cobro.'
+          }
         }
       },
       {
@@ -212,6 +240,11 @@ export class CrearInformeComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'nombre'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar un proyecto.'
+          }
         }
       },
       {
@@ -230,6 +263,11 @@ export class CrearInformeComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'numeroContrato'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar un contrato.'
+          }
         }
       }
     ];

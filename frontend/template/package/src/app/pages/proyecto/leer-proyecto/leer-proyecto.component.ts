@@ -40,8 +40,14 @@ import { DateTime } from 'luxon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PersonaService } from '../../../services/PersonaService';
-import { CommonModule } from '@angular/common';
+import {CommonModule, CurrencyPipe} from '@angular/common';
 import {AuthService} from "../../../services/auth-service.service";
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es-CO';
+
+// Registrar el locale
+registerLocaleData(localeEs);
 
 @Component({
   selector: 'app-leer-proyecto',
@@ -80,8 +86,10 @@ import {AuthService} from "../../../services/auth-service.service";
     MatMenuModule,
     MatTabsModule,
     MatProgressBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    CurrencyPipe
   ],
+  providers: [CurrencyPipe, { provide: LOCALE_ID, useValue: 'es-CO' }],
   styleUrls: ['./leer-proyecto.component.scss']
 })
 export class LeerProyectoComponent implements OnInit {
@@ -112,6 +120,8 @@ export class LeerProyectoComponent implements OnInit {
    * @param snackBar Servicio para mostrar notificaciones
    * @param paginatorIntl Servicio para internacionalización del paginador
    * @param dialog Servicio para gestionar diálogos
+   * @param authService
+   * @param currencyPipe
    */
   constructor(
     private proyectoService: ProyectoService,
@@ -119,7 +129,8 @@ export class LeerProyectoComponent implements OnInit {
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
     private dialog: MatDialog,
-    private authService: AuthService
+    private authService: AuthService,
+    private currencyPipe: CurrencyPipe
   ) {
     this.customizePaginator();
   }

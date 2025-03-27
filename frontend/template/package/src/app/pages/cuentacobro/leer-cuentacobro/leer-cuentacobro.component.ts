@@ -40,8 +40,15 @@ import { DateTime } from 'luxon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DownloadFileComponent } from '../../../downloadFile.component';
+import {CommonModule, CurrencyPipe} from '@angular/common';
+import {AuthService} from "../../../services/auth-service.service";
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es-CO';
 
-import { CommonModule } from '@angular/common';
+// Registrar el locale
+registerLocaleData(localeEs);
+
 @Component({
   selector: 'app-leer-cuentacobro',
   templateUrl: './leer-cuentacobro.component.html',
@@ -78,8 +85,10 @@ import { CommonModule } from '@angular/common';
     MatMenuModule,
     MatTabsModule,
     MatProgressBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    CurrencyPipe
   ],
+  providers: [CurrencyPipe, { provide: LOCALE_ID, useValue: 'es-CO' }],
   styleUrls: ['./leer-cuentacobro.component.scss']
 })
 export class LeerCuentaCobroComponent implements OnInit {
@@ -115,7 +124,8 @@ export class LeerCuentaCobroComponent implements OnInit {
     private cuentacobroService: CuentaCobroService,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private currencyPipe: CurrencyPipe
   ) {
     this.customizePaginator();
   }

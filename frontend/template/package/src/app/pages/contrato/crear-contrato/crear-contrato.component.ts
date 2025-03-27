@@ -1,6 +1,6 @@
 import { Component, OnInit,Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import {AbstractControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {AbstractControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
@@ -37,6 +37,7 @@ import { ProyectoService } from '../../../services/ProyectoService';
 import { PersonaService } from '../../../services/PersonaService';
 import { TipoContratoService } from '../../../services/TipoContratoService';
 import { PeriodicidadPagoService } from '../../../services/PeriodicidadPagoService';
+import {distinctUntilChanged, map} from "rxjs";
 
 interface ContratoModel {
   numeroContrato: string;
@@ -137,13 +138,18 @@ export class CrearContratoComponent implements OnInit {
         type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'NumeroContrato',
-          placeholder: 'Ingrese numeroContrato',
+          label: 'Número de Contrato',
+          placeholder: 'Ingrese número de contrato',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'El número de contrato es obligatorio.'
           }
         }
       },
@@ -159,16 +165,26 @@ export class CrearContratoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength:3,
+          maxLength:50
+        },
+        validation: {
+          messages: {
+            required: 'El cargo es obligatorio.',
+            minlength: 'El cargo debe tener al menos 3 caracteres.',
+            pattern: 'El cargo solo puede contener letras.'
           }
         }
       },
       {
         key: 'valorTotalContrato',
-        type: 'number',
+        type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'ValorTotalContrato',
-          placeholder: 'Ingrese valorTotalContrato',
+          label: 'Valor Total Contrato',
+          placeholder: 'Ingrese valor total contrato',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
@@ -176,8 +192,44 @@ export class CrearContratoComponent implements OnInit {
             'class': 'modern-input'
           },
           min: 0,
-          max: 9007199254740991,
-          step: 1
+          max: 9007199254740991
+        },
+        validators: {
+          validation: [Validators.required, Validators.min(0)]
+        },
+        validation: {
+          messages: {
+            required: 'El valor total del contrato es obligatorio.',
+            min: 'El valor del contrato debe ser mayor o igual a 0.'
+          }
+        },
+        hooks: {
+          onInit: (field: FormlyFieldConfig) => {
+            field.formControl?.valueChanges
+              .pipe(
+                distinctUntilChanged(),
+                map(value => {
+                  // Ensure value is a string
+                  const stringValue = String(value);
+
+                  // Eliminar caracteres no numéricos
+                  const numericValue = stringValue.replace(/[^\d]/g, '');
+
+                  // Formatear como moneda colombiana si hay valor
+                  return numericValue
+                    ? new Intl.NumberFormat('es-CO', {
+                      style: 'currency',
+                      currency: 'COP',
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0
+                    }).format(Number(numericValue))
+                    : '';
+                })
+              )
+              .subscribe(formattedValue => {
+                field.formControl?.setValue(formattedValue, { emitEvent: false });
+              });
+          }
         }
       },
       {
@@ -196,6 +248,13 @@ export class CrearContratoComponent implements OnInit {
           min: 0,
           max: 2147483647,
           step: 1
+        },
+        validation: {
+          messages: {
+            required: 'El número de pagos es obligatorio.',
+            min: 'El número de pagos debe ser mayor o igual a 0.',
+            max: 'El número de pagos es demasiado grande.'
+          }
         }
       },
       {
@@ -217,9 +276,14 @@ export class CrearContratoComponent implements OnInit {
             expression: (control: AbstractControl): boolean => {
               const fechaInicio = control.value;
               const fechaFin = this.model.fechaFinContrato;
-              return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
+              return !fechaFin || !fechaInicio || new Date(fechaInicio) <= new Date(fechaFin);
             },
-            message: (field: FormlyFieldConfig): string => `La fecha de inicio del contrato debe ser anterior o igual a la fecha de finalización.`
+            message: 'La fecha de inicio del contrato debe ser anterior o igual a la fecha de finalización.'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La fecha de inicio del contrato es obligatoria.'
           }
         }
       },
@@ -244,7 +308,12 @@ export class CrearContratoComponent implements OnInit {
               const fechaFin = control.value;
               return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
             },
-            message: (field: FormlyFieldConfig): string => `La fecha de finalización del contrato debe ser posterior o igual a la fecha de inicio.`
+            message: 'La fecha de finalización del contrato debe ser posterior o igual a la fecha de inicio.'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La fecha de finalización del contrato es obligatoria.'
           }
         }
       },
@@ -262,6 +331,11 @@ export class CrearContratoComponent implements OnInit {
             'class': 'modern-input'
           },
           options: [{ value: true, label: 'En curso' }, { value: false, label: 'Finalizado' }]
+        },
+        validation: {
+          messages: {
+            required: 'El estado es obligatorio.'
+          }
         }
       },
       {
@@ -276,6 +350,11 @@ export class CrearContratoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La ruta de archivo es obligatoria.'
           }
         }
       },
@@ -292,7 +371,12 @@ export class CrearContratoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          options: [{ value: true, label: 'Firmado' }, { value: false, label: 'Pendiente' }]
+          options: [{ value: true, label: 'Aprobado' }, { value: false, label: 'Pendiente' }]
+        },
+        validation: {
+          messages: {
+            required: 'El estado de firma es obligatorio.'
+          }
         }
       },
       {
@@ -311,6 +395,11 @@ export class CrearContratoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'nombre'
+        },
+        validation: {
+          messages: {
+            required: 'El proyecto es obligatorio.'
+          }
         }
       },
       {
@@ -330,6 +419,11 @@ export class CrearContratoComponent implements OnInit {
           valueProp: 'id',
           labelProp: 'nombre',
           filter: true
+        },
+        validation: {
+          messages: {
+            required: 'La persona es obligatoria.'
+          }
         }
       },
       {
@@ -348,6 +442,11 @@ export class CrearContratoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'nombreTipoContrato'
+        },
+        validation: {
+          messages: {
+            required: 'El tipo de contrato es obligatorio.'
+          }
         }
       },
       {
@@ -366,6 +465,11 @@ export class CrearContratoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'tipoPeriodoPago'
+        },
+        validation: {
+          messages: {
+            required: 'La periodicidad de pago es obligatoria.'
+          }
         }
       }
     ];
@@ -436,10 +540,23 @@ export class CrearContratoComponent implements OnInit {
 
     // 2. Copiamos el modelo para no mutarlo directamente
     const modelData = { ...this.model };
+
+    // Limpiar valor de contrato para guardar solo el número
+    if (modelData.valorTotalContrato) {
+      // Remover prefijo de moneda, separadores de miles y cualquier carácter no numérico
+      const cleanedValue = String(modelData.valorTotalContrato)
+        .replace(/[^\d]/g, '') // Elimina todo excepto dígitos
+        .replace(/^0+/, ''); // Elimina ceros a la izquierda
+
+      // Convertir a número, usar 0 si está vacío
+      modelData.valorTotalContrato = cleanedValue ? Number(cleanedValue) : 0;
+    }
+
     modelData.proyecto = { id: this.model.proyecto };
     modelData.persona = { id: this.model.persona };
     modelData.tipoContrato = { id: this.model.tipoContrato };
     modelData.periodicidadPago = { id: this.model.periodicidadPago };
+
     // Si no hay archivos a subir o no es un campo file, guardamos directo
     this.saveEntity(modelData);
   }

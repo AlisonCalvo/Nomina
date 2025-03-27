@@ -132,6 +132,16 @@ export class CrearDocumentoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength: 4,
+          maxLength: 100
+        },
+        validation: {
+          messages: {
+            required: 'El nombre es obligatorio.',
+            pattern: 'El nombre solo puede contener letras.',
+            minlength: 'El nombre debe tener al menos 4 caracteres.',
           }
         }
       },
@@ -148,7 +158,15 @@ export class CrearDocumentoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          rows: 5
+          rows: 5,
+          minLength: 4,
+          maxLength: 250
+        },
+        validation: {
+          messages: {
+            required: 'La descripción es obligatoria.',
+            minlength: 'La descripción debe tener al menos 4 caracteres.',
+          }
         }
       },
       {
@@ -196,6 +214,11 @@ export class CrearDocumentoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
+        },
+        validation: {
+          messages: {
+            required: 'El formato es obligatorio.'
+          }
         }
       },
       {
@@ -211,6 +234,11 @@ export class CrearDocumentoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
+        },
+        validation: {
+          messages: {
+            required: 'La etiqueta es obligatoria.'
+          }
         }
       },
       {
@@ -225,6 +253,11 @@ export class CrearDocumentoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La ruta es obligatoria.'
           }
         }
       },
@@ -244,6 +277,11 @@ export class CrearDocumentoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'nombre'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar una persona.'
+          }
         }
       },
       {
@@ -262,6 +300,11 @@ export class CrearDocumentoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'numeroContrato'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar un contrato.'
+          }
         }
       }
     ];
