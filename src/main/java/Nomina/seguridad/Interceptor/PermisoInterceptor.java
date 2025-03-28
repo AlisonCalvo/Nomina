@@ -50,7 +50,7 @@ public class PermisoInterceptor implements HandlerInterceptor {
         }
 
 
-        if (requestURI.matches("^/api/email-config$")) {
+        if (requestURI.matches("^/api/email-config$") || requestURI.matches("^/api/email-config/[^/]+$")) {
             return true; // Permitir sin validaciones
         }
 

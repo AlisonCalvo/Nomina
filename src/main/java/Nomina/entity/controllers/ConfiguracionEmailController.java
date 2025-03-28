@@ -28,4 +28,16 @@ public class ConfiguracionEmailController {
         ConfiguracionEmail updated = configuracionEmailService.updateConfiguration(config);
         return ResponseEntity.ok(updated);
     }
+
+    @PostMapping("/test")
+    public ResponseEntity<String> testConfiguration(@RequestBody ConfiguracionEmail config) {
+        try {
+            configuracionEmailService.testSMTPConnection(config);
+            return ResponseEntity.ok("Conexión SMTP exitosa. La configuración es válida.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al conectar al servidor SMTP: " + e.getMessage());
+        }
+    }
+
+
 }

@@ -100,6 +100,7 @@ import { LeerTipoDocumentoComponent } from './pages/tipodocumento/leer-tipodocum
 import { ActualizarTipoDocumentoComponent } from './pages/tipodocumento/actualizar-tipodocumento/actualizar-tipodocumento.component';
 //@ts-ignore
 import { EliminarTipoDocumentoComponent } from './pages/tipodocumento/eliminar-tipodocumento/eliminar-tipodocumento.component';
+import {ConfiguracionComponent} from "./pages/configuracion/configuracion.component";
 
 export const routes: Routes = [
   {
@@ -220,6 +221,7 @@ export const routes: Routes = [
       { path: 'usuarios', component: GestionUsuariosComponent, canActivate: [AuthGuard] },
       { path: 'roles', component: GestionRolesComponent, canActivate: [AuthGuard] },
       { path: 'reportes', component: ReporteComponent, canActivate: [AuthGuard] },
+      { path: 'configuracion', component: ConfiguracionComponent, canActivate: [AuthGuard] },
     ],
   },
   {

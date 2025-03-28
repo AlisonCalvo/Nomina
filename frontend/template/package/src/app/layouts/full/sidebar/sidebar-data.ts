@@ -145,6 +145,14 @@ export const navItems: NavItem[] = [
     route: '/roles',
   },
   {
+    navCap: 'Configuracion SMTP',
+  },
+  {
+    displayName: 'Configuracion',
+    iconName: 'list',
+    route: '/configuracion',
+  },
+  {
     navCap: 'Generador de Reportes',
   },
   {
