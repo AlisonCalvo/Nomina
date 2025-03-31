@@ -244,10 +244,10 @@ export class GestionUsuariosComponent implements OnInit {
       text: 'Esta acción eliminará al usuario permanentemente.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
+      cancelButtonColor: 'var(--colorError)',
       confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: 'var(--colorPrimario)',
+      cancelButtonText: 'Cancelar',
     }).then((result) => {
       if (result.isConfirmed) {
         // Llama al servicio para eliminar al usuario
@@ -257,7 +257,8 @@ export class GestionUsuariosComponent implements OnInit {
               title: 'Usuario eliminado',
               text: 'El usuario se ha eliminado correctamente.',
               icon: 'success',
-              confirmButtonText: 'OK'
+              confirmButtonText: 'OK',
+              confirmButtonColor: 'var(--colorPrimario)',
             });
             // Actualiza la tabla de usuarios después de eliminar
             this.actualizarTabla();
@@ -268,7 +269,8 @@ export class GestionUsuariosComponent implements OnInit {
               title: 'Error',
               text: 'No se pudo eliminar al usuario. Inténtalo de nuevo más tarde.',
               icon: 'error',
-              confirmButtonText: 'Cerrar'
+              confirmButtonText: 'Cerrar',
+              confirmButtonColor: 'var(--colorPrimario)',
             });
           }
         );

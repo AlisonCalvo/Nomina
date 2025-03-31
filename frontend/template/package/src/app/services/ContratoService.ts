@@ -128,5 +128,18 @@ export class ContratoService {
     return this.httpClient.get<Contrato[]>(url, { headers });
   }
 
+  /**
+   * metodo para obtener el detalle del contrato con el número de cuentas de cobro asociadas
+   * y el número máximo de pagos permitidos para asi validar que no se creen mas cuentas de las pactadass
+   * @param contratoId
+   * @return Observable con los detalles del contrato y la cuenta de cobro asociada
+   */
+  getDetalleContrato(contratoId: number): Observable<any> {
+    const url = `${this.baseUrl}/contratos/${contratoId}/detalle`;
+    const headers = new HttpHeaders().set('Accion', 'findAll').set('Objeto', 'Contrato');
+    return this.httpClient.get<any>(url, { headers });
+  }
+
+
 
 }

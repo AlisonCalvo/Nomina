@@ -91,6 +91,7 @@ export class AppSideRegisterComponent {
             text: 'El usuario se ha registrado correctamente.',
             icon: 'success',
             confirmButtonText: 'OK',
+            confirmButtonColor: 'var(--colorPrimario)',
           }).then(() => {
             // Actualizar la página después de cerrar la alerta
             window.location.reload();
@@ -105,6 +106,7 @@ export class AppSideRegisterComponent {
             text: error.error.backedMessage || 'Error al registrar. Por favor, intenta nuevamente.',
             icon: 'error',
             confirmButtonText: 'Cerrar',
+            confirmButtonColor: 'var(--colorPrimario)',
           });
         }
       );
@@ -115,6 +117,7 @@ export class AppSideRegisterComponent {
         text: 'Por favor, revisa los campos del formulario.',
         icon: 'warning',
         confirmButtonText: 'Entendido',
+        confirmButtonColor: 'var(--colorPrimario)',
       });
     }
   }

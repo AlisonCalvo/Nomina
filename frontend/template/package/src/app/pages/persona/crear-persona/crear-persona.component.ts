@@ -1,40 +1,40 @@
-import { Component, OnInit,Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
-import { FormlyMaterialModule } from '@ngx-formly/material';
-import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../services/auth-service.service';
-import { FormlyMatDatepickerModule } from '@ngx-formly/material/datepicker';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTabsModule } from '@angular/material/tabs';
-import { DateTime } from 'luxon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { PersonaService } from '../../../services/PersonaService';
-import { ProyectoService } from '../../../services/ProyectoService';
-import { TipoDocumentoService } from '../../../services/TipoDocumentoService';
+import {Component, OnInit, Inject} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import {FormGroup, ReactiveFormsModule, AbstractControl } from '@angular/forms';
+import {FormlyFieldConfig, FormlyModule} from '@ngx-formly/core';
+import {FormlyMaterialModule} from '@ngx-formly/material';
+import {Router} from '@angular/router';
+import {CommonModule} from '@angular/common';
+import {AuthService} from '../../../services/auth-service.service';
+import {FormlyMatDatepickerModule} from '@ngx-formly/material/datepicker';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCard, MatCardContent, MatCardModule} from '@angular/material/card';
+import {MatIcon, MatIconModule} from '@angular/material/icon';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatFormField, MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import {MatNativeDateModule} from '@angular/material/core';
+import {MatRadioModule} from '@angular/material/radio';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {MatTableModule} from '@angular/material/table';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatSortModule} from '@angular/material/sort';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatSnackBarModule, MatSnackBar} from '@angular/material/snack-bar';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatListModule} from '@angular/material/list';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatTabsModule} from '@angular/material/tabs';
+import {DateTime} from 'luxon';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {PersonaService} from '../../../services/PersonaService';
+import {ProyectoService} from '../../../services/ProyectoService';
+import {TipoDocumentoService} from '../../../services/TipoDocumentoService';
 import {PermissionService} from "../../authentication/services/PermissionService";
 
 
@@ -263,13 +263,25 @@ export class CrearPersonaComponent implements OnInit {
         type: 'datepicker',
         className: 'field-container',
         templateOptions: {
-          label: 'FechaNacimiento',
-          placeholder: 'Ingrese fechaNacimiento',
+          label: 'Fecha de Nacimiento',
+          placeholder: 'Ingrese fecha de nacimiento',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
-            'class': 'modern-input'
+            class: 'modern-input'
+          }
+        },
+        validators: {
+          edadMinima: {
+            expression: (control: AbstractControl): boolean => {
+              if (!control.value) {
+                return true;
+              }
+              const valorFecha = new Date(control.value);
+              return this.calcularEdad(valorFecha) >= 18;
+            },
+            message: 'Debe ser mayor de 18 años.',
           }
         }
       },
@@ -509,5 +521,29 @@ export class CrearPersonaComponent implements OnInit {
     });
     this.dialogRef.close(true);
     console.log('Acciones postCreate completadas.');
+  }
+
+  /**
+   * para calcular la edad de una persona, con el fin de validar en el campo
+   * de fecha de nacimiento que sea mayor de edad
+   * @param {Date} fechaNacimiento - fecha de nacimiento ingresada.
+   * @returns {number} edad calculada basada en la fecha actual.
+   */
+  calcularEdad(fechaNacimiento: Date): number {
+    // Obtener la fecha actual
+    const fechaActual = new Date();
+
+   //con esto calculamos la diferencia solo de los añps
+    let edad = fechaActual.getFullYear() - fechaNacimiento.getFullYear();
+
+    // aqui comparamos los meses tambien
+    const diferenciaMeses = fechaActual.getMonth() - fechaNacimiento.getMonth();
+
+    // se ajusta la edad si el mes actual es menor que el mes de nacimiento
+    // o si es el mismo mes pero el día actual es anterior al día de nacimiento
+    if (diferenciaMeses < 0 || (diferenciaMeses === 0 && fechaActual.getDate() < fechaNacimiento.getDate())) {
+      edad--;
+    }
+    return edad;
   }
 }

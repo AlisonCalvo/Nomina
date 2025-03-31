@@ -450,7 +450,7 @@ export class LeerCuentaCobroComponent implements OnInit {
       return defaultText;
     }
 
-    return keys.slice(0, 2).map(key => `${key}: ${value[key]}`).join(', ');
+    return keys.slice(1, 2).map(key => `Número de contrato: ${value[key]}`).join(', ');
   }
 
   getCollectionSummary(collection: any[] | null, defaultText: string = 'Sin datos'): string {

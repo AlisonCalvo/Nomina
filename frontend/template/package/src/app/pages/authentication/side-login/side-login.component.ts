@@ -39,28 +39,29 @@ import {PermissionService} from "../services/PermissionService";
 })
 export class AppSideLoginComponent  implements OnInit{
   private logoExtensions = ['png', 'jpg', 'jpeg', 'webp', 'svg']; // Extensiones en orden de preferencia
-  private logoBasePath = './assets/images/logos/logoProyecto';
-  logoSrc: string;
+  // private logoBasePath = './assets/images/logos/logoProyecto';
+  // logoSrc: string;
+  logoSrc: string = './assets/images/logos/logoProyecto.jpg';
   constructor() {
-    this.setInitialLogo();
+     // this.setInitialLogo();
   }
   ngOnInit() {}
-  private setInitialLogo() {
-    this.tryLoadLogo(0);
-  }
-  private tryLoadLogo(index: number) {
-    if (index >= this.logoExtensions.length) {
-      this.logoSrc = './assets/images/logos/logo-dark.svg'; // Logo por defecto si ninguna extensión funciona
-      return;
-    }
-    const path = `${this.logoBasePath}.${this.logoExtensions[index]}`;
-    const img = new Image();
-    img.onload = () => {
-      this.logoSrc = path; // Establece el logo si la imagen carga correctamente
-    };
-    img.onerror = () => {
-      this.tryLoadLogo(index + 1); // Intenta con la siguiente extensión si hay error
-    };
-    img.src = path;
-  }
+  // private setInitialLogo() {
+  //   this.tryLoadLogo(0);
+  // }
+  // private tryLoadLogo(index: number) {
+  //   if (index >= this.logoExtensions.length) {
+  //     this.logoSrc = './assets/images/logos/logo-dark.svg'; // Logo por defecto si ninguna extensión funciona
+  //     return;
+  //   }
+  //   const path = `${this.logoBasePath}.${this.logoExtensions[index]}`;
+  //   const img = new Image();
+  //   img.onload = () => {
+  //     this.logoSrc = path; // Establece el logo si la imagen carga correctamente
+  //   };
+  //   img.onerror = () => {
+  //     this.tryLoadLogo(index + 1); // Intenta con la siguiente extensión si hay error
+  //   };
+  //   img.src = path;
+  // }
 }

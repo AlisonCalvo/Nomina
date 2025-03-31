@@ -1,6 +1,6 @@
 import { Component, OnInit,Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {AbstractControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
@@ -32,8 +32,8 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { DateTime } from 'luxon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { CuentaCobroService } from '../../../services/CuentaCobroService';
-import { Observable, forkJoin, of, throwError } from 'rxjs';
+import {CuentaCobroDTO, CuentaCobroService} from '../../../services/CuentaCobroService';
+import {Observable, forkJoin, of, throwError, map} from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { ContratoService } from '../../../services/ContratoService';
 import { InformeService } from '../../../services/InformeService';
@@ -46,8 +46,8 @@ interface CuentaCobroModel {
   detalle: string;
   pago: boolean;
   notificacionPago: string;
-  firmaGerente: any;
-  firmaContratista: any;
+  firmaGerente: string;
+  firmaContratista: string;
   creador: string;
   contrato: any;
   informe: any;
@@ -249,7 +249,8 @@ export class CrearCuentaCobroComponent implements OnInit {
           placeholder: 'Seleccione firmaGerente',
           multiple: true,
           required: true,
-          accept: '.pdf,.doc,.xls,.ppt'
+          accept: 'image/*',
+          change: (field: FormlyFieldConfig, event: any) => this.handleImageChange(field, event, 'firmaGerente')
         }
       },
       {
@@ -260,7 +261,8 @@ export class CrearCuentaCobroComponent implements OnInit {
           placeholder: 'Seleccione firmaContratista',
           multiple: true,
           required: true,
-          accept: '.pdf,.doc,.xls,.ppt'
+          accept: 'image/*',
+          change: (field: FormlyFieldConfig, event: any) => this.handleImageChange(field, event, 'firmaContratista')
         }
       },
       {
@@ -279,6 +281,22 @@ export class CrearCuentaCobroComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'numeroContrato'
+        },
+        asyncValidators: {
+          validarNumeroCuentasCobro: {
+            expression: (control: AbstractControl): Observable<boolean> | Promise<boolean> => {
+              if (!control.value) {
+                return of(true); // Si no hay contrato seleccionado, no es necesario validar
+              }
+              return this.contratoService.getDetalleContrato(control.value).pipe(
+                map(response => {
+                  return response.numeroCuentasCobro < response.numeroPagosPermitidos;
+                }),
+                catchError(() => of(false)) // En caso de error en la llamada, supongamos que no es válido
+              );
+            },
+            message: 'No se pueden crear más cuentas de cobro para el contrato seleccionado.',
+          }
         }
       }
     ];
@@ -307,57 +325,104 @@ export class CrearCuentaCobroComponent implements OnInit {
     this.preCreate(this.model);
 
     // 2. Copiamos el modelo para no mutarlo directamente
-    const modelData = { ...this.model };
-    this.isLoading = true;
-
-    modelData.contrato = { id: this.model.contrato };
-
-    const uploadOperations: Observable<void>[] = [];
-    const fileFields: (keyof CuentaCobroModel)[] = ['firmaGerente', 'firmaContratista'];
-
-     const handleFileUpload = (field: keyof CuentaCobroModel) => {
-       const files = this.model[field];
-
-       if (Array.isArray(files) && files.length > 0) {
-         const upload$ = this.cuentaCobroService.uploadFiles(files).pipe(
-           switchMap(rutas => {
-            // @ts-ignore
-             modelData[field] = rutas.join(',');
-             return of(undefined);
-           }),
-           catchError(error => {
-             this.handleUploadError(field as string, error);
-             return throwError(error);
-           })
-         );
-         uploadOperations.push(upload$);
-       } else if (files instanceof File) {
-         const upload$ = this.cuentaCobroService.uploadFile(files).pipe(
-           switchMap(ruta => {
-            // @ts-ignore
-             modelData[field] = ruta;
-             return of(undefined);
-           }),
-           catchError(error => {
-             this.handleUploadError(field as string, error);
-             return throwError(error);
-           })
-         );
-         uploadOperations.push(upload$);
-       }
+    const modelData: CuentaCobroDTO = {
+      ...this.model,
+      fecha: this.model.fecha, // Mantenemos el Date directamente
+      contrato: { id: this.model.contrato },
+      informe: this.model.informe ? { id: this.model.informe } : null
     };
 
-     fileFields.forEach(field => handleFileUpload(field));
+    this.isLoading = true;
 
-     if (uploadOperations.length > 0) {
-       forkJoin(uploadOperations).subscribe({
-         next: () => this.saveEntity(modelData),
-         error: () => this.isLoading = false
-       });
-     } else {
-       this.saveEntity(modelData);
-       }
-     }
+    // Validar imágenes
+    if (typeof modelData.firmaGerente !== 'string' || !modelData.firmaGerente.startsWith('data:image')) {
+      this.snackBar.open('La firma del gerente debe ser una imagen válida', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      this.isLoading = false;
+      return;
+    }
+
+    if (typeof modelData.firmaContratista !== 'string' || !modelData.firmaContratista.startsWith('data:image')) {
+      this.snackBar.open('La firma del contratista debe ser una imagen válida', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      this.isLoading = false;
+      return;
+    }
+
+    this.saveEntity(modelData);
+  }
+
+  private validarImagenBase64(image: string): boolean {
+    if (typeof image !== 'string' || !image.startsWith('data:image')) {
+      this.snackBar.open('Debe cargar una imagen válida', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return false;
+    }
+    return true;
+  }
+
+  // onSubmit() {
+  //   // 1. Validaciones previas
+  //   this.preCreate(this.model);
+  //
+  //   // 2. Copiamos el modelo para no mutarlo directamente
+  //   const modelData = { ...this.model };
+  //   this.isLoading = true;
+  //
+  //   modelData.contrato = { id: this.model.contrato };
+  //
+  //   const uploadOperations: Observable<void>[] = [];
+  //   const fileFields: (keyof CuentaCobroModel)[] = ['firmaGerente', 'firmaContratista'];
+  //
+  //    const handleFileUpload = (field: keyof CuentaCobroModel) => {
+  //      const files = this.model[field];
+  //
+  //      if (Array.isArray(files) && files.length > 0) {
+  //        const upload$ = this.cuentaCobroService.uploadFiles(files).pipe(
+  //          switchMap(rutas => {
+  //           // @ts-ignore
+  //            modelData[field] = rutas.join(',');
+  //            return of(undefined);
+  //          }),
+  //          catchError(error => {
+  //            this.handleUploadError(field as string, error);
+  //            return throwError(error);
+  //          })
+  //        );
+  //        uploadOperations.push(upload$);
+  //      } else if (files instanceof File) {
+  //        const upload$ = this.cuentaCobroService.uploadFile(files).pipe(
+  //          switchMap(ruta => {
+  //           // @ts-ignore
+  //            modelData[field] = ruta;
+  //            return of(undefined);
+  //          }),
+  //          catchError(error => {
+  //            this.handleUploadError(field as string, error);
+  //            return throwError(error);
+  //          })
+  //        );
+  //        uploadOperations.push(upload$);
+  //      }
+  //   };
+  //
+  //    fileFields.forEach(field => handleFileUpload(field));
+  //
+  //    if (uploadOperations.length > 0) {
+  //      forkJoin(uploadOperations).subscribe({
+  //        next: () => this.saveEntity(modelData),
+  //        error: () => this.isLoading = false
+  //      });
+  //    } else {
+  //      this.saveEntity(modelData);
+  //      }
+  //    }
 
   private handleUploadError(field: string, error: any) {
      console.error(`Error subiendo archivos en ${field}:`, error);
@@ -411,5 +476,37 @@ export class CrearCuentaCobroComponent implements OnInit {
     });
     this.dialogRef.close(true);
     console.log('Acciones postCreate completadas.');
+  }
+
+  handleImageChange(field: FormlyFieldConfig, event: Event, fieldName: keyof CuentaCobroModel) {
+    console.log("haber si entra aqui")
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    // Validar que sea una imagen
+    if (!file.type.match('image.*')) {
+      this.snackBar.open('Solo se permiten archivos de imagen', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      if (e.target?.result) {
+        // Guardar el Base64 en el modelo
+        (this.model[fieldName] as string) = e.target.result as string;
+      }
+    };
+    reader.onerror = () => {
+      this.snackBar.open('Error al leer la imagen', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+    };
+    reader.readAsDataURL(file);
   }
 }

@@ -112,7 +112,7 @@ public class CuentaCobro implements Serializable {
      * Restricciones:
      */
     @FilePath(type = "file")
-    @Column(name="firmaGerente")
+    @Column(name="firmaGerente", columnDefinition = "TEXT")
     private String firmaGerente;
 
     /**
@@ -121,7 +121,7 @@ public class CuentaCobro implements Serializable {
      * Restricciones:
      */
     @FilePath(type = "file")
-    @Column(name="firmaContratista")
+    @Column(name="firmaContratista", columnDefinition = "TEXT")
     private String firmaContratista;
 
     /**

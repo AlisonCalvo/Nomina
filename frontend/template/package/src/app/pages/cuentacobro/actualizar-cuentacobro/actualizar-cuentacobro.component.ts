@@ -426,6 +426,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           placeholder: 'Seleccione contrato',
           required: false,
           appearance: 'outline',
+          disabled: true,
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'

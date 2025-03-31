@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {AbstractControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
@@ -386,13 +386,25 @@ export class ActualizarPersonaComponent implements OnInit {
         type: 'datepicker',
         className: 'field-container',
         templateOptions: {
-          label: 'FechaNacimiento',
-          placeholder: 'Ingrese fechaNacimiento',
+          label: 'Fecha de Nacimiento',
+          placeholder: 'Ingrese fecha de nacimiento',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
-            'class': 'modern-input'
+            class: 'modern-input'
+          }
+        },
+        validators: {
+          edadMinima: {
+            expression: (control: AbstractControl): boolean => {
+              if (!control.value) {
+                return true;
+              }
+              const valorFecha = new Date(control.value);
+              return this.calcularEdad(valorFecha) >= 18;
+            },
+            message: 'Debe ser mayor de 18 años.',
           }
         }
       },
@@ -546,4 +558,27 @@ export class ActualizarPersonaComponent implements OnInit {
     console.log('Acciones postUpdate completadas.');
   }
 
+  /**
+   * para calcular la edad de una persona, con el fin de validar en el campo
+   * de fecha de nacimiento que sea mayor de edad
+   * @param {Date} fechaNacimiento - fecha de nacimiento ingresada.
+   * @returns {number} edad calculada basada en la fecha actual.
+   */
+  calcularEdad(fechaNacimiento: Date): number {
+    // Obtener la fecha actual
+    const fechaActual = new Date();
+
+    //con esto calculamos la diferencia solo de los añps
+    let edad = fechaActual.getFullYear() - fechaNacimiento.getFullYear();
+
+    // aqui comparamos los meses tambien
+    const diferenciaMeses = fechaActual.getMonth() - fechaNacimiento.getMonth();
+
+    // se ajusta la edad si el mes actual es menor que el mes de nacimiento
+    // o si es el mismo mes pero el día actual es anterior al día de nacimiento
+    if (diferenciaMeses < 0 || (diferenciaMeses === 0 && fechaActual.getDate() < fechaNacimiento.getDate())) {
+      edad--;
+    }
+    return edad;
+  }
 }

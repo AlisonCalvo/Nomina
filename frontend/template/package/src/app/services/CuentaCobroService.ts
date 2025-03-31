@@ -100,7 +100,11 @@ export class CuentaCobroService {
   save(dto: CuentaCobroDTO): Observable<CuentaCobro> {
     const url = `${this.baseUrl}/cuentacobros`;
     const headers = new HttpHeaders().set('Accion', 'save').set('Objeto', 'CuentaCobro');
-    return this.httpClient.post<CuentaCobro>(url, dto, {headers});
+    const body = {
+      ...dto,
+      fecha: dto.fecha.toISOString().split('T')[0] // Formato YYYY-MM-DD
+    };
+    return this.httpClient.post<CuentaCobro>(url, body, {headers});
   }
 
   // Método para actualizar un registro existente
