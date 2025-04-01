@@ -37,6 +37,7 @@ import { InformeService } from '../../../services/InformeService';
 import { CuentaCobroService } from '../../../services/CuentaCobroService';
 import { ProyectoService } from '../../../services/ProyectoService';
 import { ContratoService } from '../../../services/ContratoService';
+import {AuthService} from "../../../services/auth-service.service";
 
 interface InformeModel {
   /** id de la entidad */
@@ -129,6 +130,7 @@ export class ActualizarInformeComponent implements OnInit {
    * @param contratoService Servicio para gestionar Contrato
    * @param router Servicio de enrutamiento
    * @param snackBar Servicio para notificaciones
+   * @param authService
    * @param data Datos recibidos por el diálogo
    * @param dialogRef Referencia al diálogo
    */
@@ -139,6 +141,7 @@ export class ActualizarInformeComponent implements OnInit {
     private contratoService: ContratoService,
     private router: Router,
     private snackBar: MatSnackBar,
+    private authService: AuthService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<ActualizarInformeComponent>
   ) {}
@@ -146,9 +149,7 @@ export class ActualizarInformeComponent implements OnInit {
   /** Inicialización del componente */
   ngOnInit() {
     this.loadInformes();
-    this.loadCuentaCobroOptions();
     this.loadProyectoOptions();
-    this.loadContratoOptions();
 
     // Verificamos si llega data a través del diálogo (registro para editar)
     if (this.data) {
@@ -198,14 +199,22 @@ export class ActualizarInformeComponent implements OnInit {
    * Carga las opciones para la relación CuentaCobro
    * @private
    */
-  private loadCuentaCobroOptions() {
-    this.cuentaCobroService.findAll().subscribe(
-      data => {
-        this.cuentaCobros = data;
-        this.updateFieldOptions('cuentaCobro', data);
-      },
-      error => console.error('Error al cargar cuentaCobro:', error)
-    );
+  private loadCuentaCobroOptions(id:number) {
+    let username: String = this.authService.getUsername();
+    if (username) {
+      // Usar un método específico en el servicio de contratos para obtener contratos por persona
+      this.cuentaCobroService.obtenerCuentasCobroPorContrato(username,id).subscribe(
+        data => {
+          const field = this.fields.find(f => f.key === 'cuentaCobro');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar proyectos de la persona:', error)
+      );
+    } else {
+      console.error('No se pudo obtener el ID de la persona');
+    }
   }
 
   /**
@@ -213,27 +222,47 @@ export class ActualizarInformeComponent implements OnInit {
    * @private
    */
   private loadProyectoOptions() {
-    this.proyectoService.findAll().subscribe(
-      data => {
-        this.proyectos = data;
-        this.updateFieldOptions('proyecto', data);
-      },
-      error => console.error('Error al cargar proyecto:', error)
-    );
+// Obtener el ID de la persona desde el token
+    const personaId = this.authService.getPersonaId();
+
+    if (personaId) {
+      // Usar un método específico en el servicio de contratos para obtener contratos por persona
+      this.proyectoService.findVisibles(personaId).subscribe(
+        data => {
+          const field = this.fields.find(f => f.key === 'proyecto');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar proyectos de la persona:', error)
+      );
+    } else {
+      console.error('No se pudo obtener el ID de la persona');
+    }
   }
 
   /**
    * Carga las opciones para la relación Contrato
    * @private
    */
-  private loadContratoOptions() {
-    this.contratoService.findAll().subscribe(
-      data => {
-        this.contratos = data;
-        this.updateFieldOptions('contrato', data);
-      },
-      error => console.error('Error al cargar contrato:', error)
-    );
+  private loadContratoOptions(proyectoId: number) {
+    // Obtener el ID de la persona desde el token
+    const personaId = this.authService.getPersonaId();
+
+    if (personaId) {
+      // Llamamos al servicio con personaId y proyectoId
+      this.contratoService.obtenerContratosPorProyecto(personaId, proyectoId).subscribe(
+        data => {
+          const field = this.fields.find(f => f.key === 'contrato');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar contratos de la persona y proyecto:', error)
+      );
+    } else {
+      console.error('No se pudo obtener el ID de la persona');
+    }
   }
 
   /**
@@ -285,6 +314,11 @@ export class ActualizarInformeComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
+        },
+        validation: {
+          messages: {
+            required: 'La fecha del informe es obligatoria.'
+          }
         }
       },
       {
@@ -299,6 +333,14 @@ export class ActualizarInformeComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          minLength:3,
+          maxLength: 100
+        },
+        validation: {
+          messages: {
+            required: 'El nombre del cliente es obligatorio.',
+            minLength: 'El nombre del cliente debe tener al menos 3 caracteres.'
           }
         }
       },
@@ -314,6 +356,16 @@ export class ActualizarInformeComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          minLength:3,
+          maxLength:50,
+          pattern:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/
+        },
+        validation: {
+          messages: {
+            required: 'El cargo es obligatorio.',
+            minLength: 'El cargo debe tener al menos 3 caracteres.',
+            pattern: 'El cargo solo puede contener letras y espacios.'
           }
         }
       },
@@ -325,7 +377,7 @@ export class ActualizarInformeComponent implements OnInit {
           placeholder: 'Seleccione informePDF',
           multiple: true,
           required: true,
-          accept: '.pdf,.doc,.docx'
+          accept: '.pdf,.doc,.xls,.ppt'
         }
       },
       {
@@ -345,31 +397,19 @@ export class ActualizarInformeComponent implements OnInit {
         }
       },
       {
-        key: 'cuentaCobro',
-        type: 'select',
-        className: 'field-container',
-        templateOptions: {
-          label: 'CuentaCobro',
-          placeholder: 'Seleccione cuentaCobro',
-          required: false,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          },
-          options: [],
-          valueProp: 'id',
-          labelProp: 'numeroCuenta'
-        }
-      },
-      {
         key: 'proyecto',
         type: 'select',
         className: 'field-container',
         templateOptions: {
           label: 'Proyecto',
+          change: (field, event) => {
+            // Obtener el valor del proyecto seleccionado
+            const value: number = field.formControl?.value;
+            this.loadContratoOptions(value);
+            console.log('Proyecto seleccionado:', value);
+          },
           placeholder: 'Seleccione proyecto',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -378,6 +418,11 @@ export class ActualizarInformeComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'nombre'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar un proyecto.'
+          }
         }
       },
       {
@@ -386,8 +431,14 @@ export class ActualizarInformeComponent implements OnInit {
         className: 'field-container',
         templateOptions: {
           label: 'Contrato',
+          change: (field, event) => {
+            // Obtener el valor del contrato seleccionado
+            const value: number = field.formControl?.value;
+            this.loadCuentaCobroOptions(value);
+            console.log('contrato seleccionado:', value);
+          },
           placeholder: 'Seleccione contrato',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -396,6 +447,34 @@ export class ActualizarInformeComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'numeroContrato'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar un contrato.'
+          }
+        }
+      },
+      {
+        key: 'cuentaCobro',
+        type: 'select',
+        className: 'field-container',
+        templateOptions: {
+          label: 'CuentaCobro',
+          placeholder: 'Seleccione cuentaCobro',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          options: [],
+          valueProp: 'id',
+          labelProp: 'numeroCuenta'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar una cuenta de cobro.'
+          }
         }
       }
     ];

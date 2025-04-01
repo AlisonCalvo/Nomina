@@ -34,6 +34,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DocumentoService } from '../../../services/DocumentoService';
 import { PersonaService } from '../../../services/PersonaService';
 import { ContratoService } from '../../../services/ContratoService';
+import {AuthService} from "../../../services/auth-service.service";
 
 interface DocumentoModel {
   /** id de la entidad */
@@ -125,6 +126,7 @@ export class ActualizarDocumentoComponent implements OnInit {
    * @param contratoService Servicio para gestionar Contrato
    * @param router Servicio de enrutamiento
    * @param snackBar Servicio para notificaciones
+   * @param authService
    * @param data Datos recibidos por el diálogo
    * @param dialogRef Referencia al diálogo
    */
@@ -134,6 +136,7 @@ export class ActualizarDocumentoComponent implements OnInit {
     private contratoService: ContratoService,
     private router: Router,
     private snackBar: MatSnackBar,
+    private authService: AuthService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<ActualizarDocumentoComponent>
   ) {}
@@ -199,8 +202,10 @@ export class ActualizarDocumentoComponent implements OnInit {
   private loadPersonaOptions() {
     this.personaService.findAll().subscribe(
       data => {
-        this.personas = data;
-        this.updateFieldOptions('persona', data);
+        const field = this.fields.find(f => f.key === 'persona');
+        if (field && field.templateOptions) {
+          field.templateOptions.options = data;
+        }
       },
       error => console.error('Error al cargar persona:', error)
     );
@@ -213,8 +218,10 @@ export class ActualizarDocumentoComponent implements OnInit {
   private loadContratoOptions() {
     this.contratoService.findAll().subscribe(
       data => {
-        this.contratos = data;
-        this.updateFieldOptions('contrato', data);
+        const field = this.fields.find(f => f.key === 'contrato');
+        if (field && field.templateOptions) {
+          field.templateOptions.options = data;
+        }
       },
       error => console.error('Error al cargar contrato:', error)
     );
@@ -264,6 +271,16 @@ export class ActualizarDocumentoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength: 4,
+          maxLength: 100
+        },
+        validation: {
+          messages: {
+            required: 'El nombre es obligatorio.',
+            pattern: 'El nombre solo puede contener letras.',
+            minlength: 'El nombre debe tener al menos 4 caracteres.',
           }
         }
       },
@@ -280,7 +297,15 @@ export class ActualizarDocumentoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          rows: 5
+          rows: 5,
+          minLength: 4,
+          maxLength: 250
+        },
+        validation: {
+          messages: {
+            required: 'La descripción es obligatoria.',
+            minlength: 'La descripción debe tener al menos 4 caracteres.',
+          }
         }
       },
       {
@@ -297,8 +322,7 @@ export class ActualizarDocumentoComponent implements OnInit {
             'class': 'modern-input'
           },
           disabled: true
-        },
-
+        }
       },
       {
         key: 'estado',
@@ -329,6 +353,11 @@ export class ActualizarDocumentoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
+        },
+        validation: {
+          messages: {
+            required: 'El formato es obligatorio.'
+          }
         }
       },
       {
@@ -344,6 +373,11 @@ export class ActualizarDocumentoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
+        },
+        validation: {
+          messages: {
+            required: 'La etiqueta es obligatoria.'
+          }
         }
       },
       {
@@ -358,6 +392,11 @@ export class ActualizarDocumentoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La ruta es obligatoria.'
           }
         }
       },
@@ -384,7 +423,7 @@ export class ActualizarDocumentoComponent implements OnInit {
         templateOptions: {
           label: 'Persona',
           placeholder: 'Seleccione persona',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -393,6 +432,11 @@ export class ActualizarDocumentoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'nombre'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar una persona.'
+          }
         }
       },
       {
@@ -402,7 +446,7 @@ export class ActualizarDocumentoComponent implements OnInit {
         templateOptions: {
           label: 'Contrato',
           placeholder: 'Seleccione contrato',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -411,6 +455,11 @@ export class ActualizarDocumentoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'numeroContrato'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar un contrato.'
+          }
         }
       }
     ];

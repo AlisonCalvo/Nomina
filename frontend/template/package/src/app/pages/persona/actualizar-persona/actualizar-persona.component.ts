@@ -34,6 +34,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PersonaService } from '../../../services/PersonaService';
 import { ProyectoService } from '../../../services/ProyectoService';
 import { TipoDocumentoService } from '../../../services/TipoDocumentoService';
+import {AuthService} from "../../../services/auth-service.service";
+import {PermissionService} from "../../authentication/services/PermissionService";
 
 interface PersonaModel {
   /** id de la entidad */
@@ -62,6 +64,7 @@ interface PersonaModel {
   proyecto: any;
   /** tipoDocumento de la entidad */
   tipoDocumento: any;
+  tipoPersona: any;
 }
 
 /**
@@ -115,6 +118,8 @@ export class ActualizarPersonaComponent implements OnInit {
   proyectos: any[] = [];
   /** Lista de tipoDocumento disponibles */
   tipoDocumentos: any[] = [];
+  /** Lista de tipoPersona disponibles */
+  tipoPersona: any[] = [];
   /** Entidad seleccionada para actualizar */
   selectedPersona: any = null;
   form = new FormGroup({});
@@ -129,6 +134,8 @@ export class ActualizarPersonaComponent implements OnInit {
    * @param tipoDocumentoService Servicio para gestionar TipoDocumento
    * @param router Servicio de enrutamiento
    * @param snackBar Servicio para notificaciones
+   * @param authService
+   * @param permissionService
    * @param data Datos recibidos por el diálogo
    * @param dialogRef Referencia al diálogo
    */
@@ -138,9 +145,13 @@ export class ActualizarPersonaComponent implements OnInit {
     private tipoDocumentoService: TipoDocumentoService,
     private router: Router,
     private snackBar: MatSnackBar,
+    private authService: AuthService,
+    private permissionService: PermissionService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<ActualizarPersonaComponent>
   ) {}
+
+  rolesMap: { [key: string]: number } = {};
 
   /** Inicialización del componente */
   ngOnInit() {
@@ -154,6 +165,7 @@ export class ActualizarPersonaComponent implements OnInit {
         this.selectedPersona = { ...this.data };
         // Inicializar modelo con los datos recibidos
         this.model = {
+          tipoPersona: this.data.tipoPersona,
           id: this.data.id,
           nombre: this.data.nombre,
           correo: this.data.correo,
@@ -171,6 +183,7 @@ export class ActualizarPersonaComponent implements OnInit {
 
         // Copia del modelo original para detectar cambios
         this.originalModel = {
+          tipoPersona: this.data.tipoPersona,
           id: this.data.id,
           nombre: this.data.nombre,
           correo: this.data.correo,
@@ -261,6 +274,26 @@ export class ActualizarPersonaComponent implements OnInit {
   generateFormFields() {
     this.fields = [
       {
+        key: 'tipoPersona',
+        type: 'select',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Tipo de Persona',
+          placeholder: 'Seleccione el tipo',
+          required: true,
+          options: [
+            {value: 'GERENTE', label: 'Gerente'},
+            {value: 'CONTRATISTA', label: 'Contratista'},
+            {value: 'CONTADOR', label: 'Contador'},
+          ],
+        },
+        validation: {
+          messages: {
+            required: 'El tipo de persona es obligatorio.'
+          }
+        }
+      },
+      {
         key: 'nombre',
         type: 'input',
         className: 'field-container',
@@ -272,6 +305,16 @@ export class ActualizarPersonaComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength: 4,
+          maxLength: 100
+        },
+        validation: {
+          messages: {
+            required: 'El nombre es obligatorio.',
+            pattern: 'El nombre solo puede contener letras.',
+            minlength: 'El nombre debe tener al menos 4 caracteres.',
           }
         }
       },
@@ -290,6 +333,35 @@ export class ActualizarPersonaComponent implements OnInit {
           },
           pattern: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
           patternError: 'El correo debe tener un formato válido (ejemplo: usuario@dominio.com)'
+        },
+        validation: {
+          messages: {
+            required: 'El correo es obligatorio.',
+            pattern: 'El correo debe tener un formato válido (ejemplo: usuario@dominio.com)'
+          }
+        }
+      },
+      {
+        key: 'tipoDocumento',
+        type: 'select',
+        className: 'field-container',
+        templateOptions: {
+          label: 'TipoDocumento',
+          placeholder: 'Seleccione tipoDocumento',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          options: [],
+          valueProp: 'id',
+          labelProp: 'nombreTipoDocumento'
+        },
+        validation: {
+          messages: {
+            required: 'El tipo de documento es obligatorio.'
+          }
         }
       },
       {
@@ -306,26 +378,117 @@ export class ActualizarPersonaComponent implements OnInit {
             class: 'modern-input'
           },
           pattern: /^[0-9]*$/,
-          maxLength: 20
+          maxLength: 20,
+          minLength: 5
         },
         validation: {
           messages: {
-            pattern: 'Solo se permiten números en este campo.'
+            required: 'El número de documento es obligatorio.',
+            pattern: 'Solo se permiten números en este campo.',
+            minlength: 'El número de documento debe tener al menos 5 caracteres.',
           }
         }
       },
       {
-        key: 'tituloProfesional',
-        type: 'input',
+        key: 'fechaExpedicion',
+        type: 'datepicker',
         className: 'field-container',
         templateOptions: {
-          label: 'TituloProfesional',
-          placeholder: 'Ingrese tituloProfesional',
+          label: 'Fecha Expedicion',
+          placeholder: 'Ingrese fecha de expedición',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validators: {
+          validation: [
+            (control: { value: any; }) => {
+              const value = control.value;
+              if (!value) return null;
+
+              const selectedDate = new Date(value);
+              const today = new Date();
+              const minValidDate = new Date(1900, 0, 1);
+              const maxValidDate = today;
+
+              // Verifica si la fecha es válida y está dentro de un rango razonable
+              if (isNaN(selectedDate.getTime())) {
+                return { invalidDate: true };
+              }
+
+              if (selectedDate < minValidDate || selectedDate > maxValidDate) {
+                return { dateOutOfRange: true };
+              }
+
+              return null;
+            }
+          ]
+        },
+        validation: {
+          messages: {
+            required: 'La fecha de expedición es obligatoria.',
+            invalidDate: 'La fecha de expedición no es válida.',
+            dateOutOfRange: 'La fecha de expedición debe estar entre 1900 y la fecha actual.'
+          }
+        }
+      },
+      {
+        key: 'fechaNacimiento',
+        type: 'datepicker',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Fecha Nacimiento',
+          placeholder: 'Ingrese fecha de nacimiento',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          }
+        },
+        validators: {
+          validation: [
+            (control: { value: any; }) => {
+              const value = control.value;
+              if (!value) return null;
+
+              const birthDate = new Date(value);
+              const today = new Date();
+              const minValidDate = new Date(1900, 0, 1);
+              const eighteenYearsAgo = new Date(
+                today.getFullYear() - 18,
+                today.getMonth(),
+                today.getDate()
+              );
+
+              //Comprobar si la fecha es válida
+              if (isNaN(birthDate.getTime())) {
+                return { invalidDate: true };
+              }
+
+              //Consultar rango de fechas
+              if (birthDate < minValidDate || birthDate > today) {
+                return { dateOutOfRange: true };
+              }
+
+              // Verificar edad (debe tener 18 años o más)
+              if (birthDate > eighteenYearsAgo) {
+                return { underAge: true };
+              }
+
+              return null;
+            }
+          ]
+        },
+        validation: {
+          messages: {
+            required: 'La fecha de nacimiento es obligatoria.',
+            invalidDate: 'La fecha de nacimiento no es válida.',
+            dateOutOfRange: 'La fecha de nacimiento debe estar entre 1900 y la fecha actual.',
+            underAge: 'Debe ser mayor de 18 años para registrarse.'
           }
         }
       },
@@ -341,6 +504,14 @@ export class ActualizarPersonaComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          minLength: 5,
+          maxLength: 200
+        },
+        validation: {
+          messages: {
+            required: 'La dirección es obligatoria.',
+            minlength: 'La dirección debe tener al menos 5 caracteres.',
           }
         }
       },
@@ -358,43 +529,38 @@ export class ActualizarPersonaComponent implements OnInit {
             class: 'modern-input'
           },
           pattern: /^[0-9]*$/,
+          minLength: 5,
+          maxLength: 20
+        },
+        validation: {
+          messages: {
+            required: 'El teléfono es obligatorio.',
+            pattern: 'Solo se permiten números en este campo.',
+            minlength: 'El teléfono debe tener al menos 5 dígitos.',
+          }
+        }
+      },
+      {
+        key: 'telefonoAdicional',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Teléfono Adicional',
+          placeholder: 'Ingrese teléfono adicional',
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          pattern: /^[0-9]*$/,
           maxLength: 20
         },
         validation: {
           messages: {
             pattern: 'Solo se permiten números en este campo.'
           }
-        }
-      },
-      {
-        key: 'fechaExpedicion',
-        type: 'datepicker',
-        className: 'field-container',
-        templateOptions: {
-          label: 'FechaExpedicion',
-          placeholder: 'Ingrese fechaExpedicion',
-          required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          }
-        }
-      },
-      {
-        key: 'fechaNacimiento',
-        type: 'datepicker',
-        className: 'field-container',
-        templateOptions: {
-          label: 'FechaNacimiento',
-          placeholder: 'Ingrese fechaNacimiento',
-          required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          }
-        }
+        },
+        hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA'
       },
       {
         key: 'nacionalidad',
@@ -408,8 +574,97 @@ export class ActualizarPersonaComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength: 3,
+          maxLength: 50
+        },
+        validation: {
+          messages: {
+            required: 'La nacionalidad es obligatoria.',
+            pattern: 'La nacionalidad solo puede contener letras.',
+            minlength: 'La nacionalidad debe tener al menos 3 caracteres.',
           }
         }
+      },
+      {
+        key: 'tituloProfesional',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Título Profesional',
+          placeholder: 'Ingrese título profesional',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength: 5,
+          maxLength: 100
+        },
+        validation: {
+          messages: {
+            required: 'El título profesional es obligatorio.',
+            pattern: 'El título profesional solo puede contener letras.',
+            minlength: 'El título profesional debe tener al menos 5 caracteres.',
+          }
+        }
+      },
+      {
+        key: 'experienciaProfesional',
+        type: 'textarea',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Experiencia Profesional',
+          placeholder: 'Ingrese experiencia profesional',
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          rows: 5,
+          minLength: 5,
+          maxLength: 250
+        },
+        validation: {
+          messages: {
+            minlength: 'La experiencia profesional debe tener al menos 5 caracteres.',
+          }
+        },
+        hideExpression: (model) => model.tipoPersona !== 'GERENTE' && model.tipoPersona !== 'CONTRATISTA'
+      },
+      {
+        key: 'numeroTarjetaProfesional',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Número de Tarjeta Profesional',
+          placeholder: 'Ingrese número de tarjeta',
+          appearance: 'outline',
+          floatLabel: 'always',
+          minLength: 5,
+          maxLength: 50
+        },
+        validation: {
+          messages: {
+            minlength: 'El número de tarjeta profesional debe tener al menos 5 caracteres.',
+          }
+        },
+        hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA' && model.tipoPersona !== 'CONTADOR'
+      },
+      {
+        key: 'firmaDigital',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'firmaDigital',
+          placeholder: 'Ingrese firmaDigital',
+          appearance: 'outline',
+          floatLabel: 'always'
+        },
+        hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA'
       },
       {
         key: 'creador',
@@ -427,24 +682,6 @@ export class ActualizarPersonaComponent implements OnInit {
           }
         }
       },
-      {
-        key: 'tipoDocumento',
-        type: 'select',
-        className: 'field-container',
-        templateOptions: {
-          label: 'TipoDocumento',
-          placeholder: 'Seleccione tipoDocumento',
-          required: false,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          },
-          options: [],
-          valueProp: 'id',
-          labelProp: 'nombreTipoDocumento'
-        }
-      }
     ];
   }
 

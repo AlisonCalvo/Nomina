@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import {AbstractControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {AbstractControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
@@ -33,6 +33,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProyectoService } from '../../../services/ProyectoService';
 import { PersonaService } from '../../../services/PersonaService';
+import {distinctUntilChanged, map} from "rxjs";
 
 interface ProyectoModel {
   /** id de la entidad */
@@ -252,16 +253,26 @@ export class ActualizarProyectoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength: 3,
+          maxLength: 50
+        },
+        validation: {
+          messages: {
+            required: 'El nombre es obligatorio.',
+            pattern: 'El nombre solo puede contener letras.',
+            minlength: 'El nombre debe tener al menos 3 caracteres.',
           }
         }
       },
       {
         key: 'valorContrato',
-        type: 'number',
+        type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'ValorContrato',
-          placeholder: 'Ingrese valorContrato',
+          label: 'Valor del Contrato',
+          placeholder: 'Ingrese valor del contrato',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
@@ -269,8 +280,44 @@ export class ActualizarProyectoComponent implements OnInit {
             'class': 'modern-input'
           },
           min: 0,
-          max: 9007199254740991,
-          step: 1
+          max: 9007199254740991
+        },
+        validators: {
+          validation: [Validators.required, Validators.min(0)]
+        },
+        validation: {
+          messages: {
+            required: 'El valor del contrato es obligatorio.',
+            min: 'El valor del contrato debe ser mayor o igual a 0.'
+          }
+        },
+        hooks: {
+          onInit: (field: FormlyFieldConfig) => {
+            field.formControl?.valueChanges
+              .pipe(
+                distinctUntilChanged(),
+                map(value => {
+                  // Ensure value is a string
+                  const stringValue = String(value);
+
+                  // Eliminar caracteres no numéricos
+                  const numericValue = stringValue.replace(/[^\d]/g, '');
+
+                  // Formatear como moneda colombiana si hay valor
+                  return numericValue
+                    ? new Intl.NumberFormat('es-CO', {
+                      style: 'currency',
+                      currency: 'COP',
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0
+                    }).format(Number(numericValue))
+                    : '';
+                })
+              )
+              .subscribe(formattedValue => {
+                field.formControl?.setValue(formattedValue, { emitEvent: false });
+              });
+          }
         }
       },
       {
@@ -278,13 +325,21 @@ export class ActualizarProyectoComponent implements OnInit {
         type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'TiempoContractual',
-          placeholder: 'Ingrese tiempoContractual',
+          label: 'Tiempo Contractual',
+          placeholder: 'Ingrese tiempo contractual',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          minLength: 5,
+          maxLength: 250
+        },
+        validation: {
+          messages: {
+            required: 'El tiempo contractual es obligatorio.',
+            minlength: 'El tiempo contractual debe tener al menos 5 caracteres.'
           }
         }
       },
@@ -293,15 +348,23 @@ export class ActualizarProyectoComponent implements OnInit {
         type: 'textarea',
         className: 'field-container',
         templateOptions: {
-          label: 'ObjetoContractual',
-          placeholder: 'Ingrese objetoContractual',
+          label: 'Objeto Contractual',
+          placeholder: 'Ingrese objeto contractual',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
           },
-          rows: 5
+          rows: 5,
+          minLength: 5,
+          maxLength: 250
+        },
+        validation: {
+          messages: {
+            required: 'El objeto contractual es obligatorio.',
+            minlength: 'El objeto contractual debe tener al menos 5 caracteres.'
+          }
         }
       },
       {
@@ -309,15 +372,23 @@ export class ActualizarProyectoComponent implements OnInit {
         type: 'textarea',
         className: 'field-container',
         templateOptions: {
-          label: 'AlcanceContractual',
-          placeholder: 'Ingrese alcanceContractual',
+          label: 'Alcance Contractual',
+          placeholder: 'Ingrese alcance contractual',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
           },
-          rows: 5
+          rows: 5,
+          minLength: 5,
+          maxLength: 250
+        },
+        validation: {
+          messages: {
+            required: 'El alcance contractual es obligatorio.',
+            minlength: 'El alcance contractual debe tener al menos 5 caracteres.',
+          }
         }
       },
       {
@@ -334,6 +405,11 @@ export class ActualizarProyectoComponent implements OnInit {
             'class': 'modern-input'
           },
           options: [{ value: true, label: 'En curso' }, { value: false, label: 'Finalizado' }]
+        },
+        validation: {
+          messages: {
+            required: 'El estado es obligatorio.'
+          }
         }
       },
       {
@@ -341,13 +417,19 @@ export class ActualizarProyectoComponent implements OnInit {
         type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'NumeroContrato',
-          placeholder: 'Ingrese numeroContrato',
+          label: 'Número de Contrato',
+          placeholder: 'Ingrese número de contrato',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          maxLength: 50
+        },
+        validation: {
+          messages: {
+            required: 'El número de contrato es obligatorio.'
           }
         }
       },
@@ -363,6 +445,16 @@ export class ActualizarProyectoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength: 3,
+          maxLength: 50
+        },
+        validation: {
+          messages: {
+            required: 'El cliente es obligatorio.',
+            pattern: 'El cliente solo puede contener letras.',
+            minlength: 'El cliente debe tener al menos 3 caracteres.',
           }
         }
       },
@@ -371,7 +463,7 @@ export class ActualizarProyectoComponent implements OnInit {
         type: 'datepicker',
         className: 'field-container',
         templateOptions: {
-          label: 'Fecha de inicio del proyecro',
+          label: 'Fecha de inicio del proyecto',
           placeholder: 'Ingrese la fecha de inicio del proyecto',
           required: true,
           appearance: 'outline',
@@ -385,9 +477,14 @@ export class ActualizarProyectoComponent implements OnInit {
             expression: (control: AbstractControl): boolean => {
               const fechaInicio = control.value;
               const fechaFin = this.model.fechaFin;
-              return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
+              return !fechaFin || !fechaInicio || new Date(fechaInicio) <= new Date(fechaFin);
             },
-            message: (field: FormlyFieldConfig): string => `La fecha de inicio del proyecto debe ser anterior o igual a la fecha de finalización.`
+            message: 'La fecha de inicio debe ser anterior o igual a la fecha de finalización.'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La fecha de inicio es obligatoria.'
           }
         }
       },
@@ -397,7 +494,7 @@ export class ActualizarProyectoComponent implements OnInit {
         className: 'field-container',
         templateOptions: {
           label: 'Fecha de finalización del proyecto',
-          placeholder: 'Ingrese la fecha de finalización del proyecto',
+          placeholder: 'Ingrese fecha de finalización del proyecto',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
@@ -412,7 +509,87 @@ export class ActualizarProyectoComponent implements OnInit {
               const fechaFin = control.value;
               return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
             },
-            message: (field: FormlyFieldConfig): string => `La fecha de finalización del proyecto debe ser posterior o igual a la fecha de inicio.`
+            message: 'La fecha de finalización debe ser posterior o igual a la fecha de inicio.'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La fecha de finalización es obligatoria.'
+          }
+        }
+      },
+      {
+        key: 'persona',
+        type: 'select',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Personas',
+          placeholder: 'Seleccione personas',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          multiple: true,
+          options: [],
+          valueProp: 'id',
+          labelProp: 'nombre',
+          filter: true
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar al menos una persona.'
+          }
+        }
+      },
+      {
+        key: 'supervisor',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Supervisor de Proyecto',
+          placeholder: 'Ingrese nombre del supervisor',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength: 4,
+          maxLength: 100
+        },
+        validation: {
+          messages: {
+            minlength: 'El nombre del supervisor debe tener al menos 4 caracteres.',
+            required: 'Debe ingresar el nombre del  supervisor.',
+            pattern: 'El nombre solo puede contener letras.',
+          }
+        }
+      },
+      {
+        key: 'contactoSupervisor',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Contacto de Supervisor',
+          placeholder: 'Ingrese contacto del supervisor',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          pattern: /^[0-9]*$/,
+          minLength: 5,
+          maxLength: 20
+        },
+        validation: {
+          messages: {
+            pattern: 'Solo se permiten números en este campo.',
+            minlength: 'El contacto debe tener al menos 5 dígitos.',
+            required: 'Debe ingresar el contacto del  supervisor.'
           }
         }
       },
@@ -431,28 +608,8 @@ export class ActualizarProyectoComponent implements OnInit {
             'class': 'modern-input'
           }
         }
-      },
-      {
-        key: 'persona',
-        type: 'select',
-        className: 'field-container',
-        templateOptions: {
-          label: 'Personas',
-          placeholder: 'Seleccione personas',
-          required: false,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          },
-          multiple: true,
-          options: [],
-          valueProp: 'id',
-          labelProp: 'nombre',
-          filter: true
-        }
       }
-    ];
+  ];
   }
 
   onSubmit() {

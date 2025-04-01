@@ -6,7 +6,7 @@ import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormlyMatDatepickerModule } from '@ngx-formly/material/datepicker';
-import { Observable, forkJoin, of, throwError } from 'rxjs';
+import {Observable, forkJoin, of, throwError, distinctUntilChanged} from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
@@ -36,6 +36,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CuentaCobroService } from '../../../services/CuentaCobroService';
 import { ContratoService } from '../../../services/ContratoService';
 import { InformeService } from '../../../services/InformeService';
+import {AuthService} from "../../../services/auth-service.service";
 
 interface CuentaCobroModel {
   /** id de la entidad */
@@ -133,6 +134,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
    * @param informeService Servicio para gestionar Informe
    * @param router Servicio de enrutamiento
    * @param snackBar Servicio para notificaciones
+   * @param authService
    * @param data Datos recibidos por el diálogo
    * @param dialogRef Referencia al diálogo
    */
@@ -142,6 +144,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
     private informeService: InformeService,
     private router: Router,
     private snackBar: MatSnackBar,
+    private authService: AuthService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<ActualizarCuentaCobroComponent>
   ) {}
@@ -266,20 +269,49 @@ export class ActualizarCuentaCobroComponent implements OnInit {
     this.fields = [
       {
         key: 'montoCobrar',
-        type: 'number',
+        type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'MontoCobrar',
-          placeholder: 'Ingrese montoCobrar',
+          label: 'Monto a Cobrar',
+          placeholder: 'Ingrese monto a cobrar',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
           },
-          min: 0,
-          max: 9007199254740991,
-          step: 1
+          min:1000,
+          max:1000000000
+        },
+        validation: {
+          messages: {
+            required: 'El monto a cobrar es obligatorio.',
+            min: 'El monto mínimo debe ser de $1,000.',
+          }
+        },
+        hooks: {
+          onInit: (field: FormlyFieldConfig) => {
+            field.formControl?.valueChanges
+              .pipe(
+                distinctUntilChanged()
+              )
+              .subscribe(value => {
+                // Formatear como moneda colombiana
+                const cleanedValue = String(value)
+                  .replace(/[^\d]/g, '');  // Eliminar caracteres no numéricos
+
+                if (cleanedValue) {
+                  const formattedValue = new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  }).format(Number(cleanedValue));
+
+                  field.formControl?.setValue(formattedValue, { emitEvent: false });
+                }
+              });
+          }
         }
       },
       {
@@ -294,6 +326,11 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La fecha es obligatoria.'
           }
         }
       },
@@ -310,7 +347,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          options: [{ value: true, label: 'Activo' }, { value: false, label: 'Inactivo' }]
+          options: [{ value: true, label: 'Aprobada' }, { value: false, label: 'No aprobada' }]
         }
       },
       {
@@ -318,13 +355,23 @@ export class ActualizarCuentaCobroComponent implements OnInit {
         type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'NumeroCuenta',
-          placeholder: 'Ingrese numeroCuenta',
+          label: 'Número de Cuenta',
+          placeholder: 'Ingrese número de cuenta',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          minLength:3,
+          maxLength:20,
+          pattern:/^[a-zA-Z0-9-]+$/
+        },
+        validation: {
+          messages: {
+            required: 'El número de cuenta es obligatorio.',
+            minLength: 'El número de cuenta debe tener al menos 3 caracteres.',
+            pattern: 'El número de cuenta solo puede contener letras, números y guiones.'
           }
         }
       },
@@ -341,7 +388,15 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          rows: 5
+          rows: 5,
+          minLength:10,
+          maxLength: 500
+        },
+        validation: {
+          messages: {
+            required: 'El detalle es obligatorio.',
+            minLength: 'El detalle debe tener al menos 10 caracteres.',
+          }
         }
       },
       {
@@ -373,7 +428,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
-        }
+        },
       },
       {
         key: 'firmaGerente',
@@ -383,7 +438,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           placeholder: 'Seleccione firmaGerente',
           multiple: true,
           required: true,
-          accept: '.pdf,.doc,.docx'
+          accept: '.pdf,.doc,.xls,.ppt'
         }
       },
       {
@@ -394,7 +449,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           placeholder: 'Seleccione firmaContratista',
           multiple: true,
           required: true,
-          accept: '.pdf,.doc,.docx'
+          accept: '.pdf,.doc,.xls,.ppt'
         }
       },
       {
@@ -420,7 +475,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
         templateOptions: {
           label: 'Contrato',
           placeholder: 'Seleccione contrato',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -429,6 +484,11 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'numeroContrato'
+        },
+        validation: {
+          messages: {
+            required: 'El contrato es obligatorio.'
+          }
         }
       }
     ];
