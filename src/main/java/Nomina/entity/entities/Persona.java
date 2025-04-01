@@ -137,6 +137,7 @@ public class Persona implements Serializable {
      * 
      * Tipo de relación: Many to Many
      */
+    @ToString.Exclude
     @ManyToMany(mappedBy = "persona", fetch = FetchType.LAZY) @JsonIgnore
     private List<Proyecto> proyecto;
 

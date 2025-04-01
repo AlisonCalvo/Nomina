@@ -111,4 +111,6 @@ public interface ContratoService {
 
     List<Contrato> obtenerContratosVisibles(Long usuarioId);
 
+    List<CuentaCobro> obtenerCuentasCobroPorContrato(String username,Long contratoId);
+
 }

@@ -205,10 +205,14 @@ export class LeerTipoDocumentoComponent implements OnInit {
    * @description Abre un diálogo modal para crear un nuevo registro utilizando el componente específico
    */
   onCreate(): void {
+    const screenWidth = window.innerWidth;
+    const minWidth = screenWidth < 600 ? '90vw' : '800px';
+
     const dialogRef = this.dialog.open(CrearTipoDocumentoComponent, {
-      minWidth: '800px',
+      minWidth: minWidth,
       data: {}
     });
+
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadData(); // Recargar la tabla si se creó un registro

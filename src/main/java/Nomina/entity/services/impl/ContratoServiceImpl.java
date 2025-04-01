@@ -1,7 +1,10 @@
 package Nomina.entity.services.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import Nomina.entity.dto.ContratoDTO;
 import Nomina.entity.entities.Contrato;
 import Nomina.entity.entities.CuentaCobro;
@@ -170,4 +173,27 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
         return repository.findByPersonaId(usuarioId);
     }
 
+    @Override
+    public List<CuentaCobro> obtenerCuentasCobroPorContrato(String username,Long contratoId) {
+
+        try {
+            // Buscar el contrato primero
+            Optional<Contrato> contratoOptional = repository.findById(contratoId);
+
+            if (contratoOptional.isPresent()) {
+                Contrato contrato = contratoOptional.get();
+                // Filtrar los contratos donde la persona está relacionada
+
+                return contrato.getCuentaCobro().stream()
+                        .filter(con -> con.getCreador().equals(username) )
+                        .collect(Collectors.toList());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+
+        // Devolver lista vacía si no se encuentra el contrato
+        return new ArrayList<>();
+    }
 }

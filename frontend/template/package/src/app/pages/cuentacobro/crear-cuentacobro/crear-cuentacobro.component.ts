@@ -342,15 +342,21 @@ export class CrearCuentaCobroComponent implements OnInit {
   }
 
   private loadContratoOptions() {
-    this.contratoService.findAll().subscribe(
-      data => {
-        const field = this.fields.find(f => f.key === 'contrato');
-        if (field && field.templateOptions) {
-          field.templateOptions.options = data;
-        }
-      },
-      error => console.error('Error al cargar contrato:', error)
-    );
+    const personaId = this.authService.getPersonaId();
+
+    if (personaId) {
+      this.contratoService.findVisibles(personaId).subscribe(
+        data => {
+          const field = this.fields.find(f => f.key === 'contrato');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar contratos de la persona:', error)
+      );
+    } else {
+      console.error('No se pudo obtener el ID de la persona');
+    }
   }
 
   closeDialog(): void {

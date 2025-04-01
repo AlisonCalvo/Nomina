@@ -49,6 +49,8 @@ interface ProyectoModel {
   fechaFin: Date;
   creador: string;
   persona: any;
+  supervisor: string;
+  contactoSupervisor: string;
 }
 
 @Component({
@@ -105,7 +107,9 @@ export class CrearProyectoComponent implements OnInit {
     fechaInicio: new Date(),
     fechaFin: new Date(),
     creador: '',
-    persona: null
+    persona: null,
+    supervisor: '',
+    contactoSupervisor: ''
   };
   fields: FormlyFieldConfig[] = [];
 
@@ -422,6 +426,56 @@ export class CrearProyectoComponent implements OnInit {
         validation: {
           messages: {
             required: 'Debe seleccionar al menos una persona.'
+          }
+        }
+      },
+      {
+        key: 'supervisor',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Supervisor de Proyecto',
+          placeholder: 'Ingrese nombre del supervisor',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength: 4,
+          maxLength: 100
+        },
+        validation: {
+          messages: {
+            minlength: 'El nombre del supervisor debe tener al menos 4 caracteres.',
+            required: 'Debe ingresar el nombre del  supervisor.',
+            pattern: 'El nombre solo puede contener letras.',
+          }
+        }
+      },
+      {
+        key: 'contactoSupervisor',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Contacto de Supervisor',
+          placeholder: 'Ingrese contacto del supervisor',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          pattern: /^[0-9]*$/,
+          minLength: 5,
+          maxLength: 20
+        },
+        validation: {
+          messages: {
+            pattern: 'Solo se permiten números en este campo.',
+            minlength: 'El contacto debe tener al menos 5 dígitos.',
+            required: 'Debe ingresar el contacto del  supervisor.'
           }
         }
       }

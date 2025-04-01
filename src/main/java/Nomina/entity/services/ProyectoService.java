@@ -79,4 +79,19 @@ public interface ProyectoService {
 
     List<Proyecto> obtenerProyectosVisibles(Long personaId);
 
+    /**
+     * Obtiene las personas asociadas a un proyecto específico.
+     *
+     * @param proyectoId Identificador del proyecto
+     * @return Lista de personas vinculadas al proyecto
+     */
+    public List<Persona> obtenerPersonasPorProyecto(Long proyectoId);
+
+    /**
+     * Obtiene las personas asociadas a un proyecto específico.
+     *
+     * @param proyectoId Identificador del proyecto
+     * @return Lista de personas vinculadas al proyecto
+     */
+    List<Contrato> obtenerContratosPorProyecto(Long personaId, Long proyectoId);
 }

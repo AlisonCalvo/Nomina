@@ -79,7 +79,7 @@ export class AuthService {
 
   getPersonaId(): number | null {
     const decodedToken = this.getDecodedToken();
-    if (!decodedToken || !decodedToken.personaId) return null; // Asegurar que el token tenga este campo
+    if (!decodedToken || !decodedToken.personaId) return null;
     return Number(decodedToken.personaId);
   }
 

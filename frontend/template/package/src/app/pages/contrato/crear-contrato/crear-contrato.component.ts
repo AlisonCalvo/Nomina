@@ -385,6 +385,12 @@ export class CrearContratoComponent implements OnInit {
         className: 'field-container',
         templateOptions: {
           label: 'Proyecto',
+          change: (field, event) => {
+            // Obtener el valor del proyecto seleccionado
+            const value: number = field.formControl?.value;
+            this.loadPersonaOptions(value);
+            console.log('Proyecto seleccionado:', value);
+          },
           placeholder: 'Seleccione proyecto',
           required: true,
           appearance: 'outline',
@@ -475,7 +481,6 @@ export class CrearContratoComponent implements OnInit {
     ];
 
     this.loadProyectoOptions();
-    this.loadPersonaOptions();
     this.loadTipoContratoOptions();
     this.loadPeriodicidadPagoOptions();
   }
@@ -492,8 +497,8 @@ export class CrearContratoComponent implements OnInit {
     );
   }
 
-  private loadPersonaOptions() {
-    this.personaService.findAll().subscribe(
+  private loadPersonaOptions(id:number) {
+    this.personaService.obtenerPersonasPorProyecto(id).subscribe(
       data => {
         // Ordenar alfabéticamente por nombre
         data.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
@@ -603,4 +608,5 @@ export class CrearContratoComponent implements OnInit {
     this.dialogRef.close(true);
     console.log('Acciones postCreate completadas.');
   }
+
 }

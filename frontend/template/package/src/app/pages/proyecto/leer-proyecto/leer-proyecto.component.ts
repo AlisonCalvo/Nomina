@@ -94,7 +94,7 @@ registerLocaleData(localeEs);
 })
 export class LeerProyectoComponent implements OnInit {
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'nombre', 'valorContrato', 'tiempoContractual', 'objetoContractual', 'alcanceContractual', 'estado', 'numeroContrato', 'cliente', 'fechaInicio', 'fechaFin', 'creador', 'persona', 'acciones'];
+  displayedColumns: string[] = ['id', 'nombre', 'valorContrato', 'tiempoContractual', 'objetoContractual', 'alcanceContractual', 'estado', 'numeroContrato', 'cliente', 'fechaInicio', 'fechaFin', 'creador', 'persona', 'supervisor','contactoSupervisor','acciones'];
 
   // Array para almacenar los datos de la entidad
   proyectos: ProyectoComponent[] = [];
@@ -242,10 +242,14 @@ export class LeerProyectoComponent implements OnInit {
    * @description Abre un diálogo modal para crear un nuevo registro utilizando el componente específico
    */
   onCreate(): void {
+    const screenWidth = window.innerWidth;
+    const minWidth = screenWidth < 600 ? '90vw' : '800px';
+
     const dialogRef = this.dialog.open(CrearProyectoComponent, {
-      minWidth: '800px',
+      minWidth: minWidth,
       data: {}
     });
+
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadData(); // Recargar la tabla si se creó un registro

@@ -113,4 +113,11 @@ export class PersonaService {
     return this.httpClient.delete<void>(url, {headers});
   }
 
+  // Método para obtener personas por proyecto
+  obtenerPersonasPorProyecto(id: number): Observable<Persona[]> {
+    const headers = new HttpHeaders().set('Accion', 'findAll').set('Objeto', 'Persona');
+    const url = `${this.baseUrl}/proyectos/${id}/personas`;
+    return this.httpClient.get<Persona[]>(url, {headers});
+  }
+
 }

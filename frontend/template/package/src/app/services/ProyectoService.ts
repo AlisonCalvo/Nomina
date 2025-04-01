@@ -30,6 +30,10 @@ export interface Proyecto {
   fechaFin: Date;
   /** creador - Campo de texto */
   creador: string;
+  /**Campo que representa el supervisor del proyecto*/
+  supervisor: string;
+  /**Campo que representa el contacto del supervisor del proyecto*/
+  contactoSupervisor: string ;
 }
 
 /**
@@ -59,6 +63,10 @@ export interface ProyectoDTO {
   fechaFin: Date;
   /** creador - Campo de texto */
   creador: string;
+  /**Campo que representa el supervisor del proyecto*/
+  supervisor: string;
+  /**Campo que representa el contacto del supervisor del proyecto*/
+  contactoSupervisor: string ;
 }
 
 /**

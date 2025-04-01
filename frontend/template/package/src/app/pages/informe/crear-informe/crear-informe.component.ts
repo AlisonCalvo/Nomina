@@ -202,34 +202,17 @@ export class CrearInformeComponent implements OnInit {
         }
       },
       {
-        key: 'cuentaCobro',
-        type: 'select',
-        className: 'field-container',
-        templateOptions: {
-          label: 'CuentaCobro',
-          placeholder: 'Seleccione cuentaCobro',
-          required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          },
-          options: [],
-          valueProp: 'id',
-          labelProp: 'numeroCuenta'
-        },
-        validation: {
-          messages: {
-            required: 'Debe seleccionar una cuenta de cobro.'
-          }
-        }
-      },
-      {
         key: 'proyecto',
         type: 'select',
         className: 'field-container',
         templateOptions: {
           label: 'Proyecto',
+          change: (field, event) => {
+            // Obtener el valor del proyecto seleccionado
+            const value: number = field.formControl?.value;
+            this.loadContratoOptions(value);
+            console.log('Proyecto seleccionado:', value);
+          },
           placeholder: 'Seleccione proyecto',
           required: true,
           appearance: 'outline',
@@ -253,6 +236,12 @@ export class CrearInformeComponent implements OnInit {
         className: 'field-container',
         templateOptions: {
           label: 'Contrato',
+          change: (field, event) => {
+            // Obtener el valor del contrato seleccionado
+            const value: number = field.formControl?.value;
+            this.loadCuentaCobroOptions(value);
+            console.log('contrato seleccionado:', value);
+          },
           placeholder: 'Seleccione contrato',
           required: true,
           appearance: 'outline',
@@ -269,48 +258,91 @@ export class CrearInformeComponent implements OnInit {
             required: 'Debe seleccionar un contrato.'
           }
         }
+      },
+      {
+        key: 'cuentaCobro',
+        type: 'select',
+        className: 'field-container',
+        templateOptions: {
+          label: 'CuentaCobro',
+          placeholder: 'Seleccione cuentaCobro',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          options: [],
+          valueProp: 'id',
+          labelProp: 'numeroCuenta'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar una cuenta de cobro.'
+          }
+        }
       }
     ];
 
-    this.loadCuentaCobroOptions();
     this.loadProyectoOptions();
-    this.loadContratoOptions();
   }
 
-  private loadCuentaCobroOptions() {
-    this.cuentaCobroService.findAll().subscribe(
-      data => {
-        const field = this.fields.find(f => f.key === 'cuentaCobro');
-        if (field && field.templateOptions) {
-          field.templateOptions.options = data;
-        }
-      },
-      error => console.error('Error al cargar cuentaCobro:', error)
-    );
+  private loadCuentaCobroOptions(id:number) {
+    let username: String = this.authService.getUsername();
+    if (username) {
+      // Usar un método específico en el servicio de contratos para obtener contratos por persona
+      this.cuentaCobroService.obtenerCuentasCobroPorContrato(username,id).subscribe(
+        data => {
+          const field = this.fields.find(f => f.key === 'cuentaCobro');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar proyectos de la persona:', error)
+      );
+    } else {
+      console.error('No se pudo obtener el ID de la persona');
+    }
   }
 
   private loadProyectoOptions() {
-    this.proyectoService.findAll().subscribe(
-      data => {
-        const field = this.fields.find(f => f.key === 'proyecto');
-        if (field && field.templateOptions) {
-          field.templateOptions.options = data;
-        }
-      },
-      error => console.error('Error al cargar proyecto:', error)
-    );
+// Obtener el ID de la persona desde el token
+    const personaId = this.authService.getPersonaId();
+
+    if (personaId) {
+      // Usar un método específico en el servicio de contratos para obtener contratos por persona
+      this.proyectoService.findVisibles(personaId).subscribe(
+        data => {
+          const field = this.fields.find(f => f.key === 'proyecto');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar proyectos de la persona:', error)
+      );
+    } else {
+      console.error('No se pudo obtener el ID de la persona');
+    }
   }
 
-  private loadContratoOptions() {
-    this.contratoService.findAll().subscribe(
-      data => {
-        const field = this.fields.find(f => f.key === 'contrato');
-        if (field && field.templateOptions) {
-          field.templateOptions.options = data;
-        }
-      },
-      error => console.error('Error al cargar contrato:', error)
-    );
+  private loadContratoOptions(proyectoId: number) {
+    // Obtener el ID de la persona desde el token
+    const personaId = this.authService.getPersonaId();
+
+    if (personaId) {
+      // Llamamos al servicio con personaId y proyectoId
+      this.contratoService.obtenerContratosPorProyecto(personaId, proyectoId).subscribe(
+        data => {
+          const field = this.fields.find(f => f.key === 'contrato');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar contratos de la persona y proyecto:', error)
+      );
+    } else {
+      console.error('No se pudo obtener el ID de la persona');
+    }
   }
 
   closeDialog(): void {
