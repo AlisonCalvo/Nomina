@@ -1,4 +1,4 @@
-import { Component, OnInit,Inject } from '@angular/core';
+import {Component, OnInit, Inject, NgModule} from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {AbstractControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
@@ -88,12 +88,18 @@ interface CuentaCobroModel {
     MatMenuModule,
     MatTabsModule,
     MatProgressBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
   ],
   templateUrl: './crear-cuentacobro.component.html',
   styleUrls: ['./crear-cuentacobro.component.scss']
 })
 export class CrearCuentaCobroComponent implements OnInit {
+
+  previews: { [key: string]: string | null } = {
+    firmaGerente: null,
+    firmaContratista: null
+  };
+
   form = new FormGroup({});
   model: CuentaCobroModel = {
     montoCobrar: 0,
@@ -250,8 +256,8 @@ export class CrearCuentaCobroComponent implements OnInit {
           multiple: true,
           required: true,
           accept: 'image/*',
-          change: (field: FormlyFieldConfig, event: any) => this.handleImageChange(field, event, 'firmaGerente')
-        }
+          change: (field: FormlyFieldConfig, event: any) => this.handleImageChange(field, event, 'firmaGerente'),
+        },
       },
       {
         key: 'firmaContratista',
@@ -262,8 +268,8 @@ export class CrearCuentaCobroComponent implements OnInit {
           multiple: true,
           required: true,
           accept: 'image/*',
-          change: (field: FormlyFieldConfig, event: any) => this.handleImageChange(field, event, 'firmaContratista')
-        }
+          change: (field: FormlyFieldConfig, event: any) => this.handleImageChange(field, event, 'firmaContratista'),
+        },
       },
       {
         key: 'contrato',
@@ -478,14 +484,13 @@ export class CrearCuentaCobroComponent implements OnInit {
     console.log('Acciones postCreate completadas.');
   }
 
-  handleImageChange(field: FormlyFieldConfig, event: Event, fieldName: keyof CuentaCobroModel) {
-    console.log("haber si entra aqui")
+  handleImageChange(field: FormlyFieldConfig, event: Event, fieldName: 'firmaGerente' | 'firmaContratista') {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
     if (!file) return;
 
-    // Validar que sea una imagen
+    // Validación de tipo de imagen (manteniendo tu lógica)
     if (!file.type.match('image.*')) {
       this.snackBar.open('Solo se permiten archivos de imagen', 'Cerrar', {
         duration: 3000,
@@ -494,19 +499,46 @@ export class CrearCuentaCobroComponent implements OnInit {
       return;
     }
 
+    // Validación de tamaño (puedes ajustar el límite)
+    if (file.size > 2 * 1024 * 1024) { // 2MB
+      this.snackBar.open('La imagen no debe exceder 2MB', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
     const reader = new FileReader();
+
     reader.onload = (e: ProgressEvent<FileReader>) => {
       if (e.target?.result) {
-        // Guardar el Base64 en el modelo
-        (this.model[fieldName] as string) = e.target.result as string;
+        const base64 = e.target.result as string;
+
+        // 1. Actualizar el modelo (seguro en tipos)
+        this.model[fieldName] = base64;
+
+        // 2. Actualizar previsualización (forma segura)
+        if (field.templateOptions) {
+          (field.templateOptions as any).preview = base64;
+        }
+
+        // 3. Actualizar vista (forma optimizada)
+        setTimeout(() => {
+          this.fields = [...this.fields];
+        }, 0);
       }
     };
+
     reader.onerror = () => {
       this.snackBar.open('Error al leer la imagen', 'Cerrar', {
         duration: 3000,
         panelClass: ['error-snackbar']
       });
+
+      // Limpiar el input en caso de error
+      input.value = '';
     };
+
     reader.readAsDataURL(file);
   }
 }

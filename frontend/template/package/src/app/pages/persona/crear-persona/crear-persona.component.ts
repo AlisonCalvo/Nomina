@@ -199,8 +199,11 @@ export class CrearPersonaComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          pattern: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
-          patternError: 'El correo debe tener un formato válido (ejemplo: usuario@dominio.com)'
+          pattern: '^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$',
+        },validation: {
+          messages: {
+            pattern: 'El correo debe tener un formato válido (ejemplo: usuario@dominio.com)'
+          }
         }
       },
       {
