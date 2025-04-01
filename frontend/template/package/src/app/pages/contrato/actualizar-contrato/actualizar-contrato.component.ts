@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import {AbstractControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {AbstractControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
@@ -36,6 +36,8 @@ import { ProyectoService } from '../../../services/ProyectoService';
 import { PersonaService } from '../../../services/PersonaService';
 import { TipoContratoService } from '../../../services/TipoContratoService';
 import { PeriodicidadPagoService } from '../../../services/PeriodicidadPagoService';
+import {AuthService} from "../../../services/auth-service.service";
+import {distinctUntilChanged, map} from "rxjs";
 
 interface ContratoModel {
   /** id de la entidad */
@@ -141,6 +143,7 @@ export class ActualizarContratoComponent implements OnInit {
    * @param periodicidadPagoService Servicio para gestionar PeriodicidadPago
    * @param router Servicio de enrutamiento
    * @param snackBar Servicio para notificaciones
+   * @param authService
    * @param data Datos recibidos por el diálogo
    * @param dialogRef Referencia al diálogo
    */
@@ -152,15 +155,15 @@ export class ActualizarContratoComponent implements OnInit {
     private periodicidadPagoService: PeriodicidadPagoService,
     private router: Router,
     private snackBar: MatSnackBar,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private dialogRef: MatDialogRef<ActualizarContratoComponent>
-  ) {}
+    private authService: AuthService,
+  @Inject(MAT_DIALOG_DATA) public data: any,
+  private dialogRef: MatDialogRef<ActualizarContratoComponent>
+) {}
 
   /** Inicialización del componente */
   ngOnInit() {
     this.loadContratos();
     this.loadProyectoOptions();
-    this.loadPersonaOptions();
     this.loadTipoContratoOptions();
     this.loadPeriodicidadPagoOptions();
 
@@ -227,8 +230,10 @@ export class ActualizarContratoComponent implements OnInit {
   private loadProyectoOptions() {
     this.proyectoService.findAll().subscribe(
       data => {
-        this.proyectos = data;
-        this.updateFieldOptions('proyecto', data);
+        const field = this.fields.find(f => f.key === 'proyecto');
+        if (field && field.templateOptions) {
+          field.templateOptions.options = data;
+        }
       },
       error => console.error('Error al cargar proyecto:', error)
     );
@@ -238,8 +243,8 @@ export class ActualizarContratoComponent implements OnInit {
    * Carga las opciones para la relación Persona
    * @private
    */
-  private loadPersonaOptions() {
-    this.personaService.findAll().subscribe(
+  private loadPersonaOptions(id:number) {
+    this.personaService.obtenerPersonasPorProyecto(id).subscribe(
       data => {
         // Ordenar alfabéticamente por nombre
         data.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
@@ -259,8 +264,10 @@ export class ActualizarContratoComponent implements OnInit {
   private loadTipoContratoOptions() {
     this.tipoContratoService.findAll().subscribe(
       data => {
-        this.tipoContratos = data;
-        this.updateFieldOptions('tipoContrato', data);
+        const field = this.fields.find(f => f.key === 'tipoContrato');
+        if (field && field.templateOptions) {
+          field.templateOptions.options = data;
+        }
       },
       error => console.error('Error al cargar tipoContrato:', error)
     );
@@ -273,8 +280,10 @@ export class ActualizarContratoComponent implements OnInit {
   private loadPeriodicidadPagoOptions() {
     this.periodicidadPagoService.findAll().subscribe(
       data => {
-        this.periodicidadPagos = data;
-        this.updateFieldOptions('periodicidadPago', data);
+        const field = this.fields.find(f => f.key === 'periodicidadPago');
+        if (field && field.templateOptions) {
+          field.templateOptions.options = data;
+        }
       },
       error => console.error('Error al cargar periodicidadPago:', error)
     );
@@ -325,13 +334,18 @@ export class ActualizarContratoComponent implements OnInit {
         type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'NumeroContrato',
-          placeholder: 'Ingrese numeroContrato',
+          label: 'Número de Contrato',
+          placeholder: 'Ingrese número de contrato',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'El número de contrato es obligatorio.'
           }
         }
       },
@@ -347,16 +361,26 @@ export class ActualizarContratoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength:3,
+          maxLength:50
+        },
+        validation: {
+          messages: {
+            required: 'El cargo es obligatorio.',
+            minlength: 'El cargo debe tener al menos 3 caracteres.',
+            pattern: 'El cargo solo puede contener letras.'
           }
         }
       },
       {
         key: 'valorTotalContrato',
-        type: 'number',
+        type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'ValorTotalContrato',
-          placeholder: 'Ingrese valorTotalContrato',
+          label: 'Valor Total Contrato',
+          placeholder: 'Ingrese valor total contrato',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
@@ -364,8 +388,44 @@ export class ActualizarContratoComponent implements OnInit {
             'class': 'modern-input'
           },
           min: 0,
-          max: 9007199254740991,
-          step: 1
+          max: 9007199254740991
+        },
+        validators: {
+          validation: [Validators.required, Validators.min(0)]
+        },
+        validation: {
+          messages: {
+            required: 'El valor total del contrato es obligatorio.',
+            min: 'El valor del contrato debe ser mayor o igual a 0.'
+          }
+        },
+        hooks: {
+          onInit: (field: FormlyFieldConfig) => {
+            field.formControl?.valueChanges
+              .pipe(
+                distinctUntilChanged(),
+                map(value => {
+                  // Ensure value is a string
+                  const stringValue = String(value);
+
+                  // Eliminar caracteres no numéricos
+                  const numericValue = stringValue.replace(/[^\d]/g, '');
+
+                  // Formatear como moneda colombiana si hay valor
+                  return numericValue
+                    ? new Intl.NumberFormat('es-CO', {
+                      style: 'currency',
+                      currency: 'COP',
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0
+                    }).format(Number(numericValue))
+                    : '';
+                })
+              )
+              .subscribe(formattedValue => {
+                field.formControl?.setValue(formattedValue, { emitEvent: false });
+              });
+          }
         }
       },
       {
@@ -384,6 +444,13 @@ export class ActualizarContratoComponent implements OnInit {
           min: 0,
           max: 2147483647,
           step: 1
+        },
+        validation: {
+          messages: {
+            required: 'El número de pagos es obligatorio.',
+            min: 'El número de pagos debe ser mayor o igual a 0.',
+            max: 'El número de pagos es demasiado grande.'
+          }
         }
       },
       {
@@ -405,9 +472,14 @@ export class ActualizarContratoComponent implements OnInit {
             expression: (control: AbstractControl): boolean => {
               const fechaInicio = control.value;
               const fechaFin = this.model.fechaFinContrato;
-              return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
+              return !fechaFin || !fechaInicio || new Date(fechaInicio) <= new Date(fechaFin);
             },
-            message: (field: FormlyFieldConfig): string => `La fecha de inicio del contrato debe ser anterior o igual a la fecha de finalización.`
+            message: 'La fecha de inicio del contrato debe ser anterior o igual a la fecha de finalización.'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La fecha de inicio del contrato es obligatoria.'
           }
         }
       },
@@ -416,8 +488,8 @@ export class ActualizarContratoComponent implements OnInit {
         type: 'datepicker',
         className: 'field-container',
         templateOptions: {
-          label: 'Fecha de finalización del contrato',
-          placeholder: 'Ingrese la fecha de finalización del contrato',
+          label: 'Fecha de finalizacion del contrato',
+          placeholder: 'Ingrese la fecha de finalizacion del contrato',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
@@ -432,7 +504,12 @@ export class ActualizarContratoComponent implements OnInit {
               const fechaFin = control.value;
               return !fechaFin || !fechaInicio || new Date(fechaFin) >= new Date(fechaInicio);
             },
-            message: (field: FormlyFieldConfig): string => `La fecha de finalización del contrato debe ser posterior o igual a la fecha de inicio.`
+            message: 'La fecha de finalización del contrato debe ser posterior o igual a la fecha de inicio.'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La fecha de finalización del contrato es obligatoria.'
           }
         }
       },
@@ -450,6 +527,11 @@ export class ActualizarContratoComponent implements OnInit {
             'class': 'modern-input'
           },
           options: [{ value: true, label: 'En curso' }, { value: false, label: 'Finalizado' }]
+        },
+        validation: {
+          messages: {
+            required: 'El estado es obligatorio.'
+          }
         }
       },
       {
@@ -465,6 +547,11 @@ export class ActualizarContratoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
+        },
+        validation: {
+          messages: {
+            required: 'La ruta de archivo es obligatoria.'
+          }
         }
       },
       {
@@ -474,13 +561,18 @@ export class ActualizarContratoComponent implements OnInit {
         templateOptions: {
           label: 'Firmado',
           placeholder: 'Ingrese firmado',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
           },
-          options: [{ value: true, label: 'Firmado' }, { value: false, label: 'Pendiente' }]
+          options: [{ value: true, label: 'Aprobado' }, { value: false, label: 'Pendiente' }]
+        },
+        validation: {
+          messages: {
+            required: 'El estado de firma es obligatorio.'
+          }
         }
       },
       {
@@ -505,8 +597,14 @@ export class ActualizarContratoComponent implements OnInit {
         className: 'field-container',
         templateOptions: {
           label: 'Proyecto',
+          change: (field, event) => {
+            // Obtener el valor del proyecto seleccionado
+            const value: number = field.formControl?.value;
+            this.loadPersonaOptions(value);
+            console.log('Proyecto seleccionado:', value);
+          },
           placeholder: 'Seleccione proyecto',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -515,6 +613,11 @@ export class ActualizarContratoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'nombre'
+        },
+        validation: {
+          messages: {
+            required: 'El proyecto es obligatorio.'
+          }
         }
       },
       {
@@ -524,7 +627,7 @@ export class ActualizarContratoComponent implements OnInit {
         templateOptions: {
           label: 'Persona',
           placeholder: 'Seleccione persona',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -534,6 +637,11 @@ export class ActualizarContratoComponent implements OnInit {
           valueProp: 'id',
           labelProp: 'nombre',
           filter: true
+        },
+        validation: {
+          messages: {
+            required: 'La persona es obligatoria.'
+          }
         }
       },
       {
@@ -543,7 +651,7 @@ export class ActualizarContratoComponent implements OnInit {
         templateOptions: {
           label: 'TipoContrato',
           placeholder: 'Seleccione tipoContrato',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -552,6 +660,11 @@ export class ActualizarContratoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'nombreTipoContrato'
+        },
+        validation: {
+          messages: {
+            required: 'El tipo de contrato es obligatorio.'
+          }
         }
       },
       {
@@ -561,7 +674,7 @@ export class ActualizarContratoComponent implements OnInit {
         templateOptions: {
           label: 'PeriodicidadPago',
           placeholder: 'Seleccione periodicidadPago',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -570,6 +683,11 @@ export class ActualizarContratoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'tipoPeriodoPago'
+        },
+        validation: {
+          messages: {
+            required: 'La periodicidad de pago es obligatoria.'
+          }
         }
       }
     ];

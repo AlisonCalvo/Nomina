@@ -1,6 +1,6 @@
-import {Component, OnInit, Inject, NgModule} from '@angular/core';
+import { Component, OnInit,Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import {AbstractControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {AbstractControl, FormGroup,Validators, ReactiveFormsModule} from '@angular/forms';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
@@ -33,7 +33,7 @@ import { DateTime } from 'luxon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {CuentaCobroDTO, CuentaCobroService} from '../../../services/CuentaCobroService';
-import {Observable, forkJoin, of, throwError, map} from 'rxjs';
+import {Observable, forkJoin, of, throwError, map, distinctUntilChanged} from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { ContratoService } from '../../../services/ContratoService';
 import { InformeService } from '../../../services/InformeService';
@@ -88,7 +88,7 @@ interface CuentaCobroModel {
     MatMenuModule,
     MatTabsModule,
     MatProgressBarModule,
-    MatProgressSpinnerModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './crear-cuentacobro.component.html',
   styleUrls: ['./crear-cuentacobro.component.scss']
@@ -136,20 +136,49 @@ export class CrearCuentaCobroComponent implements OnInit {
     this.fields = [
       {
         key: 'montoCobrar',
-        type: 'number',
+        type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'MontoCobrar',
-          placeholder: 'Ingrese montoCobrar',
+          label: 'Monto a Cobrar',
+          placeholder: 'Ingrese monto a cobrar',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
           },
-          min: 0,
-          max: 9007199254740991,
-          step: 1
+          min:1000,
+          max:1000000000
+        },
+        validation: {
+          messages: {
+            required: 'El monto a cobrar es obligatorio.',
+            min: 'El monto mínimo debe ser de $1,000.',
+          }
+        },
+        hooks: {
+          onInit: (field: FormlyFieldConfig) => {
+            field.formControl?.valueChanges
+              .pipe(
+                distinctUntilChanged()
+              )
+              .subscribe(value => {
+                // Formatear como moneda colombiana
+                const cleanedValue = String(value)
+                  .replace(/[^\d]/g, '');  // Eliminar caracteres no numéricos
+
+                if (cleanedValue) {
+                  const formattedValue = new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  }).format(Number(cleanedValue));
+
+                  field.formControl?.setValue(formattedValue, { emitEvent: false });
+                }
+              });
+          }
         }
       },
       {
@@ -164,6 +193,11 @@ export class CrearCuentaCobroComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La fecha es obligatoria.'
           }
         }
       },
@@ -189,13 +223,23 @@ export class CrearCuentaCobroComponent implements OnInit {
         type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'NumeroCuenta',
-          placeholder: 'Ingrese numeroCuenta',
+          label: 'Número de Cuenta',
+          placeholder: 'Ingrese número de cuenta',
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          minLength:3,
+          maxLength:20,
+          pattern:/^[a-zA-Z0-9-]+$/
+        },
+        validation: {
+          messages: {
+            required: 'El número de cuenta es obligatorio.',
+            minLength: 'El número de cuenta debe tener al menos 3 caracteres.',
+            pattern: 'El número de cuenta solo puede contener letras, números y guiones.'
           }
         }
       },
@@ -212,7 +256,15 @@ export class CrearCuentaCobroComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          rows: 5
+          rows: 5,
+          minLength:10,
+          maxLength: 500
+        },
+        validation: {
+          messages: {
+            required: 'El detalle es obligatorio.',
+            minLength: 'El detalle debe tener al menos 10 caracteres.',
+          }
         }
       },
       {
@@ -245,7 +297,7 @@ export class CrearCuentaCobroComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
-        }
+        },
       },
       {
         key: 'firmaGerente',
@@ -288,6 +340,11 @@ export class CrearCuentaCobroComponent implements OnInit {
           valueProp: 'id',
           labelProp: 'numeroContrato'
         },
+        validation: {
+          messages: {
+            required: 'El contrato es obligatorio.'
+          }
+        },
         asyncValidators: {
           validarNumeroCuentasCobro: {
             expression: (control: AbstractControl): Observable<boolean> | Promise<boolean> => {
@@ -311,15 +368,21 @@ export class CrearCuentaCobroComponent implements OnInit {
   }
 
   private loadContratoOptions() {
-    this.contratoService.findAll().subscribe(
-      data => {
-        const field = this.fields.find(f => f.key === 'contrato');
-        if (field && field.templateOptions) {
-          field.templateOptions.options = data;
-        }
-      },
-      error => console.error('Error al cargar contrato:', error)
-    );
+    const personaId = this.authService.getPersonaId();
+
+    if (personaId) {
+      this.contratoService.findVisibles(personaId).subscribe(
+        data => {
+          const field = this.fields.find(f => f.key === 'contrato');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar contratos de la persona:', error)
+      );
+    } else {
+      console.error('No se pudo obtener el ID de la persona');
+    }
   }
 
   closeDialog(): void {
@@ -350,6 +413,7 @@ export class CrearCuentaCobroComponent implements OnInit {
       return;
     }
 
+
     if (typeof modelData.firmaContratista !== 'string' || !modelData.firmaContratista.startsWith('data:image')) {
       this.snackBar.open('La firma del contratista debe ser una imagen válida', 'Cerrar', {
         duration: 3000,
@@ -357,6 +421,14 @@ export class CrearCuentaCobroComponent implements OnInit {
       });
       this.isLoading = false;
       return;
+    }
+    // Limpiar valor de monto a cobrar para guardar solo el número
+    if (modelData.montoCobrar) {
+      const cleanedValue = String(modelData.montoCobrar)
+        .replace(/[^\d]/g, '')  // Elimina todo excepto dígitos
+        .replace(/^0+/, '');    // Elimina ceros a la izquierda
+
+      modelData.montoCobrar = cleanedValue ? Number(cleanedValue) : 0;
     }
 
     this.saveEntity(modelData);

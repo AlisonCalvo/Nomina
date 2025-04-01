@@ -100,11 +100,7 @@ export class CuentaCobroService {
   save(dto: CuentaCobroDTO): Observable<CuentaCobro> {
     const url = `${this.baseUrl}/cuentacobros`;
     const headers = new HttpHeaders().set('Accion', 'save').set('Objeto', 'CuentaCobro');
-    const body = {
-      ...dto,
-      fecha: dto.fecha.toISOString().split('T')[0] // Formato YYYY-MM-DD
-    };
-    return this.httpClient.post<CuentaCobro>(url, body, {headers});
+    return this.httpClient.post<CuentaCobro>(url, dto, {headers});
   }
 
   // Método para actualizar un registro existente
@@ -173,5 +169,12 @@ export class CuentaCobroService {
   downloadFile(fileName: string): Observable<Blob> {
     const url = `${this.baseUrl}/cuentacobros/download?file=${fileName}`;
     return this.httpClient.get(url, { responseType: 'blob' });
+  }
+
+  // Método para obtener personas por proyecto
+  obtenerCuentasCobroPorContrato(username: String, id: number): Observable<CuentaCobro[]> {
+    const headers = new HttpHeaders().set('Accion', 'findAll').set('Objeto', 'Contrato');
+    const url = `${this.baseUrl}/contratos/${username}/${id}/cuentascobro`;
+    return this.httpClient.get<CuentaCobro[]>(url, {headers});
   }
 }

@@ -1,48 +1,57 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormGroup, FormsModule } from '@angular/forms';
-import { FormlyFieldConfig } from '@ngx-formly/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorIntl } from '@angular/material/paginator';
-import { Router, RouterLink, RouterModule } from '@angular/router';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {FormGroup, FormsModule} from '@angular/forms';
+import {FormlyFieldConfig} from '@ngx-formly/core';
+import {MatPaginator} from '@angular/material/paginator';
+import {MatSort} from '@angular/material/sort';
+import {MatDialog} from '@angular/material/dialog';
+import {MatTableDataSource} from '@angular/material/table';
+import {MatPaginatorIntl} from '@angular/material/paginator';
+import {Router, RouterLink, RouterModule} from '@angular/router';
 import * as XLSX from 'xlsx';
-import { CuentaCobroService } from '../../../services/CuentaCobroService';
-import { CuentaCobroComponent } from '../cuentacobro.component';
-import { ActualizarCuentaCobroComponent } from '../actualizar-cuentacobro/actualizar-cuentacobro.component';
-import { CrearCuentaCobroComponent } from '../crear-cuentacobro/crear-cuentacobro.component';
+import {CuentaCobroService} from '../../../services/CuentaCobroService';
+import {CuentaCobroComponent} from '../../cuentacobro/cuentacobro.component';
+import {
+  ActualizarCuentaCobroComponent
+} from '../../cuentacobro/actualizar-cuentacobro/actualizar-cuentacobro.component';
+import {CrearCuentaCobroComponent} from '../../cuentacobro/crear-cuentacobro/crear-cuentacobro.component';
+import {environment} from '../../../../environments/environment';
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTabsModule } from '@angular/material/tabs';
-import { DateTime } from 'luxon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { DownloadFileComponent } from '../../../downloadFile.component';
-import { ShowFilesListComponent } from '../../../showFiles.component';
-
-import { CommonModule } from '@angular/common';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCard, MatCardContent, MatCardModule} from '@angular/material/card';
+import {MatIcon, MatIconModule} from '@angular/material/icon';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatFormField, MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import {MatNativeDateModule} from '@angular/material/core';
+import {MatRadioModule} from '@angular/material/radio';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {MatTableModule} from '@angular/material/table';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatSortModule} from '@angular/material/sort';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatSnackBarModule, MatSnackBar} from '@angular/material/snack-bar';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatListModule} from '@angular/material/list';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatTabsModule} from '@angular/material/tabs';
+import {DateTime} from 'luxon';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {DownloadFileComponent} from '../../../downloadFile.component';
+import {CommonModule, CurrencyPipe} from '@angular/common';
 import {AuthService} from "../../../services/auth-service.service";
+import {LOCALE_ID} from '@angular/core';
+import {registerLocaleData} from '@angular/common';
+import localeEs from '@angular/common/locales/es-CO';
+import {ShowFilesListComponent} from "../../../showFiles.component";
+
+// Registrar el locale
+registerLocaleData(localeEs);
+
 @Component({
   selector: 'app-leer-cuentacobro',
   templateUrl: './leer-cuentacobro.component.html',
@@ -79,8 +88,10 @@ import {AuthService} from "../../../services/auth-service.service";
     MatMenuModule,
     MatTabsModule,
     MatProgressBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    CurrencyPipe
   ],
+  providers: [CurrencyPipe, {provide: LOCALE_ID, useValue: 'es-CO'}],
   styleUrls: ['./leer-cuentacobro.component.scss']
 })
 export class LeerCuentaCobroComponent implements OnInit {
@@ -118,7 +129,8 @@ export class LeerCuentaCobroComponent implements OnInit {
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
     private dialog: MatDialog,
-  private authService: AuthService
+    private authService: AuthService,
+    private currencyPipe: CurrencyPipe
   ) {
     this.mostrarBotonEliminar = this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']);
     this.customizePaginator();
@@ -177,12 +189,12 @@ export class LeerCuentaCobroComponent implements OnInit {
     this.cuentacobroService.findAll().subscribe({
       next: data => {
         this.dataSource.data = data.map(item => Object.assign(new CuentaCobroComponent(this.cuentacobroService), item));
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-    },
-       error: error => {
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+      },
+      error: error => {
         console.error('Error al obtener cuentacobros:', error);
-      this.errorMessage = 'Error al cargar los datos.';
+        this.errorMessage = 'Error al cargar los datos.';
       }
     });
   }
@@ -205,7 +217,7 @@ export class LeerCuentaCobroComponent implements OnInit {
           const dialogRef = this.dialog.open(DownloadFileComponent, {
             maxWidth: 'none',
             width: '500px',
-            data: { files: files }
+            data: {files: files}
           });
           dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
             if (selectedFiles && selectedFiles.length > 0) {
@@ -246,10 +258,14 @@ export class LeerCuentaCobroComponent implements OnInit {
    * @description Abre un diálogo modal para crear un nuevo registro utilizando el componente específico
    */
   onCreate(): void {
+    const screenWidth = window.innerWidth;
+    const minWidth = screenWidth < 600 ? '90vw' : '800px';
+
     const dialogRef = this.dialog.open(CrearCuentaCobroComponent, {
-      minWidth: '800px',
+      minWidth: minWidth,
       data: {}
     });
+
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadData(); // Recargar la tabla si se creó un registro
@@ -475,10 +491,9 @@ export class LeerCuentaCobroComponent implements OnInit {
     files = files.map((path: string) => this.extractFileName(path));
     this.dialog.open(ShowFilesListComponent, {
       width: '500px',
-      data: { files: files }
+      data: {files: files}
     });
   }
-
 
 
   onShowFirmaContratista(element: any) {
@@ -492,7 +507,7 @@ export class LeerCuentaCobroComponent implements OnInit {
 
     this.dialog.open(ShowFilesListComponent, {
       width: '500px',
-      data: { files: files }
+      data: {files: files}
     });
   }
 

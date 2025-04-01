@@ -13,7 +13,7 @@ import { RouterModule } from '@angular/router';
           [src]="logoSrc"
           class="align-middle m-2"
           alt="logo"
-          style="width: 100%; height: auto; max-width: 100px; max-height: 100px;"
+          style="width: 100px; height: 100px; object-fit: contain;"
         />
       </a>
     </div>

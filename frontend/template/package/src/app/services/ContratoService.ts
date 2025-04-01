@@ -128,6 +128,13 @@ export class ContratoService {
     return this.httpClient.get<Contrato[]>(url, { headers });
   }
 
+  // Método para obtener contratos por proyecto
+  obtenerContratosPorProyecto(personaId: number, proyectoId: number): Observable<Contrato[]> {
+    const headers = new HttpHeaders().set('Accion', 'findAll').set('Objeto', 'Contrato');
+    const url = `${this.baseUrl}/proyectos/${personaId}/${proyectoId}/contratos`;
+    return this.httpClient.get<Contrato[]>(url, {headers});
+  }
+
   /**
    * metodo para obtener el detalle del contrato con el número de cuentas de cobro asociadas
    * y el número máximo de pagos permitidos para asi validar que no se creen mas cuentas de las pactadass

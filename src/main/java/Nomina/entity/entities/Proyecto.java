@@ -162,6 +162,19 @@ public class Proyecto implements Serializable {
     private List<Informe> informe;
 
     /**
+     * Supervisor del proyecto
+     */
+    @Column(name="supervisor", nullable=false)
+    private String supervisor;
+
+    /**
+     * Contacto del supervisor del proyecto
+     * Restricciones:
+     */
+    @Column(name="contactoSupervisor", nullable=false)
+    private String contactoSupervisor;
+
+    /**
      * Constructor con parámetros.
      * Inicializa una nueva instancia de Proyecto con los valores especificados.
      *
@@ -176,8 +189,10 @@ public class Proyecto implements Serializable {
      * @param fechaInicio fecha de inicio del contrato
      * @param fechaFin fecha de finalizacion del contrato
      * @param creador Columna que representa el creador de la entidad.
+     *@param supervisor Supervisor del proyecto
+     *@param contactoSupervisor Contacto del supervisor
      */
-    public Proyecto(String nombre, long valorContrato, String tiempoContractual, String objetoContractual, String alcanceContractual, boolean estado, String numeroContrato, String cliente, LocalDate fechaInicio, LocalDate fechaFin, String creador) {
+    public Proyecto(String nombre, long valorContrato, String tiempoContractual, String objetoContractual, String alcanceContractual, boolean estado, String numeroContrato, String cliente, LocalDate fechaInicio, LocalDate fechaFin, String creador, String supervisor, String contactoSupervisor) {
         this.nombre = nombre;
         this.valorContrato = valorContrato;
         this.tiempoContractual = tiempoContractual;
@@ -189,6 +204,7 @@ public class Proyecto implements Serializable {
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
         this.creador = creador;
+        this.supervisor = supervisor;
+        this.contactoSupervisor = contactoSupervisor;
     }
-
 }

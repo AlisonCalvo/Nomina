@@ -39,8 +39,14 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { DateTime } from 'luxon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { CommonModule } from '@angular/common';
+import {CommonModule, CurrencyPipe} from '@angular/common';
 import {AuthService} from "../../../services/auth-service.service";
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es-CO';
+
+// Registrar el locale
+registerLocaleData(localeEs);
 
 @Component({
   selector: 'app-leer-contrato',
@@ -79,8 +85,10 @@ import {AuthService} from "../../../services/auth-service.service";
     MatMenuModule,
     MatTabsModule,
     MatProgressBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    CurrencyPipe
   ],
+  providers: [CurrencyPipe, { provide: LOCALE_ID, useValue: 'es-CO' }],
   styleUrls: ['./leer-contrato.component.scss']
 })
 export class LeerContratoComponent implements OnInit {
@@ -121,8 +129,8 @@ export class LeerContratoComponent implements OnInit {
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
     private dialog: MatDialog,
-    private authService: AuthService
-
+    private authService: AuthService,
+    private currencyPipe: CurrencyPipe
   ) {
     this.mostrarBotonCrear = this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']);
     this.mostrarBotonModificar = this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']);
@@ -142,7 +150,7 @@ export class LeerContratoComponent implements OnInit {
     this.dataSource.filterPredicate = (data, filter) => {
       const searchText = filter.trim().toLowerCase();
       const estadoText = data.estado ? 'en curso' : 'finalizado';
-      const firmadoText = data.firmado ? 'firmado' : 'pendiente';
+      const firmadoText = data.firmado ? 'aprobado' : 'pendiente';
       const combinedValues = this.getCombinedValuesForFilter(data);
       return combinedValues.includes(searchText);
     };
@@ -210,6 +218,7 @@ export class LeerContratoComponent implements OnInit {
     }
   }
 
+
   /**
    * Personaliza los textos del paginador a español
    */
@@ -237,16 +246,21 @@ export class LeerContratoComponent implements OnInit {
    * @description Abre un diálogo modal para crear un nuevo registro utilizando el componente específico
    */
   onCreate(): void {
+    const screenWidth = window.innerWidth;
+    const minWidth = screenWidth < 600 ? '90vw' : '800px';
+
     const dialogRef = this.dialog.open(CrearContratoComponent, {
-      minWidth: '800px',
+      minWidth: minWidth,
       data: {}
     });
+
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadData(); // Recargar la tabla si se creó un registro
       }
     });
   }
+
 
   /**
    * Método para editar un registro existente
@@ -353,8 +367,8 @@ export class LeerContratoComponent implements OnInit {
         displayedColumns.forEach(column => {
           if (column === 'estado') {
             formattedRow[column] = row[column] ? 'curso' : 'Finalizado';
-          } else if (column === 'firmado') {
-            formattedRow[column] = row[column] ? 'Firmado' : 'Pendiente';
+          } else if (column === 'aprobado') {
+            formattedRow[column] = row[column] ? 'Aprobado' : 'Pendiente';
           } else if (Array.isArray(row[column])) {
             // Procesar colecciones con getCollectionSummary
             formattedRow[column] = this.getCollectionSummary(row[column]);

@@ -1,5 +1,7 @@
 package Nomina.entity.controllers;
 
+import Nomina.entity.entities.Contrato;
+import Nomina.entity.entities.Persona;
 import org.springframework.http.HttpStatus;
 import Nomina.entity.dto.ProyectoDTO;
 import java.util.List;
@@ -113,5 +115,34 @@ public class ProyectoController {
         List<Proyecto> proyectos = service.obtenerProyectosVisibles(personaId);
         return ResponseEntity.ok(proyectos);
     }
+
+    /**
+     * Obtiene las personas asociadas a un proyecto específico.
+     *
+     * @param proyectoId Identificador del proyecto
+     * @return ResponseEntity con la lista de personas asociadas al proyecto
+     */
+    @GetMapping("/{proyectoId}/personas")
+    public ResponseEntity<List<Persona>> obtenerPersonasPorProyecto(@PathVariable Long proyectoId) {
+        List<Persona> personas = service.obtenerPersonasPorProyecto(proyectoId);
+        return ResponseEntity.ok(personas);
+    }
+
+
+    /**
+     * Obtiene los contratos asociados a un proyecto específico.
+     *
+     * @param personaId Identificador del contrato
+     * @return ResponseEntity con la lista de contratos asociados al proyecto
+     */
+    @GetMapping("/{personaId}/{proyectoId}/contratos")
+    public ResponseEntity<List<Contrato>> obtenerContratosVisibles(
+            @PathVariable Long personaId,
+            @PathVariable Long proyectoId) {
+
+        List<Contrato> contratos = service.obtenerContratosPorProyecto(personaId, proyectoId);
+        return ResponseEntity.ok(contratos);
+    }
+
 
 }

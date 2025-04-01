@@ -36,6 +36,7 @@ import { PersonaService } from '../../../services/PersonaService';
 import { ContratoService } from '../../../services/ContratoService';
 import { Observable, forkJoin, of, throwError } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import {AuthService} from "../../../services/auth-service.service";
 
 interface DocumentoModel {
   /** id de la entidad */
@@ -52,8 +53,8 @@ interface DocumentoModel {
   formato: string;
   /** etiqueta de la entidad */
   etiqueta: string;
-  /** archivo de la entidad */
-  archivo: any;
+  /** rutaArchivo de la entidad */
+  rutaArchivo: string;
   /** creador de la entidad */
   creador: string;
   /** persona de la entidad */
@@ -129,6 +130,7 @@ export class ActualizarDocumentoComponent implements OnInit {
    * @param contratoService Servicio para gestionar Contrato
    * @param router Servicio de enrutamiento
    * @param snackBar Servicio para notificaciones
+   * @param authService
    * @param data Datos recibidos por el diálogo
    * @param dialogRef Referencia al diálogo
    */
@@ -138,6 +140,7 @@ export class ActualizarDocumentoComponent implements OnInit {
     private contratoService: ContratoService,
     private router: Router,
     private snackBar: MatSnackBar,
+    private authService: AuthService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<ActualizarDocumentoComponent>
   ) {}
@@ -161,7 +164,7 @@ export class ActualizarDocumentoComponent implements OnInit {
           estado: this.data.estado,
           formato: this.data.formato,
           etiqueta: this.data.etiqueta,
-          archivo: this.data.archivo,
+          rutaArchivo: this.data.rutaArchivo,
           creador: this.data.creador,
           persona: this.data.persona && this.data.persona.id ? this.data.persona.id : null,
           contrato: this.data.contrato && this.data.contrato.id ? this.data.contrato.id : null
@@ -176,7 +179,7 @@ export class ActualizarDocumentoComponent implements OnInit {
           estado: this.data.estado,
           formato: this.data.formato,
           etiqueta: this.data.etiqueta,
-          archivo: this.data.archivo,
+          rutaArchivo: this.data.rutaArchivo,
           creador: this.data.creador,
           persona: this.data.persona && this.data.persona.id ? this.data.persona.id : null,
           contrato: this.data.contrato && this.data.contrato.id ? this.data.contrato.id : null
@@ -203,8 +206,10 @@ export class ActualizarDocumentoComponent implements OnInit {
   private loadPersonaOptions() {
     this.personaService.findAll().subscribe(
       data => {
-        this.personas = data;
-        this.updateFieldOptions('persona', data);
+        const field = this.fields.find(f => f.key === 'persona');
+        if (field && field.templateOptions) {
+          field.templateOptions.options = data;
+        }
       },
       error => console.error('Error al cargar persona:', error)
     );
@@ -217,8 +222,10 @@ export class ActualizarDocumentoComponent implements OnInit {
   private loadContratoOptions() {
     this.contratoService.findAll().subscribe(
       data => {
-        this.contratos = data;
-        this.updateFieldOptions('contrato', data);
+        const field = this.fields.find(f => f.key === 'contrato');
+        if (field && field.templateOptions) {
+          field.templateOptions.options = data;
+        }
       },
       error => console.error('Error al cargar contrato:', error)
     );
@@ -268,6 +275,16 @@ export class ActualizarDocumentoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength: 4,
+          maxLength: 100
+        },
+        validation: {
+          messages: {
+            required: 'El nombre es obligatorio.',
+            pattern: 'El nombre solo puede contener letras.',
+            minlength: 'El nombre debe tener al menos 4 caracteres.',
           }
         }
       },
@@ -284,7 +301,15 @@ export class ActualizarDocumentoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          rows: 5
+          rows: 5,
+          minLength: 4,
+          maxLength: 250
+        },
+        validation: {
+          messages: {
+            required: 'La descripción es obligatoria.',
+            minlength: 'La descripción debe tener al menos 4 caracteres.',
+          }
         }
       },
       {
@@ -301,8 +326,7 @@ export class ActualizarDocumentoComponent implements OnInit {
             'class': 'modern-input'
           },
           disabled: true
-        },
-
+        }
       },
       {
         key: 'estado',
@@ -333,6 +357,11 @@ export class ActualizarDocumentoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
+        },
+        validation: {
+          messages: {
+            required: 'El formato es obligatorio.'
+          }
         }
       },
       {
@@ -348,17 +377,31 @@ export class ActualizarDocumentoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
+        },
+        validation: {
+          messages: {
+            required: 'La etiqueta es obligatoria.'
+          }
         }
       },
       {
-        key: 'archivo',
-        type: 'file',
+        key: 'rutaArchivo',
+        type: 'input',
+        className: 'field-container',
         templateOptions: {
-          label: 'Archivo',
-          placeholder: 'Seleccione archivo',
-          multiple: true,
+          label: 'RutaArchivo',
+          placeholder: 'Ingrese rutaArchivo',
           required: true,
-          accept: '.pdf,.doc,.docx'
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La ruta es obligatoria.'
+          }
         }
       },
       {
@@ -384,7 +427,7 @@ export class ActualizarDocumentoComponent implements OnInit {
         templateOptions: {
           label: 'Persona',
           placeholder: 'Seleccione persona',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -393,6 +436,11 @@ export class ActualizarDocumentoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'nombre'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar una persona.'
+          }
         }
       },
       {
@@ -402,7 +450,7 @@ export class ActualizarDocumentoComponent implements OnInit {
         templateOptions: {
           label: 'Contrato',
           placeholder: 'Seleccione contrato',
-          required: false,
+          required: true,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -411,6 +459,11 @@ export class ActualizarDocumentoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'numeroContrato'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar un contrato.'
+          }
         }
       }
     ];
@@ -429,60 +482,9 @@ export class ActualizarDocumentoComponent implements OnInit {
     if (modelData.contrato) {
       modelData.contrato = { id: modelData.contrato };
     }
-    const uploadOperations: Observable<void>[] = [];
-    const fileFields: (keyof DocumentoModel)[] = ['archivo'];
 
-    const handleFileUpload = (field: keyof DocumentoModel) => {
-      const files = this.model[field];
-
-      if (Array.isArray(files) && files.length > 0) {
-        const upload$ = this.documentoService.uploadFiles(files).pipe(
-          switchMap(rutas => {
-            // @ts-ignore
-            modelData[field] = rutas.join(',');
-            return of(undefined);
-          }),
-          catchError(error => {
-            this.handleUploadError(field as string, error);
-            return throwError(error);
-          })
-        );
-        uploadOperations.push(upload$);
-      } else if (files instanceof File) {
-        const upload$ = this.documentoService.uploadFile(files).pipe(
-          switchMap(ruta => {
-            // @ts-ignore
-            modelData[field] = ruta;
-            return of(undefined);
-          }),
-          catchError(error => {
-            this.handleUploadError(field as string, error);
-            return throwError(error);
-          })
-        );
-        uploadOperations.push(upload$);
-      }
-    };
-
-    fileFields.forEach(field => handleFileUpload(field));
-
-    if (uploadOperations.length > 0) {
-      forkJoin(uploadOperations).subscribe({
-        next: () => this.updateEntity(modelData),
-        error: () => this.isLoading = false
-      });
-    } else {
-      this.updateEntity(modelData);
-    }
-  }
-
-  private handleUploadError(field: string, error: any) {
-    console.error(`Error subiendo archivos en ${field}:`, error);
-    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
-      duration: 3000,
-      panelClass: ['error-snackbar']
-    });
-    this.isLoading = false;
+    // Si no se subieron archivos, procedemos a actualizar directamente
+    this.updateEntity(modelData);
   }
 
   private updateEntity(modelData: any) {

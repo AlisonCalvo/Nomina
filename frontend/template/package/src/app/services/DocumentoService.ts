@@ -20,8 +20,8 @@ export interface Documento {
   formato: string;
   /** etiqueta - Campo de texto */
   etiqueta: string;
-  /** archivo - Campo de texto */
-  archivo: string;
+  /** rutaArchivo - Campo de texto */
+  rutaArchivo: string;
   /** persona - Campo de tipo Persona */
   persona: any;
   /** contrato - Campo de tipo Contrato */
@@ -47,8 +47,8 @@ export interface DocumentoDTO {
   formato: string;
   /** etiqueta - Campo de texto */
   etiqueta: string;
-  /** archivo - Campo de texto */
-  archivo: string;
+  /** rutaArchivo - Campo de texto */
+  rutaArchivo: string;
   /** persona - Campo de tipo Persona */
   persona: any;
   /** contrato - Campo de tipo Contrato */

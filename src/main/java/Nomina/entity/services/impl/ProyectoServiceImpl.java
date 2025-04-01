@@ -1,12 +1,13 @@
 package Nomina.entity.services.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import Nomina.entity.dto.ProyectoDTO;
-import Nomina.entity.entities.Contrato;
-import Nomina.entity.entities.Informe;
-import Nomina.entity.entities.Persona;
-import Nomina.entity.entities.Proyecto;
+import Nomina.entity.entities.*;
+import Nomina.entity.repositories.ContratoRepository;
 import Nomina.entity.repositories.ProyectoRepository;
 import Nomina.entity.services.ProyectoService;
 import Nomina.seguridad.Interceptor.HibernateFilterActivator;
@@ -33,7 +34,7 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
      * @param repository Repositorio para la entidad Proyecto
      */
     @Autowired
-    public ProyectoServiceImpl(ProyectoRepository repository) {
+    public ProyectoServiceImpl(ProyectoRepository repository, ContratoRepository repositoryContrato) {
         this.repository = repository;
     }
 
@@ -134,5 +135,39 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
         return repository.findByPersonaId(personaId);
     }
 
+    @Override
+    public List<Persona> obtenerPersonasPorProyecto(Long proyectoId) {
+        // Buscar el proyecto primero
+        Optional<Proyecto> proyectoOptional = repository.findById(proyectoId);
+
+        if (proyectoOptional.isPresent()) {
+            Proyecto proyecto = proyectoOptional.get();
+            // Devolver las personas asociadas al proyecto
+            return proyecto.getPersona();
+        }
+
+        // Devolver lista vacía si no se encuentra el proyecto
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Contrato> obtenerContratosPorProyecto(Long personaId, Long proyectoId) {
+        // Buscar el proyecto específico por ID
+        Optional<Proyecto> proyectoOptional = repository.findById(proyectoId);
+
+        if (proyectoOptional.isPresent()) {
+            Proyecto proyecto = proyectoOptional.get();
+
+            // Filtrar los contratos donde la persona está relacionada
+            return proyecto.getContrato().stream()
+                    .filter(contrato -> contrato.getPersona().getId() == personaId)
+                    .collect(Collectors.toList());
+        }
+
+        // Si el proyecto no existe, devolver una lista vacía
+        return new ArrayList<>();
+    }
 
 }
+
+

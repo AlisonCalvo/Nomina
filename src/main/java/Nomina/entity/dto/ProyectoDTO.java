@@ -87,4 +87,14 @@ public class ProyectoDTO {
      */
     private String creador;
 
+    /**
+     * Campo que representa el supervisor del proyecto
+     */
+    private String supervisor;
+
+    /**
+     * Campo que representa el contacto del supervisor del proyecto
+     */
+    private String contactoSupervisor;
+
 }

@@ -135,6 +135,11 @@ export class CrearInformeComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
+        },
+        validation: {
+          messages: {
+            required: 'La fecha del informe es obligatoria.'
+          }
         }
       },
       {
@@ -149,6 +154,14 @@ export class CrearInformeComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          minLength:3,
+          maxLength: 100
+        },
+        validation: {
+          messages: {
+            required: 'El nombre del cliente es obligatorio.',
+            minLength: 'El nombre del cliente debe tener al menos 3 caracteres.'
           }
         }
       },
@@ -164,6 +177,16 @@ export class CrearInformeComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          minLength:3,
+          maxLength:50,
+          pattern:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/
+        },
+        validation: {
+          messages: {
+            required: 'El cargo es obligatorio.',
+            minLength: 'El cargo debe tener al menos 3 caracteres.',
+            pattern: 'El cargo solo puede contener letras y espacios.'
           }
         }
       },
@@ -176,6 +199,64 @@ export class CrearInformeComponent implements OnInit {
           multiple: true,
           required: true,
           accept: '.pdf,.doc,.xls,.ppt'
+        }
+      },
+      {
+        key: 'proyecto',
+        type: 'select',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Proyecto',
+          change: (field, event) => {
+            // Obtener el valor del proyecto seleccionado
+            const value: number = field.formControl?.value;
+            this.loadContratoOptions(value);
+            console.log('Proyecto seleccionado:', value);
+          },
+          placeholder: 'Seleccione proyecto',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          options: [],
+          valueProp: 'id',
+          labelProp: 'nombre'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar un proyecto.'
+          }
+        }
+      },
+      {
+        key: 'contrato',
+        type: 'select',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Contrato',
+          change: (field, event) => {
+            // Obtener el valor del contrato seleccionado
+            const value: number = field.formControl?.value;
+            this.loadCuentaCobroOptions(value);
+            console.log('contrato seleccionado:', value);
+          },
+          placeholder: 'Seleccione contrato',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          options: [],
+          valueProp: 'id',
+          labelProp: 'numeroContrato'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar un contrato.'
+          }
         }
       },
       {
@@ -194,85 +275,74 @@ export class CrearInformeComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'numeroCuenta'
-        }
-      },
-      {
-        key: 'proyecto',
-        type: 'select',
-        className: 'field-container',
-        templateOptions: {
-          label: 'Proyecto',
-          placeholder: 'Seleccione proyecto',
-          required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          },
-          options: [],
-          valueProp: 'id',
-          labelProp: 'nombre'
-        }
-      },
-      {
-        key: 'contrato',
-        type: 'select',
-        className: 'field-container',
-        templateOptions: {
-          label: 'Contrato',
-          placeholder: 'Seleccione contrato',
-          required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          },
-          options: [],
-          valueProp: 'id',
-          labelProp: 'numeroContrato'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar una cuenta de cobro.'
+          }
         }
       }
     ];
 
-    this.loadCuentaCobroOptions();
     this.loadProyectoOptions();
-    this.loadContratoOptions();
   }
 
-  private loadCuentaCobroOptions() {
-    this.cuentaCobroService.findAll().subscribe(
-      data => {
-        const field = this.fields.find(f => f.key === 'cuentaCobro');
-        if (field && field.templateOptions) {
-          field.templateOptions.options = data;
-        }
-      },
-      error => console.error('Error al cargar cuentaCobro:', error)
-    );
+  private loadCuentaCobroOptions(id:number) {
+    let username: String = this.authService.getUsername();
+    if (username) {
+      // Usar un método específico en el servicio de contratos para obtener contratos por persona
+      this.cuentaCobroService.obtenerCuentasCobroPorContrato(username,id).subscribe(
+        data => {
+          const field = this.fields.find(f => f.key === 'cuentaCobro');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar proyectos de la persona:', error)
+      );
+    } else {
+      console.error('No se pudo obtener el ID de la persona');
+    }
   }
 
   private loadProyectoOptions() {
-    this.proyectoService.findAll().subscribe(
-      data => {
-        const field = this.fields.find(f => f.key === 'proyecto');
-        if (field && field.templateOptions) {
-          field.templateOptions.options = data;
-        }
-      },
-      error => console.error('Error al cargar proyecto:', error)
-    );
+// Obtener el ID de la persona desde el token
+    const personaId = this.authService.getPersonaId();
+
+    if (personaId) {
+      // Usar un método específico en el servicio de contratos para obtener contratos por persona
+      this.proyectoService.findVisibles(personaId).subscribe(
+        data => {
+          const field = this.fields.find(f => f.key === 'proyecto');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar proyectos de la persona:', error)
+      );
+    } else {
+      console.error('No se pudo obtener el ID de la persona');
+    }
   }
 
-  private loadContratoOptions() {
-    this.contratoService.findAll().subscribe(
-      data => {
-        const field = this.fields.find(f => f.key === 'contrato');
-        if (field && field.templateOptions) {
-          field.templateOptions.options = data;
-        }
-      },
-      error => console.error('Error al cargar contrato:', error)
-    );
+  private loadContratoOptions(proyectoId: number) {
+    // Obtener el ID de la persona desde el token
+    const personaId = this.authService.getPersonaId();
+
+    if (personaId) {
+      // Llamamos al servicio con personaId y proyectoId
+      this.contratoService.obtenerContratosPorProyecto(personaId, proyectoId).subscribe(
+        data => {
+          const field = this.fields.find(f => f.key === 'contrato');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar contratos de la persona y proyecto:', error)
+      );
+    } else {
+      console.error('No se pudo obtener el ID de la persona');
+    }
   }
 
   closeDialog(): void {

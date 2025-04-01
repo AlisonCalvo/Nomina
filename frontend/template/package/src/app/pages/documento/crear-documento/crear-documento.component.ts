@@ -45,7 +45,7 @@ interface DocumentoModel {
   estado: boolean;
   formato: string;
   etiqueta: string;
-  archivo: string;
+  rutaArchivo: string;
   creador: string;
   persona: any;
   contrato: any;
@@ -100,7 +100,7 @@ export class CrearDocumentoComponent implements OnInit {
     estado: false,
     formato: '',
     etiqueta: '',
-    archivo: '',
+    rutaArchivo: '',
     creador: '',
     persona: null,
     contrato: null
@@ -135,6 +135,16 @@ export class CrearDocumentoComponent implements OnInit {
           floatLabel: 'always',
           attributes: {
             'class': 'modern-input'
+          },
+          pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+          minLength: 4,
+          maxLength: 100
+        },
+        validation: {
+          messages: {
+            required: 'El nombre es obligatorio.',
+            pattern: 'El nombre solo puede contener letras.',
+            minlength: 'El nombre debe tener al menos 4 caracteres.',
           }
         }
       },
@@ -151,7 +161,15 @@ export class CrearDocumentoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          rows: 5
+          rows: 5,
+          minLength: 4,
+          maxLength: 250
+        },
+        validation: {
+          messages: {
+            required: 'La descripción es obligatoria.',
+            minlength: 'La descripción debe tener al menos 4 caracteres.',
+          }
         }
       },
       {
@@ -199,6 +217,11 @@ export class CrearDocumentoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
+        },
+        validation: {
+          messages: {
+            required: 'El formato es obligatorio.'
+          }
         }
       },
       {
@@ -214,17 +237,31 @@ export class CrearDocumentoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           }
+        },
+        validation: {
+          messages: {
+            required: 'La etiqueta es obligatoria.'
+          }
         }
       },
       {
-        key: 'archivo',
-        type: 'file',
+        key: 'rutaArchivo',
+        type: 'input',
+        className: 'field-container',
         templateOptions: {
-          label: 'Archivo',
-          placeholder: 'Seleccione archivo',
-          multiple: true,
+          label: 'RutaArchivo',
+          placeholder: 'Ingrese rutaArchivo',
           required: true,
-          accept: '.pdf,.doc,.xls,.ppt'
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'La ruta es obligatoria.'
+          }
         }
       },
       {
@@ -243,6 +280,11 @@ export class CrearDocumentoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'nombre'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar una persona.'
+          }
         }
       },
       {
@@ -261,6 +303,11 @@ export class CrearDocumentoComponent implements OnInit {
           options: [],
           valueProp: 'id',
           labelProp: 'numeroContrato'
+        },
+        validation: {
+          messages: {
+            required: 'Debe seleccionar un contrato.'
+          }
         }
       }
     ];
@@ -305,61 +352,8 @@ export class CrearDocumentoComponent implements OnInit {
     const modelData = { ...this.model };
     modelData.persona = { id: this.model.persona };
     modelData.contrato = { id: this.model.contrato };
-
-    const uploadOperations: Observable<void>[] = [];
-    const fileFields: (keyof DocumentoModel)[] = ['archivo'];
-
-    const handleFileUpload = (field: keyof DocumentoModel) => {
-      const files = this.model[field];
-
-      if (Array.isArray(files) && files.length > 0) {
-        const upload$ = this.documentoService.uploadFiles(files).pipe(
-          switchMap(rutas => {
-            // @ts-ignore
-            modelData[field] = rutas.join(',');
-            return of(undefined);
-          }),
-          catchError(error => {
-            this.handleUploadError(field as string, error);
-            return throwError(error);
-          })
-        );
-        uploadOperations.push(upload$);
-      } else if (files instanceof File) {
-        const upload$ = this.documentoService.uploadFile(files).pipe(
-          switchMap(ruta => {
-            // @ts-ignore
-            modelData[field] = ruta;
-            return of(undefined);
-          }),
-          catchError(error => {
-            this.handleUploadError(field as string, error);
-            return throwError(error);
-          })
-        );
-        uploadOperations.push(upload$);
-      }
-    };
-
-    fileFields.forEach(field => handleFileUpload(field));
-
-    if (uploadOperations.length > 0) {
-      forkJoin(uploadOperations).subscribe({
-        next: () => this.saveEntity(modelData),
-        error: () => this.isLoading = false
-      });
-    } else {
-      this.saveEntity(modelData);
-    }
-  }
-
-  private handleUploadError(field: string, error: any) {
-    console.error(`Error subiendo archivos en ${field}:`, error);
-    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
-      duration: 3000,
-      panelClass: ['error-snackbar']
-    });
-    this.isLoading = false;
+    // Si no hay archivos a subir o no es un campo file, guardamos directo
+    this.saveEntity(modelData);
   }
 
   private saveEntity(modelData: any) {

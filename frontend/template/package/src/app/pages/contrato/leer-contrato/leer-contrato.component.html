@@ -40,7 +40,7 @@
       </ng-container>
       <ng-container matColumnDef="valorTotalContrato">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Valor Total Contrato</th>
-        <td mat-cell *matCellDef="let element">{{element.valorTotalContrato}}</td>
+        <td mat-cell *matCellDef="let element">{{element.valorTotalContrato  | currency:'COP':'symbol':'1.0-0':'es-CO' }}</td>
       </ng-container>
       <ng-container matColumnDef="numeroPagos">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Numero Pagos</th>
@@ -70,7 +70,7 @@
         <th mat-header-cell *matHeaderCellDef mat-sort-header> Firmado </th>
         <td mat-cell *matCellDef="let element">
     <span [ngClass]="{'status-approved': element.firmado, 'status-rejected': !element.firmado}">
-      {{ element.firmado ? 'Firmado' : 'Pendiente' }}
+      {{ element.firmado ? 'Aprobado' : 'Pendiente' }}
     </span>
         </td>
       </ng-container>

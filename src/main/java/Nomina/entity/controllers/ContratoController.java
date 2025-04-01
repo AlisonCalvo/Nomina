@@ -47,7 +47,7 @@ public class ContratoController {
      * Obtiene todas las entidades Contrato disponibles.
      *
      * @return ResponseEntity con la lista de entidades si existen,
-     *         o una lista vacía si no hay registros
+     * o una lista vacía si no hay registros
      */
     @GetMapping
     public ResponseEntity<List<Contrato>> findAll() {
@@ -60,7 +60,7 @@ public class ContratoController {
      *
      * @param id Identificador único de la entidad
      * @return ResponseEntity con la entidad si existe,
-     *         o ResponseEntity.notFound si no existe
+     * o ResponseEntity.notFound si no existe
      */
     @GetMapping("/{id}")
     public ResponseEntity<Contrato> findById(@PathVariable Long id) {
@@ -83,10 +83,10 @@ public class ContratoController {
     /**
      * Actualiza una entidad Contrato existente.
      *
-     * @param id Identificador de la entidad a actualizar
+     * @param id  Identificador de la entidad a actualizar
      * @param dto DTO con los nuevos datos de la entidad
      * @return ResponseEntity con la entidad actualizada,
-     *         o ResponseEntity.notFound si la entidad no existe
+     * o ResponseEntity.notFound si la entidad no existe
      */
     @PutMapping("/{id}")
     public ResponseEntity<Contrato> update(@PathVariable Long id, @RequestBody ContratoDTO dto) {
@@ -102,7 +102,7 @@ public class ContratoController {
      *
      * @param id Identificador de la entidad a eliminar
      * @return ResponseEntity con estado HTTP 204 (No Content) si se eliminó correctamente,
-     *         o ResponseEntity.notFound si la entidad no existe
+     * o ResponseEntity.notFound si la entidad no existe
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
@@ -119,6 +119,17 @@ public class ContratoController {
         return ResponseEntity.ok(contratos);
     }
 
+    /**
+     * Obtiene las cuentas de cobro asociadas a un contrato específico.
+     *
+     * @param contratoId Identificador del proyecto
+     * @return ResponseEntity con la lista de personas asociadas al proyecto
+     */
+    @GetMapping("/{username}/{contratoId}/cuentascobro")
+    public ResponseEntity<List<CuentaCobro>> obtenerCuentasCobroPorContrato(@PathVariable String username,@PathVariable Long contratoId) {
+        List<CuentaCobro> cuentas = service.obtenerCuentasCobroPorContrato(username, contratoId);
+        return ResponseEntity.ok(cuentas);
+    }
 
     /**
      * Endpoint para obtener de los contratos el numero de pagos y la cantidad de cuentas de cobro que tiene asociadas
