@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/authGitHub/github")
-@CrossOrigin(origins = {"http://localhost:*", "http://3.135.124.123:*"})
+@CrossOrigin(origins = {"http://localhost:*", "http://www.datentity.org:*"})
 
 public class GitHubAuthController {
 
