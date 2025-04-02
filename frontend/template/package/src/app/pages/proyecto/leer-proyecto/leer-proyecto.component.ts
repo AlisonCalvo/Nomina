@@ -93,6 +93,10 @@ registerLocaleData(localeEs);
   styleUrls: ['./leer-proyecto.component.scss']
 })
 export class LeerProyectoComponent implements OnInit {
+  mostrarBotonCrear: boolean;
+  mostrarBotonModificar: boolean;
+  mostrarBotonEliminar: boolean;
+
   // Columnas que se mostrarán en la tabla
   displayedColumns: string[] = ['id', 'nombre', 'valorContrato', 'tiempoContractual', 'objetoContractual', 'alcanceContractual', 'estado', 'numeroContrato', 'cliente', 'fechaInicio', 'fechaFin', 'creador', 'persona', 'supervisor','contactoSupervisor','acciones'];
 
@@ -132,6 +136,9 @@ export class LeerProyectoComponent implements OnInit {
     private authService: AuthService,
     private currencyPipe: CurrencyPipe
   ) {
+    this.mostrarBotonCrear = this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']);
+    this.mostrarBotonModificar = this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']);
+    this.mostrarBotonEliminar = this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']);
     this.customizePaginator();
   }
 

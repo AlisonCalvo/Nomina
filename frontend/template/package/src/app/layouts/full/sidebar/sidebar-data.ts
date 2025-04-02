@@ -145,11 +145,11 @@ export const navItems: NavItem[] = [
     route: '/roles',
   },
   {
-    navCap: 'Reportes',
+    navCap: 'Generador de Reportes',
   },
   {
-    displayName: 'Generador de Reportes',
-    iconName: 'description',
+    displayName: 'Reportes',
+    iconName: 'list',
     route: '/reportes',
   }
 ];

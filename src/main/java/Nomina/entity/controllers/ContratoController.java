@@ -2,10 +2,14 @@ package Nomina.entity.controllers;
 
 import Nomina.entity.entities.CuentaCobro;
 import org.springframework.http.HttpStatus;
+
+import java.util.HashMap;
 import java.util.List;
 import Nomina.entity.services.ContratoService;
 import Nomina.entity.entities.Contrato;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
 import java.util.Optional;
 import Nomina.entity.services.impl.NotificacionEmailServiceImpl;
 import org.springframework.http.ResponseEntity;
@@ -123,8 +127,30 @@ public class ContratoController {
      */
     @GetMapping("/{username}/{contratoId}/cuentascobro")
     public ResponseEntity<List<CuentaCobro>> obtenerCuentasCobroPorContrato(@PathVariable String username,@PathVariable Long contratoId) {
-        List<CuentaCobro> cunetas = service.obtenerCuentasCobroPorContrato(username, contratoId);
-        return ResponseEntity.ok(cunetas);
+        List<CuentaCobro> cuentas = service.obtenerCuentasCobroPorContrato(username, contratoId);
+        return ResponseEntity.ok(cuentas);
+    }
+
+    /**
+     * Endpoint para obtener de los contratos el numero de pagos y la cantidad de cuentas de cobro que tiene asociadas
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}/detalle")
+    public ResponseEntity<Map<String, Object>> obtenerDetalleContrato(@PathVariable Long id) {
+        Optional<Contrato> contratoOpt = service.findById(id);
+        if (contratoOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Contrato contrato = contratoOpt.get();
+        List<CuentaCobro> cuentasDeCobro = contrato.getCuentaCobro(); // Asegúrate de que la relación está correctamente configurada para cargar las cuentas de cobro
+        int numeroCuentasCobro = cuentasDeCobro != null ? cuentasDeCobro.size() : 0;
+        Map<String, Object> response = new HashMap<>();
+        response.put("contrato", contrato);
+        response.put("numeroCuentasCobro", numeroCuentasCobro);
+        response.put("numeroPagosPermitidos", contrato.getNumeroPagos());
+
+        return ResponseEntity.ok(response);
     }
 
 }

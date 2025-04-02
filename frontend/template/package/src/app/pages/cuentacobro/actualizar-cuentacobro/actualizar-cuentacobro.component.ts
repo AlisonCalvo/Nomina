@@ -344,6 +344,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
+          disabled: !this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']),
           attributes: {
             'class': 'modern-input'
           },
@@ -409,6 +410,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
+          disabled: !this.authService.tieneRoles(['ADMINISTRADOR', 'CONTADOR']),
           attributes: {
             'class': 'modern-input'
           },

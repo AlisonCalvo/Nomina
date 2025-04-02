@@ -127,43 +127,45 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
         Optional<CuentaCobro> optional = repository.findById(id);
         if (optional.isEmpty()) {
             throw new RuntimeException("CuentaCobro no encontrada con id: " + id);
-        }
 
-        CuentaCobro entity = optional.get();
 
-        List<String> filePaths = new ArrayList<>();
-
-        if (entity.getFirmaContratista() != null) {
-            String[] contratistaPaths = entity.getFirmaContratista().split(",");
-            for (String path : contratistaPaths) {
-                path = path.trim();
-                if (!path.isEmpty()) {
-                    filePaths.add(path);
-                }
-            }
-        }
-
-        if (entity.getFirmaGerente() != null) {
-            String[] gerentePaths = entity.getFirmaGerente().split(",");
-            for (String path : gerentePaths) {
-                path = path.trim();
-                if (!path.isEmpty()) {
-                    filePaths.add(path);
-                }
-            }
-        }
-
-        for (String filePathString : filePaths) {
-            try {
-                Path filePath = Path.of(filePathString).toAbsolutePath().normalize();
-                Path uploadsDir = Path.of("uploads").toAbsolutePath().normalize();
-                if (filePath.startsWith(uploadsDir)) {
-
-                    Files.deleteIfExists(filePath);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            //Se guardan ahora como imagenes en un base64 en la base de datos,
+            // entonces ya no se requiere eliminacion de archivos
+//        CuentaCobro entity = optional.get();
+//
+//        List<String> filePaths = new ArrayList<>();
+//
+//        if (entity.getFirmaContratista() != null) {
+//            String[] contratistaPaths = entity.getFirmaContratista().split(",");
+//            for (String path : contratistaPaths) {
+//                path = path.trim();
+//                if (!path.isEmpty()) {
+//                    filePaths.add(path);
+//                }
+//            }
+//        }
+//
+//        if (entity.getFirmaGerente() != null) {
+//            String[] gerentePaths = entity.getFirmaGerente().split(",");
+//            for (String path : gerentePaths) {
+//                path = path.trim();
+//                if (!path.isEmpty()) {
+//                    filePaths.add(path);
+//                }
+//            }
+//        }
+//
+//        for (String filePathString : filePaths) {
+//            try {
+//                Path filePath = Path.of(filePathString).toAbsolutePath().normalize();
+//                Path uploadsDir = Path.of("uploads").toAbsolutePath().normalize();
+//                if (filePath.startsWith(uploadsDir)) {
+//
+//                    Files.deleteIfExists(filePath);
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
         repository.deleteById(id);
     }

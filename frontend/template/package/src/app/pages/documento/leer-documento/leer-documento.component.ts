@@ -41,6 +41,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ContratoService } from '../../../services/ContratoService';
 import { CommonModule } from '@angular/common';
+import {DownloadFileComponent} from "../../../downloadFile.component";
 @Component({
   selector: 'app-leer-documento',
   templateUrl: './leer-documento.component.html',
@@ -269,6 +270,37 @@ export class LeerDocumentoComponent implements OnInit {
     }
   }
 
+  onDownload(element: any) {
+    this.documentoService.getFilesByDocumentoServiceId(element.id)
+      .subscribe({
+        next: (files) => {
+          const dialogRef = this.dialog.open(DownloadFileComponent, {
+            maxWidth: 'none',
+            width: '500px',
+            data: { files: files }
+          });
+          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
+            if (selectedFiles && selectedFiles.length > 0) {
+              selectedFiles.forEach(selectedFile => {
+                this.documentoService.downloadFile(selectedFile).subscribe(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = selectedFile;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                });
+              });
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error al obtener archivos:', err);
+          this.showMessage('Error al obtener archivos del servidor.', 'error');
+        }
+      });
+  }
+
   /**
    * Método de validación previo a la eliminación
    * @param {number} id - ID del registro a validar
@@ -412,7 +444,7 @@ export class LeerDocumentoComponent implements OnInit {
       return defaultText;
     }
 
-    return keys.slice(0, 2).map(key => `${key}: ${value[key]}`).join(', ');
+    return keys.slice(1, 2).map(key => `${value[key]}`).join(', ');
   }
 
   getCollectionSummary(collection: any[] | null, defaultText: string = 'Sin datos'): string {

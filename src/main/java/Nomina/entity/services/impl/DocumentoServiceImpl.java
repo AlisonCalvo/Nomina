@@ -1,10 +1,15 @@
 package Nomina.entity.services.impl;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import Nomina.entity.dto.DocumentoDTO;
 import Nomina.entity.entities.Contrato;
 import Nomina.entity.entities.Documento;
+import Nomina.entity.entities.Informe;
 import Nomina.entity.entities.Persona;
 import Nomina.entity.repositories.DocumentoRepository;
 import Nomina.entity.services.DocumentoService;
@@ -12,6 +17,8 @@ import Nomina.seguridad.Interceptor.HibernateFilterActivator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.print.Doc;
 
 /**
  * Implementación del servicio {@link DocumentoService} que proporciona

@@ -50,6 +50,7 @@ export class LoginTradicionalComponent {
         text: 'Por favor, completa todos los campos correctamente.',
         icon: 'warning',
         confirmButtonText: 'Entendido',
+        confirmButtonColor: 'var(--colorPrimario)',
       });
       return;
     }
@@ -66,6 +67,7 @@ export class LoginTradicionalComponent {
             text: 'Redirigiendo al inicio...',
             icon: 'success',
             confirmButtonText: 'OK',
+            confirmButtonColor: 'var(--colorPrimario)',
           }).then(() => {
             this.router.navigate(['/inicio']);
           });
@@ -77,6 +79,7 @@ export class LoginTradicionalComponent {
             text: 'Usuario o contraseña incorrectos.',
             icon: 'error',
             confirmButtonText: 'Intentar de nuevo',
+            confirmButtonColor: 'var(--colorPrimario)',
           });
         }
       });

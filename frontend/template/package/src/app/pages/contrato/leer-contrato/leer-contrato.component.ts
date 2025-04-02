@@ -92,6 +92,9 @@ registerLocaleData(localeEs);
   styleUrls: ['./leer-contrato.component.scss']
 })
 export class LeerContratoComponent implements OnInit {
+  mostrarBotonCrear: boolean;
+  mostrarBotonModificar: boolean;
+  mostrarBotonEliminar: boolean;
   // Columnas que se mostrarán en la tabla
   displayedColumns: string[] = ['id','numeroContrato' ,'cargo', 'valorTotalContrato', 'numeroPagos', 'fechaInicioContrato', 'fechaFinContrato', 'estado', 'rutaArchivo', 'firmado', 'creador', 'proyecto', 'persona', 'tipoContrato', 'periodicidadPago', 'acciones'];
 
@@ -129,6 +132,9 @@ export class LeerContratoComponent implements OnInit {
     private authService: AuthService,
     private currencyPipe: CurrencyPipe
   ) {
+    this.mostrarBotonCrear = this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']);
+    this.mostrarBotonModificar = this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']);
+    this.mostrarBotonEliminar = this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']);
     this.customizePaginator();
   }
 

@@ -100,8 +100,8 @@ public class Documento implements Serializable {
     private String etiqueta;
 
     /**
-     * ruta del archivo 
-     * 
+     * ruta del archivo
+     *
      * Restricciones:
      */
     @Column(name="rutaArchivo", nullable=false)
@@ -139,7 +139,7 @@ public class Documento implements Serializable {
      * @param estado estado del documento
      * @param formato formato del documento
      * @param etiqueta etiqueta del documento(publico o privado)
-     * @param rutaArchivo ruta del archivo 
+     * @param rutaArchivo ruta del archivo
      * @param persona 
      * @param contrato 
      * @param creador Columna que representa el creador de la entidad.

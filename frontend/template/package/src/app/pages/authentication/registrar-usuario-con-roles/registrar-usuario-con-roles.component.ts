@@ -175,7 +175,8 @@ export class RegistrarUsuarioConRolesComponent implements OnInit {
             title: '¡Registro exitoso!',
             text: 'El usuario ha sido registrado correctamente con los roles seleccionados.',
             icon: 'success',
-            confirmButtonText: 'OK'
+            confirmButtonText: 'OK',
+            confirmButtonColor: 'var(--colorPrimario)',
           }).then(() => {
             window.location.reload();
           });
@@ -186,7 +187,8 @@ export class RegistrarUsuarioConRolesComponent implements OnInit {
             title: 'Error',
             text: error.error?.message || 'Error al registrar usuario. Por favor, intenta nuevamente.',
             icon: 'error',
-            confirmButtonText: 'Cerrar'
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: 'var(--colorPrimario)',
           });
         }
       });

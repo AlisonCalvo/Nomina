@@ -43,6 +43,8 @@ import { CuentaCobroService } from '../../../services/CuentaCobroService';
 import { ContratoService } from '../../../services/ContratoService';
 import { CommonModule } from '@angular/common';
 import {DownloadFileComponent} from "../../../downloadFile.component";
+import {ShowFilesListComponent} from "../../../showFiles.component";
+
 @Component({
   selector: 'app-leer-informe',
   templateUrl: './leer-informe.component.html',
@@ -440,7 +442,7 @@ export class LeerInformeComponent implements OnInit {
       return defaultText;
     }
 
-    return keys.slice(0, 2).map(key => `${key}: ${value[key]}`).join(', ');
+    return keys.slice(1, 2).map(key => `${key}: ${value[key]}`).join(', ');
   }
 
   getCollectionSummary(collection: any[] | null, defaultText: string = 'Sin datos'): string {
@@ -455,4 +457,28 @@ export class LeerInformeComponent implements OnInit {
     this.showMessage('Funcionalidad no implementada', 'error');
   }
 
-   }
+  onShowInformePDF(element: any) {
+    const rawPaths = element.informePDF;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos de InformePDF.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: { files: files }
+    });
+  }
+
+  private extractFileName(fullPath: string): string {
+    const lastBackslash = fullPath.lastIndexOf('\\');
+    const lastSlash = fullPath.lastIndexOf('/');
+    const lastSeparator = Math.max(lastBackslash, lastSlash);
+    if (lastSeparator === -1) {
+      return fullPath;
+    }
+    return fullPath.substring(lastSeparator + 1);
+  }
+
+}

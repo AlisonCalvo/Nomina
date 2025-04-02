@@ -35,6 +35,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DocumentoService } from '../../../services/DocumentoService';
 import { PersonaService } from '../../../services/PersonaService';
 import { ContratoService } from '../../../services/ContratoService';
+import { Observable, forkJoin, of, throwError } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 
 interface DocumentoModel {
   nombre: string;
@@ -104,6 +106,7 @@ export class CrearDocumentoComponent implements OnInit {
     contrato: null
   };
   fields: FormlyFieldConfig[] = [];
+  isLoading = false;
 
   constructor(
     private dialogRef: MatDialogRef<CrearDocumentoComponent>,

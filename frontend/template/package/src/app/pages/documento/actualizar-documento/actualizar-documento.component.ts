@@ -34,6 +34,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DocumentoService } from '../../../services/DocumentoService';
 import { PersonaService } from '../../../services/PersonaService';
 import { ContratoService } from '../../../services/ContratoService';
+import { Observable, forkJoin, of, throwError } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import {AuthService} from "../../../services/auth-service.service";
 
 interface DocumentoModel {
@@ -118,6 +120,8 @@ export class ActualizarDocumentoComponent implements OnInit {
   model: DocumentoModel = {} as DocumentoModel;
   originalModel: DocumentoModel = {} as DocumentoModel;
   fields: FormlyFieldConfig[] = [];
+  /** Indicador de carga de archivos */
+  isLoading = false;
 
   /**
    * Constructor del componente
