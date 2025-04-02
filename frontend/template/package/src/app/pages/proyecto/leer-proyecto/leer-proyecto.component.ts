@@ -270,10 +270,12 @@ export class LeerProyectoComponent implements OnInit {
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(proyecto: any): void {
-    const dialogRef = this.dialog.open(ActualizarProyectoComponent, {
-      minWidth: '800px',
-      data: proyecto,
-    });
+      const screenWidth = window.innerWidth;
+      const minWidth = screenWidth < 600 ? '90vw' : '800px';
+      const dialogRef = this.dialog.open(ActualizarProyectoComponent, {
+        minWidth: minWidth,
+        data: proyecto,
+      });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {

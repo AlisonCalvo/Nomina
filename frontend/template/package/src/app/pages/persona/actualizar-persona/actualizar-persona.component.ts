@@ -38,33 +38,26 @@ import {AuthService} from "../../../services/auth-service.service";
 import {PermissionService} from "../../authentication/services/PermissionService";
 
 interface PersonaModel {
-  /** id de la entidad */
   id: number;
-  /** nombre de la entidad */
   nombre: string;
-  /** correo de la entidad */
   correo: string;
-  /** numeroDocumento de la entidad */
   numeroDocumento: string;
-  /** tituloProfesional de la entidad */
   tituloProfesional: string;
-  /** direccion de la entidad */
   direccion: string;
-  /** telefono de la entidad */
   telefono: string;
-  /** fechaExpedicion de la entidad */
   fechaExpedicion: Date;
-  /** fechaNacimiento de la entidad */
   fechaNacimiento: Date;
-  /** nacionalidad de la entidad */
   nacionalidad: string;
-  /** creador de la entidad */
   creador: string;
-  /** proyecto de la entidad */
   proyecto: any;
-  /** tipoDocumento de la entidad */
   tipoDocumento: any;
   tipoPersona: any;
+  necesitaAcceso: boolean;
+  roles?: number[];
+  experienciaProfesional?: string;
+  numeroTarjetaProfesional?: string;
+  telefonoAdicional?: string;
+  firmaDigital?: string;
 }
 
 /**
@@ -114,12 +107,12 @@ interface PersonaModel {
 export class ActualizarPersonaComponent implements OnInit {
   /** Lista de todas las entidades */
   personas: any[] = [];
-  /** Lista de proyecto disponibles */
+  /** Lista de proyecto disponible */
   proyectos: any[] = [];
   /** Lista de tipoDocumento disponibles */
   tipoDocumentos: any[] = [];
-  /** Lista de tipoPersona disponibles */
-  tipoPersona: any[] = [];
+   /** Lista de tipoPersona disponibles */
+   tipoPersona: any[] = [];
   /** Entidad seleccionada para actualizar */
   selectedPersona: any = null;
   form = new FormGroup({});
@@ -163,6 +156,10 @@ export class ActualizarPersonaComponent implements OnInit {
     if (this.data) {
       try {
         this.selectedPersona = { ...this.data };
+        console.log('tipoPersona recibido:', this.data.tipoPersona);
+        console.log('Datos completos recibidos:', this.data);
+
+
         // Inicializar modelo con los datos recibidos
         this.model = {
           tipoPersona: this.data.tipoPersona,
@@ -178,7 +175,13 @@ export class ActualizarPersonaComponent implements OnInit {
           nacionalidad: this.data.nacionalidad,
           creador: this.data.creador,
           proyecto: this.data.proyecto && this.data.proyecto.id ? this.data.proyecto.id : null,
-          tipoDocumento: this.data.tipoDocumento && this.data.tipoDocumento.id ? this.data.tipoDocumento.id : null
+          tipoDocumento: this.data.tipoDocumento && this.data.tipoDocumento.id ? this.data.tipoDocumento.id : null,
+          necesitaAcceso: this.data.necesitaAcceso ?? false,
+          roles: this.data.roles || [],
+          experienciaProfesional: this.data.experienciaProfesional,
+          numeroTarjetaProfesional: this.data.numeroTarjetaProfesional,
+          telefonoAdicional: this.data.telefonoAdicional,
+          firmaDigital: this.data.firmaDigital,
         };
 
         // Copia del modelo original para detectar cambios
@@ -196,7 +199,13 @@ export class ActualizarPersonaComponent implements OnInit {
           nacionalidad: this.data.nacionalidad,
           creador: this.data.creador,
           proyecto: this.data.proyecto && this.data.proyecto.id ? this.data.proyecto.id : null,
-          tipoDocumento: this.data.tipoDocumento && this.data.tipoDocumento.id ? this.data.tipoDocumento.id : null
+          tipoDocumento: this.data.tipoDocumento && this.data.tipoDocumento.id ? this.data.tipoDocumento.id : null,
+          necesitaAcceso: this.data.necesitaAcceso ?? false,
+          roles: this.data.roles || [],
+          experienciaProfesional: this.data.experienciaProfesional,
+          numeroTarjetaProfesional: this.data.numeroTarjetaProfesional,
+          telefonoAdicional: this.data.telefonoAdicional,
+          firmaDigital: this.data.firmaDigital,
         };
       } catch (error) {
         console.error('Error al procesar datos:', error);

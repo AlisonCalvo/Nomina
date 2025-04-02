@@ -191,24 +191,85 @@ public class PersonaServiceImpl implements PersonaService {
      */
     @Override
     public Persona update(long id, PersonaDTO dto) {
-        Optional<Persona> optionalEntity = repository.findById(id);
-        if (optionalEntity.isPresent()) {
-            Persona entity = optionalEntity.get();
-            for (java.lang.reflect.Field field : dto.getClass().getDeclaredFields()) {
-                field.setAccessible(true);
-                try {
-                    java.lang.reflect.Field entityField = entity.getClass().getDeclaredField(field.getName());
-                    entityField.setAccessible(true);
-                    entityField.set(entity, field.get(dto));
-                } catch (NoSuchFieldException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
+        // Buscar la persona en la base de datos
+        Persona persona = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
+
+        // Verificar si el tipo de persona ha cambiado
+        if (!persona.getClass().getSimpleName().equalsIgnoreCase(dto.getTipoPersona())) {
+            // Si cambia el tipo de persona, se debe crear una nueva instancia
+            switch (dto.getTipoPersona().toUpperCase()) {
+                case "GERENTE":
+                    persona = new Gerente();
+                    ((Gerente) persona).setExperienciaProfesional(dto.getExperienciaProfesional());
+                    break;
+                case "CONTRATISTA":
+                    persona = new Contratista();
+                    ((Contratista) persona).setNumeroTarjetaProfesional(dto.getNumeroTarjetaProfesional());
+                    ((Contratista) persona).setExperienciaProfesional(dto.getExperienciaProfesional());
+                    ((Contratista) persona).setTelefonoAdicional(dto.getTelefonoAdicional());
+                    ((Contratista) persona).setFirmaDigital(dto.getFirmaDigital());
+                    break;
+                case "CONTADOR":
+                    persona = new Contador();
+                    ((Contador) persona).setNumeroTarjetaProfesional(dto.getNumeroTarjetaProfesional());
+                    break;
+                default:
+                    throw new IllegalArgumentException("Tipo de persona no válido: " + dto.getTipoPersona());
             }
-            return repository.save(entity);
-        } else {
-            throw new RuntimeException("Entity not found");
         }
+
+        // Actualizar los atributos comunes
+        persona.setNombre(dto.getNombre());
+        persona.setCorreo(dto.getCorreo());
+        persona.setNumeroDocumento(dto.getNumeroDocumento());
+        persona.setTituloProfesional(dto.getTituloProfesional());
+        persona.setDireccion(dto.getDireccion());
+        persona.setTelefono(dto.getTelefono());
+        persona.setFechaExpedicion(dto.getFechaExpedicion());
+        persona.setFechaNacimiento(dto.getFechaNacimiento());
+        persona.setNacionalidad(dto.getNacionalidad());
+        persona.setTipoDocumento(dto.getTipoDocumento());
+        persona.setCreador(dto.getCreador());
+
+        // Guardar la persona actualizada en la base de datos
+        persona = repository.save(persona);
+
+        // Si la persona necesita acceso, actualizar o crear el usuario asociado
+        if (dto.isNecesitaAcceso()) {
+            Usuario usuario = usuarioRepository.findByUsername(persona.getCorreo())
+                    .orElseGet(() -> new Usuario());
+
+            usuario.setCorreo(persona.getCorreo());
+            usuario.setUsername(persona.getCorreo());
+            usuario.setPersona(persona);
+            usuario.setActivo(true);
+            usuario.setName(persona.getNombre());
+
+            if (dto.getRoles() == null || dto.getRoles().isEmpty()) {
+                throw new IllegalArgumentException("Debe asignar al menos un rol al usuario.");
+            }
+
+            // Buscar y asignar roles
+            Set<Rol> roles = new HashSet<>();
+            for (Long roleId : dto.getRoles()) {
+                roleRepository.findById(roleId).ifPresent(roles::add);
+            }
+            usuario.setRoles(roles);
+
+            // Si es un usuario nuevo, generar una contraseña y enviarla por correo
+            if (usuario.getPassword() == null) {
+                String password = generarContrasena();
+                usuario.setPassword(password);
+                enviarCorreoCredenciales(persona.getCorreo(), persona.getNombre(), usuario.getUsername(), password);
+            }
+
+            usuarioRepository.save(usuario);
+        }
+
+        return persona;
     }
+
 
     /**
      * {@inheritDoc}

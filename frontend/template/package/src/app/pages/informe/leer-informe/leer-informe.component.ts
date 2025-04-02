@@ -230,10 +230,12 @@ export class LeerInformeComponent implements OnInit {
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(informe: any): void {
-    const dialogRef = this.dialog.open(ActualizarInformeComponent, {
-      minWidth: '800px',
-      data: informe,
-    });
+      const screenWidth = window.innerWidth;
+      const minWidth = screenWidth < 600 ? '90vw' : '800px';
+      const dialogRef = this.dialog.open(ActualizarInformeComponent, {
+        minWidth: minWidth,
+        data: informe,
+      });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {

@@ -226,10 +226,12 @@ export class LeerTipoDocumentoComponent implements OnInit {
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(tipodocumento: any): void {
-    const dialogRef = this.dialog.open(ActualizarTipoDocumentoComponent, {
-      minWidth: '800px',
-      data: tipodocumento,
-    });
+      const screenWidth = window.innerWidth;
+      const minWidth = screenWidth < 600 ? '90vw' : '800px';
+      const dialogRef = this.dialog.open(ActualizarTipoDocumentoComponent, {
+        minWidth: minWidth,
+        data: tipodocumento,
+      });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
