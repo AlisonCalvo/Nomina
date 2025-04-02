@@ -86,7 +86,7 @@
         <td mat-cell *matCellDef="let element">{{element.creador}}</td>
       </ng-container>
       <ng-container matColumnDef="contrato">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Contrato</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Numero Contrato</th>
         <td mat-cell *matCellDef="let element">{{generateSummary(element.contrato) || 'Sin contrato'}}</td>
       </ng-container>
       <ng-container matColumnDef="informe">
