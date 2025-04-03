@@ -54,10 +54,10 @@ interface PersonaModel {
   tipoPersona: any;
   necesitaAcceso: boolean;
   roles?: number[];
-  experienciaProfesional?: string;
-  numeroTarjetaProfesional?: string;
-  telefonoAdicional?: string;
-  firmaDigital?: string;
+  experienciaProfesional?: string | null;
+  numeroTarjetaProfesional?: string | null;
+  telefonoAdicional?: string | null;
+  firmaDigital?: string | null;
 }
 
 /**
@@ -119,6 +119,10 @@ export class ActualizarPersonaComponent implements OnInit {
   model: PersonaModel = {} as PersonaModel;
   originalModel: PersonaModel = {} as PersonaModel;
   fields: FormlyFieldConfig[] = [];
+  /** Lista de roles disponibles */
+  roles: any[] = [];
+
+  rolesMap: { [key: string]: number } = {};
 
   /**
    * Constructor del componente
@@ -144,13 +148,12 @@ export class ActualizarPersonaComponent implements OnInit {
     private dialogRef: MatDialogRef<ActualizarPersonaComponent>
   ) {}
 
-  rolesMap: { [key: string]: number } = {};
-
   /** Inicialización del componente */
   ngOnInit() {
     this.loadPersonas();
     this.loadProyectoOptions();
     this.loadTipoDocumentoOptions();
+    this.loadRoles();
 
     // Verificamos si llega data a través del diálogo (registro para editar)
     if (this.data) {
@@ -251,6 +254,45 @@ export class ActualizarPersonaComponent implements OnInit {
   }
 
   /**
+   * Carga los roles disponibles en el sistema
+   * @private
+   */
+  private loadRoles() {
+    this.permissionService.getRoles().subscribe(
+      data => {
+        this.roles = data;
+        // Crear mapeo de roles
+        this.roles.forEach(rol => {
+          // Mapeo según nombre del rol
+          if (rol.nombre.includes('GERENTE')) {
+            this.rolesMap['GERENTE'] = rol.id;
+          } else if (rol.nombre.includes('CONTRATISTA')) {
+            this.rolesMap['CONTRATISTA'] = rol.id;
+          } else if (rol.nombre.includes('CONTADOR')) {
+            this.rolesMap['CONTADOR'] = rol.id;
+          }
+        });
+        // Actualizar el campo de roles si está presente
+        this.updateRolesField();
+      },
+      error => console.error('Error al cargar roles:', error)
+    );
+  }
+
+  /**
+   * Actualiza el campo de roles en el formulario
+   */
+  private updateRolesField() {
+    // Añadir campo para roles si necesitaAcceso está activo
+    if (this.model.necesitaAcceso) {
+      const roleField = this.fields.find(f => f.key === 'roles');
+      if (roleField && roleField.templateOptions) {
+        roleField.templateOptions.options = this.roles;
+      }
+    }
+  }
+
+  /**
    * Actualiza las opciones de un campo tipo select en el formulario
    */
   private updateFieldOptions(key: string, options: any[]) {
@@ -295,6 +337,25 @@ export class ActualizarPersonaComponent implements OnInit {
             {value: 'CONTRATISTA', label: 'Contratista'},
             {value: 'CONTADOR', label: 'Contador'},
           ],
+          change: (field, event) => {
+            // Reiniciar los campos específicos cuando cambia el tipo de persona
+            if (field.formControl?.value === 'GERENTE') {
+              this.model.experienciaProfesional = this.model.experienciaProfesional || '';
+              this.model.numeroTarjetaProfesional = null;
+              this.model.telefonoAdicional = null;
+              this.model.firmaDigital = null;
+            } else if (field.formControl?.value === 'CONTRATISTA') {
+              this.model.experienciaProfesional = this.model.experienciaProfesional || '';
+              this.model.numeroTarjetaProfesional = this.model.numeroTarjetaProfesional || '';
+              this.model.telefonoAdicional = this.model.telefonoAdicional || '';
+              this.model.firmaDigital = this.model.firmaDigital || '';
+            } else if (field.formControl?.value === 'CONTADOR') {
+              this.model.experienciaProfesional = null;
+              this.model.numeroTarjetaProfesional = this.model.numeroTarjetaProfesional || '';
+              this.model.telefonoAdicional = null;
+              this.model.firmaDigital = null;
+            }
+          }
         },
         validation: {
           messages: {
@@ -562,14 +623,18 @@ export class ActualizarPersonaComponent implements OnInit {
             'class': 'modern-input'
           },
           pattern: /^[0-9]*$/,
-          maxLength: 20
+          maxLength: 20,
         },
         validation: {
           messages: {
+            required: 'El teléfono adicional es obligatorio para contratistas.',
             pattern: 'Solo se permiten números en este campo.'
           }
         },
-        hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA'
+        hideExpression: (model: any) => model.tipoPersona !== 'CONTRATISTA',
+        expressionProperties: {
+          'templateOptions.required': 'model.tipoPersona === "CONTRATISTA"',
+        }
       },
       {
         key: 'nacionalidad',
@@ -635,14 +700,18 @@ export class ActualizarPersonaComponent implements OnInit {
           },
           rows: 5,
           minLength: 5,
-          maxLength: 250
+          maxLength: 250,
         },
         validation: {
           messages: {
+            required: 'La experiencia profesional es obligatoria para este tipo de persona.',
             minlength: 'La experiencia profesional debe tener al menos 5 caracteres.',
           }
         },
-        hideExpression: (model) => model.tipoPersona !== 'GERENTE' && model.tipoPersona !== 'CONTRATISTA'
+        hideExpression: (model: any) => model.tipoPersona !== 'GERENTE' && model.tipoPersona !== 'CONTRATISTA',
+        expressionProperties: {
+          'templateOptions.required': 'model.tipoPersona === "GERENTE" || model.tipoPersona === "CONTRATISTA"',
+        }
       },
       {
         key: 'numeroTarjetaProfesional',
@@ -654,26 +723,41 @@ export class ActualizarPersonaComponent implements OnInit {
           appearance: 'outline',
           floatLabel: 'always',
           minLength: 5,
-          maxLength: 50
+          maxLength: 50,
         },
         validation: {
           messages: {
+            required: 'El número de tarjeta profesional es obligatorio para este tipo de persona.',
             minlength: 'El número de tarjeta profesional debe tener al menos 5 caracteres.',
           }
         },
-        hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA' && model.tipoPersona !== 'CONTADOR'
+        hideExpression: (model: any) => model.tipoPersona !== 'CONTRATISTA' && model.tipoPersona !== 'CONTADOR',
+        expressionProperties: {
+          'templateOptions.required': 'model.tipoPersona === "CONTRATISTA" || model.tipoPersona === "CONTADOR"',
+        }
       },
       {
         key: 'firmaDigital',
         type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'firmaDigital',
-          placeholder: 'Ingrese firmaDigital',
+          label: 'Firma Digital',
+          placeholder: 'Ingrese firma digital',
           appearance: 'outline',
-          floatLabel: 'always'
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
         },
-        hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA'
+        validation: {
+          messages: {
+            required: 'La firma digital es obligatoria para contratistas.'
+          }
+        },
+        hideExpression: (model: any) => model.tipoPersona !== 'CONTRATISTA',
+        expressionProperties: {
+          'templateOptions.required': 'model.tipoPersona === "CONTRATISTA"',
+        }
       },
       {
         key: 'creador',
@@ -691,10 +775,63 @@ export class ActualizarPersonaComponent implements OnInit {
           }
         }
       },
+      {
+        key: 'necesitaAcceso',
+        type: 'checkbox',
+        templateOptions: {
+          label: '¿Necesita acceso al sistema?',
+        },
+        hooks: {
+          onInit: (field) => {
+            if (!field || !field.formControl) return; // Verificamos que formControl exista
+
+            field.formControl.valueChanges.subscribe((value) => {
+              if (value) {
+                // Si necesita acceso, asignamos el rol dinámico según el tipo de persona
+                const tipoPersona = this.model.tipoPersona?.toUpperCase();
+                if (tipoPersona && this.rolesMap[tipoPersona]) {
+                  this.model.roles = [this.rolesMap[tipoPersona]];
+                }
+              } else {
+                this.model.roles = [];
+              }
+              // Actualizamos la visibilidad del campo de roles
+              const rolesField = this.fields.find(f => f.key === 'roles');
+              if (rolesField) {
+                rolesField.hide = !value;
+              }
+            });
+          }
+        }
+      }
     ];
   }
 
+  /**
+   * Actualiza los roles asignados según el tipo de persona seleccionado
+   */
+  actualizarRolSegunTipoPersona() {
+    if (this.model.necesitaAcceso) {
+      const tipoPersona = this.model.tipoPersona?.toUpperCase();
+      if (tipoPersona && this.rolesMap[tipoPersona]) {
+        this.model.roles = [this.rolesMap[tipoPersona]];
+      }
+    }
+  }
+
   onSubmit() {
+    // Asegurar que el rol está asignado según el tipo de persona
+    this.actualizarRolSegunTipoPersona();
+
+    // Verificar si necesita acceso pero no tiene roles seleccionados
+    if (this.model.necesitaAcceso && (!this.model.roles || this.model.roles.length === 0)) {
+      this.snackBar.open('Debe seleccionar al menos un rol para el usuario.', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+      });
+      return;
+    }
+
     // 1. Acciones previas
     this.preUpdate(this.model);
 
@@ -706,6 +843,29 @@ export class ActualizarPersonaComponent implements OnInit {
 
     if (modelData.tipoDocumento) {
       modelData.tipoDocumento = { id: modelData.tipoDocumento };
+    }
+
+    // Manejar campos opcionales según el tipo de persona
+    if (modelData.tipoPersona === 'GERENTE') {
+      // Asegurar que experienciaProfesional esté presente para gerentes
+      modelData.experienciaProfesional = modelData.experienciaProfesional || '';
+      // Quitar campos no aplicables
+      modelData.numeroTarjetaProfesional = null;
+      modelData.telefonoAdicional = null;
+      modelData.firmaDigital = null;
+    } else if (modelData.tipoPersona === 'CONTRATISTA') {
+      // Asegurar que todos los campos de contratista estén presentes
+      modelData.experienciaProfesional = modelData.experienciaProfesional || '';
+      modelData.numeroTarjetaProfesional = modelData.numeroTarjetaProfesional || '';
+      modelData.telefonoAdicional = modelData.telefonoAdicional || '';
+      modelData.firmaDigital = modelData.firmaDigital || '';
+    } else if (modelData.tipoPersona === 'CONTADOR') {
+      // Asegurar que numeroTarjetaProfesional esté presente para contadores
+      modelData.numeroTarjetaProfesional = modelData.numeroTarjetaProfesional || '';
+      // Quitar campos no aplicables
+      modelData.experienciaProfesional = null;
+      modelData.telefonoAdicional = null;
+      modelData.firmaDigital = null;
     }
 
     // Si no se subieron archivos, procedemos a actualizar directamente
@@ -759,6 +919,10 @@ export class ActualizarPersonaComponent implements OnInit {
   preUpdate(model: any) {
     // Verificar si el formulario es válido
     if (!this.form.valid) {
+      this.snackBar.open('Por favor complete todos los campos requeridos.', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+      });
       throw new Error('El formulario no es válido.');
     }
 
@@ -770,6 +934,39 @@ export class ActualizarPersonaComponent implements OnInit {
       throw new Error('No se han realizado cambios en el registro.');
     }
 
+    // Validar campos según el tipo de persona
+    if (model.tipoPersona === 'GERENTE' && (!model.experienciaProfesional || model.experienciaProfesional.trim() === '')) {
+      this.snackBar.open('La experiencia profesional es requerida para Gerentes.', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+      });
+      throw new Error('Campos específicos de Gerente incompletos.');
+    }
+
+    if (model.tipoPersona === 'CONTRATISTA') {
+      const camposRequeridos = [];
+      if (!model.experienciaProfesional || model.experienciaProfesional.trim() === '') camposRequeridos.push('Experiencia Profesional');
+      if (!model.numeroTarjetaProfesional || model.numeroTarjetaProfesional.trim() === '') camposRequeridos.push('Número de Tarjeta Profesional');
+      if (!model.telefonoAdicional || model.telefonoAdicional.trim() === '') camposRequeridos.push('Teléfono Adicional');
+      if (!model.firmaDigital || model.firmaDigital.trim() === '') camposRequeridos.push('Firma Digital');
+
+      if (camposRequeridos.length > 0) {
+        this.snackBar.open(`Campos requeridos para Contratista: ${camposRequeridos.join(', ')}`, 'Cerrar', {
+          duration: 3000,
+          panelClass: ['error-snackbar'],
+        });
+        throw new Error('Campos específicos de Contratista incompletos.');
+      }
+    }
+
+    if (model.tipoPersona === 'CONTADOR' && (!model.numeroTarjetaProfesional || model.numeroTarjetaProfesional.trim() === '')) {
+      this.snackBar.open('El número de tarjeta profesional es requerido para Contadores.', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+      });
+      throw new Error('Campos específicos de Contador incompletos.');
+    }
+
     // Quitar espacios al inicio y final
     for (const key in model) {
       if (typeof model[key] === 'string') {
@@ -777,7 +974,6 @@ export class ActualizarPersonaComponent implements OnInit {
       }
     }
 
-    // TODO: Verificar permisos si se requiere
     console.log('Validaciones de preUpdate completadas.');
   }
 

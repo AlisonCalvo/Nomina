@@ -1,5 +1,6 @@
 package Nomina.seguridad.persistence.repository;
 
+import Nomina.entity.entities.Persona;
 import Nomina.seguridad.dto.AccionObjetoDTO;
 import Nomina.seguridad.persistence.entities.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,7 @@ public interface UserRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByUsername(String username);
     Optional<Usuario> findByUsernameAndPassword(String username, String password);
     Optional<Usuario> findByCorreo(String correo);
+    Optional<Usuario> findByPersona(Persona persona);
 
     @Query(value = "select u from Usuario u")
     List<Usuario> listarTodo();
