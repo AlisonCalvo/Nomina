@@ -42,6 +42,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ContratoService } from '../../../services/ContratoService';
 import { CommonModule } from '@angular/common';
 import {DownloadFileComponent} from "../../../downloadFile.component";
+import {CrearCuentaCobroComponent} from "../../cuentacobro/crear-cuentacobro/crear-cuentacobro.component";
 @Component({
   selector: 'app-leer-documento',
   templateUrl: './leer-documento.component.html',
@@ -229,10 +230,12 @@ export class LeerDocumentoComponent implements OnInit {
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(documento: any): void {
-    const dialogRef = this.dialog.open(ActualizarDocumentoComponent, {
-      minWidth: '800px',
-      data: documento,
-    });
+      const screenWidth = window.innerWidth;
+      const minWidth = screenWidth < 600 ? '90vw' : '800px';
+      const dialogRef = this.dialog.open(ActualizarDocumentoComponent, {
+        minWidth: minWidth,
+        data: documento,
+      });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
