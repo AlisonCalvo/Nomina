@@ -1,7 +1,7 @@
 // Importaciones de Angular core y HTTP
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {environment} from '../../environments/environment';
 
 /**
@@ -59,6 +59,13 @@ export interface PersonaDTO {
   tipoDocumento: any;
   /** creador - Campo de texto */
   creador: string;
+  tipoPersona: string;
+  necesitaAcceso: boolean;
+  roles?: number[];
+  experienciaProfesional?: string;
+  numeroTarjetaProfesional?: string;
+  telefonoAdicional?: string;
+  firmaDigital?: string;
 }
 
 /**
@@ -119,5 +126,4 @@ export class PersonaService {
     const url = `${this.baseUrl}/proyectos/${id}/personas`;
     return this.httpClient.get<Persona[]>(url, {headers});
   }
-
 }

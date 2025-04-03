@@ -48,6 +48,7 @@ import {LOCALE_ID} from '@angular/core';
 import {registerLocaleData} from '@angular/common';
 import localeEs from '@angular/common/locales/es-CO';
 import {ShowFilesListComponent} from "../../../showFiles.component";
+import {CrearContratoComponent} from "../../contrato/crear-contrato/crear-contrato.component";
 
 // Registrar el locale
 registerLocaleData(localeEs);
@@ -279,8 +280,10 @@ export class LeerCuentaCobroComponent implements OnInit {
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(cuentacobro: any): void {
+    const screenWidth = window.innerWidth;
+    const minWidth = screenWidth < 600 ? '90vw' : '800px';
     const dialogRef = this.dialog.open(ActualizarCuentaCobroComponent, {
-      minWidth: '800px',
+      minWidth: minWidth,
       data: cuentacobro,
     });
 

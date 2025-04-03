@@ -40,6 +40,7 @@ import { DateTime } from 'luxon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
+import {CrearCuentaCobroComponent} from "../../cuentacobro/crear-cuentacobro/crear-cuentacobro.component";
 @Component({
   selector: 'app-leer-periodicidadpago',
   templateUrl: './leer-periodicidadpago.component.html',
@@ -226,10 +227,12 @@ export class LeerPeriodicidadPagoComponent implements OnInit {
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(periodicidadpago: any): void {
-    const dialogRef = this.dialog.open(ActualizarPeriodicidadPagoComponent, {
-      minWidth: '800px',
-      data: periodicidadpago,
-    });
+      const screenWidth = window.innerWidth;
+      const minWidth = screenWidth < 600 ? '90vw' : '800px';
+      const dialogRef = this.dialog.open(ActualizarPeriodicidadPagoComponent, {
+        minWidth: minWidth,
+        data: periodicidadpago,
+      });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
