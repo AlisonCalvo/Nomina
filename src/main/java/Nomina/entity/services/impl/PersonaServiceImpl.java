@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
-
 /**
  * Implementación del servicio {@link PersonaService} que proporciona
  * la lógica de negocio para gestionar entidades {@link Persona}.
@@ -258,9 +257,9 @@ public class PersonaServiceImpl implements PersonaService {
             
             // Actualizar datos del usuario
             usuario.setCorreo(persona.getCorreo());
-            usuario.setUsername(persona.getCorreo()); // El username es el correo
-            usuario.setName(persona.getNombre());     // Asegurar que el nombre esté actualizado
-            usuario.setPersona(persona);              // Asignar la persona actualizada
+            usuario.setUsername(persona.getCorreo()); 
+            usuario.setName(persona.getNombre());     
+            usuario.setPersona(persona);              
             usuario.setActivo(true);
 
             if (dto.getRoles() == null || dto.getRoles().isEmpty()) {
