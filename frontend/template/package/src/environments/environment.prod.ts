@@ -1,9 +1,9 @@
 export const environment = {
   production: true,
-  baseUrl: 'http://www.datentity.org:8080',
-  baseUrlApi: 'http://www.datentity.org:8080/api',
-  baseUrlGitHub: 'http://www.datentity.org:8080/authGitHub/github',
-  baseUrlRegistro: 'http://www.datentity.org:8080/auth/crearUsuario',
+  baseUrl: 'https://www.datentity.org',
+  baseUrlApi: 'https://www.datentity.org/api',
+  baseUrlGitHub: 'https://www.datentity.org/authGitHub/github',
+  baseUrlRegistro: 'https://www.datentity.org/auth/crearUsuario',
   googleClientId: 'TU_CLIENT_ID_DE_PRODUCCIÓN',
-  baseUrlExportar: 'http://www.datentity.org:8080/api/generacion/exportar',
+  baseUrlExportar: 'https://www.datentity.org/api/generacion/exportar',
 };

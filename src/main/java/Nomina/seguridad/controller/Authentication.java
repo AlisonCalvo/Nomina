@@ -22,7 +22,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin(origins = {"http://localhost:*", "http://www.datentity.org:*"})
+@CrossOrigin(origins = {
+        "http://localhost:*",
+        "https://www.datentity.org",
+        "https://datentity.org"
+})
 @RequestMapping("/auth")
 public class Authentication {
 
