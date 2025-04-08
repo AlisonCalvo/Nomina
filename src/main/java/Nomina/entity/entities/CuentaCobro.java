@@ -103,7 +103,7 @@ public class CuentaCobro implements Serializable {
      * 
      * Restricciones:
      */
-    @Column(name="notificacionPago")
+    @Column(name="notificacionPago",nullable=true)
     private String notificacionPago;
 
     /**
@@ -112,7 +112,7 @@ public class CuentaCobro implements Serializable {
      * Restricciones:
      */
     @FilePath(type = "file")
-    @Column(name="firmaGerente", columnDefinition = "TEXT")
+    @Column(name="firmaGerente", columnDefinition = "TEXT", nullable = true)
     private String firmaGerente;
 
     /**

@@ -306,10 +306,11 @@ export class CrearCuentaCobroComponent implements OnInit {
           label: 'FirmaGerente',
           placeholder: 'Seleccione firmaGerente',
           multiple: true,
-          required: true,
+          required: false,
           accept: 'image/*',
           change: (field: FormlyFieldConfig, event: any) => this.handleImageChange(field, event, 'firmaGerente'),
         },
+        hideExpression: () => !this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']),
       },
       {
         key: 'firmaContratista',
@@ -322,6 +323,7 @@ export class CrearCuentaCobroComponent implements OnInit {
           accept: 'image/*',
           change: (field: FormlyFieldConfig, event: any) => this.handleImageChange(field, event, 'firmaContratista'),
         },
+        hideExpression: () => this.authService.tieneRoles(['GERENTE', 'CONTADOR']) && !this.authService.tieneRoles(['ADMINISTRADOR']),
       },
       {
         key: 'contrato',
@@ -403,25 +405,31 @@ export class CrearCuentaCobroComponent implements OnInit {
 
     this.isLoading = true;
 
-    // Validar imágenes
-    if (typeof modelData.firmaGerente !== 'string' || !modelData.firmaGerente.startsWith('data:image')) {
-      this.snackBar.open('La firma del gerente debe ser una imagen válida', 'Cerrar', {
-        duration: 3000,
-        panelClass: ['error-snackbar']
-      });
-      this.isLoading = false;
-      return;
+    // Validar la firma del gerente solo si se ha proporcionado una y el usuario es ADMINISTRADOR o GERENTE
+    if (this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE'])) {
+      if (modelData.firmaGerente && (typeof modelData.firmaGerente !== 'string' || !modelData.firmaGerente.startsWith('data:image'))) {
+        this.snackBar.open('La firma del gerente debe ser una imagen válida', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['error-snackbar']
+        });
+        this.isLoading = false;
+        return;
+      }
     }
 
-
-    if (typeof modelData.firmaContratista !== 'string' || !modelData.firmaContratista.startsWith('data:image')) {
-      this.snackBar.open('La firma del contratista debe ser una imagen válida', 'Cerrar', {
-        duration: 3000,
-        panelClass: ['error-snackbar']
-      });
-      this.isLoading = false;
-      return;
+    // Validar la firma del contratista solo si el usuario no es GERENTE ni CONTADOR
+    // o si es ADMINISTRADOR (que puede editar todo)
+    if (!this.authService.tieneRoles(['GERENTE', 'CONTADOR']) || this.authService.tieneRoles(['ADMINISTRADOR'])) {
+      if (typeof modelData.firmaContratista !== 'string' || !modelData.firmaContratista.startsWith('data:image')) {
+        this.snackBar.open('La firma del contratista debe ser una imagen válida', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['error-snackbar']
+        });
+        this.isLoading = false;
+        return;
+      }
     }
+
     // Limpiar valor de monto a cobrar para guardar solo el número
     if (modelData.montoCobrar) {
       const cleanedValue = String(modelData.montoCobrar)

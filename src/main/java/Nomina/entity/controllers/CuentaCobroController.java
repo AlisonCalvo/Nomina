@@ -100,12 +100,28 @@ public class CuentaCobroController {
      * o ResponseEntity.notFound si la entidad no existe
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CuentaCobro> update(@PathVariable Long id, @RequestBody CuentaCobroDTO dto) {
-        if (service.findById(id).isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody CuentaCobroDTO dto) {
+        try {
+            // Verificar si la entidad existe
+            if (service.findById(id).isEmpty()) {
+                System.out.println("No se encontró la cuenta de cobro con ID: " + id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("No se encontró la cuenta de cobro con ID: " + id);
+            }
+            
+            System.out.println("Llamando a service.update con ID: " + id);
+            CuentaCobro updatedEntity = service.update(id, dto);
+            System.out.println("Actualización completada. Entidad actualizada con ID: " + updatedEntity.getId());
+            
+            return ResponseEntity.ok(updatedEntity);
+        } catch (Exception e) {
+            System.err.println("Error al actualizar la cuenta de cobro: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Devolver un mensaje de error más descriptivo
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al actualizar la cuenta de cobro: " + e.getMessage());
         }
-        CuentaCobro updatedEntity = service.update(id, dto);
-        return ResponseEntity.ok(updatedEntity);
     }
 
     /**

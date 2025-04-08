@@ -415,6 +415,12 @@ export class ActualizarCuentaCobroComponent implements OnInit {
             'class': 'modern-input'
           },
           options: [{ value: true, label: 'Realizado' }, { value: false, label: 'Pendiente' }]
+        },
+        expressionProperties: {
+          'model.pago': (model: any) => {
+            console.log('Valor actual de pago:', model.pago);
+            return model.pago;
+          }
         }
       },
       {
@@ -436,23 +442,29 @@ export class ActualizarCuentaCobroComponent implements OnInit {
         key: 'firmaGerente',
         type: 'file',
         templateOptions: {
-          label: 'FirmaGerente',
-          placeholder: 'Seleccione firmaGerente',
-          multiple: true,
-          required: true,
-          accept: '.pdf,.doc,.xls,.ppt'
-        }
+          label: 'Firma Gerente',
+          placeholder: 'Seleccione firma del gerente',
+          multiple: false,
+          required: false,
+          accept: 'image/*',
+          change: (field: FormlyFieldConfig, event: Event) => this.handleImageChange(field, event, 'firmaGerente'),
+          preview: this.model.firmaGerente && typeof this.model.firmaGerente === 'string' ? this.model.firmaGerente : null
+        },
+        hideExpression: () => !this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']),
       },
       {
         key: 'firmaContratista',
         type: 'file',
         templateOptions: {
-          label: 'FirmaContratista',
-          placeholder: 'Seleccione firmaContratista',
-          multiple: true,
+          label: 'Firma Contratista',
+          placeholder: 'Seleccione firma del contratista',
+          multiple: false,
           required: true,
-          accept: '.pdf,.doc,.xls,.ppt'
-        }
+          accept: 'image/*',
+          change: (field: FormlyFieldConfig, event: Event) => this.handleImageChange(field, event, 'firmaContratista'),
+          preview: this.model.firmaContratista && typeof this.model.firmaContratista === 'string' ? this.model.firmaContratista : null
+        },
+        hideExpression: () => this.authService.tieneRoles(['GERENTE', 'CONTADOR']) && !this.authService.tieneRoles(['ADMINISTRADOR']),
       },
       {
         key: 'creador',
@@ -498,12 +510,18 @@ export class ActualizarCuentaCobroComponent implements OnInit {
 
   onSubmit() {
     // 1. Acciones previas
+    try {
     this.preUpdate(this.model);
+    } catch (error) {
+      console.error('Error en preUpdate:', error);
+      this.isLoading = false;
+      return;
+    }
 
     const modelData = { ...this.model };
-
     this.isLoading = true;
 
+    // Convertir ID a objetos para las relaciones
     if (modelData.contrato) {
       modelData.contrato = { id: modelData.contrato };
     }
@@ -512,74 +530,56 @@ export class ActualizarCuentaCobroComponent implements OnInit {
       modelData.informe = { id: modelData.informe };
     }
 
-
-    const uploadOperations: Observable<void>[] = [];
-    const fileFields: (keyof CuentaCobroModel)[] = ['firmaGerente', 'firmaContratista'];
-
-    const handleFileUpload = (field: keyof CuentaCobroModel) => {
-      const files = this.model[field];
-
-      if (Array.isArray(files) && files.length > 0) {
-        const upload$ = this.cuentacobroService.uploadFiles(files).pipe(
-          switchMap(rutas => {
-            // @ts-ignore
-            modelData[field] = rutas.join(',');
-            return of(undefined);
-          }),
-          catchError(error => {
-            this.handleUploadError(field as string, error);
-            return throwError(error);
-          })
-        );
-        uploadOperations.push(upload$);
-      } else if (files instanceof File) {
-        const upload$ = this.cuentacobroService.uploadFile(files).pipe(
-          switchMap(ruta => {
-            // @ts-ignore
-            modelData[field] = ruta;
-            return of(undefined);
-          }),
-          catchError(error => {
-            this.handleUploadError(field as string, error);
-            return throwError(error);
-          })
-        );
-        uploadOperations.push(upload$);
+    // Validar las firmas según el rol del usuario
+    
+    // Validar la firma del gerente solo si el usuario es ADMINISTRADOR o GERENTE
+    if (this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE'])) {
+      if (modelData.firmaGerente && typeof modelData.firmaGerente !== 'string') {
+        this.snackBar.open('La firma del gerente debe ser una imagen válida', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['error-snackbar']
+        });
+        this.isLoading = false;
+        return;
       }
-    };
-
-    fileFields.forEach(field => handleFileUpload(field));
-
-    if (uploadOperations.length > 0) {
-      forkJoin(uploadOperations).subscribe({
-        next: () => this.updateEntity(modelData),
-        error: () => this.isLoading = false
-      });
-    } else {
-      this.updateEntity(modelData);
     }
-  }
 
-  private handleUploadError(field: string, error: any) {
-    console.error(`Error subiendo archivos en ${field}:`, error);
-    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+    // Validar la firma del contratista solo si el usuario no es GERENTE ni CONTADOR
+    // o si es ADMINISTRADOR (que puede editar todo)
+    if (!this.authService.tieneRoles(['GERENTE', 'CONTADOR']) || this.authService.tieneRoles(['ADMINISTRADOR'])) {
+      if (!modelData.firmaContratista || typeof modelData.firmaContratista !== 'string') {
+        this.snackBar.open('La firma del contratista es obligatoria y debe ser una imagen válida', 'Cerrar', {
       duration: 3000,
       panelClass: ['error-snackbar']
     });
     this.isLoading = false;
+        return;
+      }
+    }
+
+    // Limpiar valor de monto a cobrar si es necesario (convertir de formato moneda a número)
+    if (typeof modelData.montoCobrar === 'string') {
+      const cleanedValue = (modelData.montoCobrar as string).replace(/[^\d]/g, '');
+      modelData.montoCobrar = cleanedValue ? Number(cleanedValue) : 0;
+    }
+
+    // Actualizar la entidad
+    this.updateEntity(modelData);
   }
 
   private updateEntity(modelData: any) {
+    
     this.cuentacobroService.update(modelData.id, modelData).subscribe({
       next: (response) => {
+        console.log('Respuesta del servidor:', response);
         this.isLoading = false;
         this.postUpdate(response);
       },
       error: (error) => {
+        console.error('Error completo al actualizar CuentaCobro:', error);
         this.isLoading = false;
-        console.error('Error al actualizar CuentaCobro:', error);
-        this.snackBar.open('Error al actualizar CuentaCobro', 'Cerrar', {
-          duration: 3000,
+        this.snackBar.open('Error al actualizar CuentaCobro: ' + (error.message || 'Error desconocido'), 'Cerrar', {
+          duration: 5000,
           panelClass: ['error-snackbar'],
         });
       },
@@ -594,10 +594,18 @@ export class ActualizarCuentaCobroComponent implements OnInit {
    * Verifica si hay cambios entre el model actual y el original.
    */
   private hasChanges(model: CuentaCobroModel): boolean {
+    console.log('Verificando cambios en el modelo');
+    console.log('Modelo original:', this.originalModel);
+    console.log('Modelo actual:', model);
+    
     for (const key in model) {
       const keyTyped = key as keyof CuentaCobroModel;
       const newValue = typeof model[keyTyped] === 'string' ? (model[keyTyped] as string).trim() : model[keyTyped];
       const originalValue = typeof this.originalModel[keyTyped] === 'string' ? (this.originalModel[keyTyped] as string).trim() : this.originalModel[keyTyped];
+
+      if (keyTyped === 'pago') {
+        console.log('Comparando campo pago - Nuevo:', newValue, 'Original:', originalValue);
+      }
 
       if (Array.isArray(newValue) && Array.isArray(originalValue)) {
         if (newValue.length !== originalValue.length ||
@@ -608,6 +616,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
         return true; // Cambio en valor simple
       }
     }
+    console.log('No se detectaron cambios en el modelo');
     return false; // No hay cambios
   }
 
@@ -648,6 +657,64 @@ export class ActualizarCuentaCobroComponent implements OnInit {
     });
     this.dialogRef.close(true);
     console.log('Acciones postUpdate completadas.');
+  }
+
+  handleImageChange(field: FormlyFieldConfig, event: Event, fieldName: 'firmaGerente' | 'firmaContratista') {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    // Validación de tipo de imagen
+    if (!file.type.match('image.*')) {
+      this.snackBar.open('Solo se permiten archivos de imagen', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    // Validación de tamaño (2MB máximo)
+    if (file.size > 2 * 1024 * 1024) {
+      this.snackBar.open('La imagen no debe exceder 2MB', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      if (e.target?.result) {
+        const base64 = e.target.result as string;
+
+        // 1. Actualizar el modelo
+        this.model[fieldName] = base64;
+
+        // 2. Actualizar previsualización
+        if (field.templateOptions) {
+          (field.templateOptions as any).preview = base64;
+        }
+
+        // 3. Actualizar vista
+        setTimeout(() => {
+          this.fields = [...this.fields];
+        }, 0);
+      }
+    };
+
+    reader.onerror = () => {
+      this.snackBar.open('Error al leer la imagen', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+
+      // Limpiar el input en caso de error
+      input.value = '';
+    };
+
+    reader.readAsDataURL(file);
   }
 
 }

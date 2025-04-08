@@ -42,10 +42,11 @@ public interface CuentaCobroRepository extends JpaRepository<CuentaCobro, Long> 
                                     @Param("esContador") boolean esContador,
                                     @Param("esAdminGerente") boolean esAdminGerente);
 
-
-
-
-
-
-
+    /**
+     * Busca una cuenta de cobro por su ID y carga también el contrato y la persona asociada
+     * @param id ID de la cuenta de cobro
+     * @return Cuenta de cobro con sus relaciones cargadas
+     */
+    @Query("SELECT DISTINCT c FROM CuentaCobro c LEFT JOIN FETCH c.contrato ct LEFT JOIN FETCH ct.persona WHERE c.id = :id")
+    Optional<CuentaCobro> findByIdWithContrato(@Param("id") Long id);
 }
