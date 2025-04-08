@@ -194,8 +194,8 @@ export class CrearInformeComponent implements OnInit {
         key: 'informePDF',
         type: 'file',
         templateOptions: {
-          label: 'InformePDF',
-          placeholder: 'Seleccione informePDF',
+          label: 'Informe PDF',
+          placeholder: 'Seleccione informe PDF',
           multiple: true,
           required: true,
           accept: '.pdf,.doc,.xls,.ppt'

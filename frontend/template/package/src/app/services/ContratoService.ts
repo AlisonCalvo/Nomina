@@ -35,7 +35,6 @@ export interface Contrato {
   /** creador - Campo de texto */
   creador: string;
 }
-
 /**
  * Interfaz que define la estructura del DTO para Contrato
  * Utilizada para la transferencia de datos entre el frontend y backend
@@ -68,6 +67,7 @@ export interface ContratoDTO {
   /** creador - Campo de texto */
   creador: string;
 }
+
 
 /**
  * Servicio que maneja las operaciones CRUD y otras funcionalidades
@@ -147,6 +147,10 @@ export class ContratoService {
     return this.httpClient.get<any>(url, { headers });
   }
 
-
+  obtenerUsuarios(): Observable<any> {
+    const headers = new HttpHeaders().set('Accion', 'findAll').set('Objeto', 'Contrato');
+    const url = `${this.baseUrl}/auth/getUsers`;
+    return this.httpClient.get<any>(url, {headers});
+  }
 
 }

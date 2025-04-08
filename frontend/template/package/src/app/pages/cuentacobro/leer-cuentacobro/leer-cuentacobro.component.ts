@@ -49,6 +49,7 @@ import {registerLocaleData} from '@angular/common';
 import localeEs from '@angular/common/locales/es-CO';
 import {ShowFilesListComponent} from "../../../showFiles.component";
 import {CrearContratoComponent} from "../../contrato/crear-contrato/crear-contrato.component";
+import {PersonaService} from "../../../services/PersonaService";
 
 // Registrar el locale
 registerLocaleData(localeEs);
@@ -102,6 +103,8 @@ export class LeerCuentaCobroComponent implements OnInit {
 
   // Array para almacenar los datos de la entidad
   cuentacobros: CuentaCobroComponent[] = [];
+  // Array para almacenar los datos de las personas
+  personas: any[] = [];
   // Mensaje para mostrar errores al usuario
   errorMessage: string = '';
 
@@ -127,6 +130,7 @@ export class LeerCuentaCobroComponent implements OnInit {
    */
   constructor(
     private cuentacobroService: CuentaCobroService,
+    private personaService: PersonaService,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
     private dialog: MatDialog,
@@ -142,6 +146,7 @@ export class LeerCuentaCobroComponent implements OnInit {
    * Carga los datos iniciales y configura el filtrado de la tabla
    */
   ngOnInit(): void {
+    this.cargarDatosPersonas();
     this.loadData();
     this.customizePaginator();
 
@@ -484,33 +489,36 @@ export class LeerCuentaCobroComponent implements OnInit {
     this.showMessage('Funcionalidad no implementada', 'error');
   }
 
-  onShowFirmaGerente(element: any) {
-    const rawPaths = element.firmaGerente;
-    if (!rawPaths) {
-      this.showMessage('No hay archivos de FirmaGerente.', 'error');
+  onShowFirmaGerente(element: any): void {
+    if (!element.firmaGerente) {
+      this.showMessage('No hay firma del gerente disponible', 'error');
       return;
     }
-    let files = rawPaths.split(',').map((path: string) => path.trim());
-    files = files.map((path: string) => this.extractFileName(path));
+
     this.dialog.open(ShowFilesListComponent, {
-      width: '500px',
-      data: {files: files}
+      width: '600px',
+      maxHeight: '90vh',
+      data: {
+        files: [element.firmaGerente], // Pasar como array para mantener compatibilidad
+        title: 'Firma del Gerente'
+      }
     });
   }
 
 
-  onShowFirmaContratista(element: any) {
-    const rawPaths = element.firmaContratista;
-    if (!rawPaths) {
-      this.showMessage('No hay archivos de FirmaContratista.', 'error');
+  onShowFirmaContratista(element: any): void {
+    if (!element.firmaContratista) {
+      this.showMessage('No hay firma del contratista disponible', 'error');
       return;
     }
-    let files = rawPaths.split(',').map((path: string) => path.trim());
-    files = files.map((path: string) => this.extractFileName(path));
 
     this.dialog.open(ShowFilesListComponent, {
-      width: '500px',
-      data: {files: files}
+      width: '600px',
+      maxHeight: '90vh',
+      data: {
+        files: [element.firmaContratista],
+        title: 'Firma del Contratista'
+      }
     });
   }
 
@@ -525,5 +533,28 @@ export class LeerCuentaCobroComponent implements OnInit {
     return fullPath.substring(lastSeparator + 1);
   }
 
+  /**
+   * Metodo para cargar los datos de las personas
+   */
+  cargarDatosPersonas(): void {
+    this.personaService.findAll().subscribe({
+      next: (personas) => {
+        this.personas = personas;
+      },
+      error: (err) => {
+        console.error('Error cargando personas:', err);
+        this.personas = [];
+      }
+    });
+  }
+
+  obtenerNombreCreador(username: string): string {
+    if (!this.personas || this.personas.length === 0) {
+      return username; // Devuelve el username si no hay personas cargadas
+    }
+
+    const persona = this.personas.find(p => p.correo === username);
+    return persona?.nombre || username;
+  }
 
 }

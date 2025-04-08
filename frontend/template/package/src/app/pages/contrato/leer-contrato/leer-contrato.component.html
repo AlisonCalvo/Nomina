@@ -76,7 +76,7 @@
       </ng-container>
       <ng-container matColumnDef="creador">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Creador</th>
-        <td mat-cell *matCellDef="let element">{{element.creador}}</td>
+        <td mat-cell *matCellDef="let element">{{ obtenerNombreCreador(element.creador) }}</td>
       </ng-container>
       <ng-container matColumnDef="proyecto">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Proyecto</th>

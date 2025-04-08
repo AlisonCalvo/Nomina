@@ -1,49 +1,51 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormGroup, FormsModule } from '@angular/forms';
-import { FormlyFieldConfig } from '@ngx-formly/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorIntl } from '@angular/material/paginator';
-import { Router, RouterLink, RouterModule } from '@angular/router';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {FormGroup, FormsModule} from '@angular/forms';
+import {FormlyFieldConfig} from '@ngx-formly/core';
+import {MatPaginator} from '@angular/material/paginator';
+import {MatSort} from '@angular/material/sort';
+import {MatDialog} from '@angular/material/dialog';
+import {MatTableDataSource} from '@angular/material/table';
+import {MatPaginatorIntl} from '@angular/material/paginator';
+import {Router, RouterLink, RouterModule} from '@angular/router';
 import * as XLSX from 'xlsx';
-import { ContratoService } from '../../../services/ContratoService';
-import { ContratoComponent } from '../contrato.component';
-import { ActualizarContratoComponent } from '../actualizar-contrato/actualizar-contrato.component';
-import { CrearContratoComponent } from '../crear-contrato/crear-contrato.component';
+import {ContratoService} from '../../../services/ContratoService';
+import {PersonaService} from '../../../services/PersonaService';
+import {ContratoComponent} from '../contrato.component';
+import {ActualizarContratoComponent} from '../actualizar-contrato/actualizar-contrato.component';
+import {CrearContratoComponent} from '../crear-contrato/crear-contrato.component';
 import {environment} from '../../../../environments/environment';
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTabsModule } from '@angular/material/tabs';
-import { DateTime } from 'luxon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCard, MatCardContent, MatCardModule} from '@angular/material/card';
+import {MatIcon, MatIconModule} from '@angular/material/icon';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatFormField, MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import {MatNativeDateModule} from '@angular/material/core';
+import {MatRadioModule} from '@angular/material/radio';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {MatTableModule} from '@angular/material/table';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatSortModule} from '@angular/material/sort';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatSnackBarModule, MatSnackBar} from '@angular/material/snack-bar';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatListModule} from '@angular/material/list';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatTabsModule} from '@angular/material/tabs';
+import {DateTime} from 'luxon';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {CommonModule, CurrencyPipe} from '@angular/common';
 import {AuthService} from "../../../services/auth-service.service";
-import { LOCALE_ID } from '@angular/core';
-import { registerLocaleData } from '@angular/common';
+import {LOCALE_ID} from '@angular/core';
+import {registerLocaleData} from '@angular/common';
 import localeEs from '@angular/common/locales/es-CO';
+import {PersonaComponent} from "../../persona/persona.component";
 
 // Registrar el locale
 registerLocaleData(localeEs);
@@ -88,7 +90,7 @@ registerLocaleData(localeEs);
     MatProgressSpinnerModule,
     CurrencyPipe
   ],
-  providers: [CurrencyPipe, { provide: LOCALE_ID, useValue: 'es-CO' }],
+  providers: [CurrencyPipe, {provide: LOCALE_ID, useValue: 'es-CO'}],
   styleUrls: ['./leer-contrato.component.scss']
 })
 export class LeerContratoComponent implements OnInit {
@@ -96,10 +98,12 @@ export class LeerContratoComponent implements OnInit {
   mostrarBotonModificar: boolean;
   mostrarBotonEliminar: boolean;
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id','numeroContrato' ,'cargo', 'valorTotalContrato', 'numeroPagos', 'fechaInicioContrato', 'fechaFinContrato', 'estado', 'rutaArchivo', 'firmado', 'creador', 'proyecto', 'persona', 'tipoContrato', 'periodicidadPago', 'acciones'];
+  displayedColumns: string[] = ['id', 'numeroContrato', 'cargo', 'valorTotalContrato', 'numeroPagos', 'fechaInicioContrato', 'fechaFinContrato', 'estado', 'rutaArchivo', 'firmado', 'creador', 'proyecto', 'persona', 'tipoContrato', 'periodicidadPago', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   contratos: ContratoComponent[] = [];
+  // Array para almacenar los datos de las personas
+  personas: any[] = [];
   // Mensaje para mostrar errores al usuario
   errorMessage: string = '';
 
@@ -125,6 +129,7 @@ export class LeerContratoComponent implements OnInit {
    */
   constructor(
     private contratoService: ContratoService,
+    private personaService: PersonaService,
     private router: Router,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
@@ -143,6 +148,7 @@ export class LeerContratoComponent implements OnInit {
    * Carga los datos iniciales y configura el filtrado de la tabla
    */
   ngOnInit(): void {
+    this.cargarDatosPersonas();
     this.loadData();
     this.customizePaginator();
 
@@ -218,6 +224,21 @@ export class LeerContratoComponent implements OnInit {
     }
   }
 
+  /**
+   * Metodo para cargar los datos de las personas
+   */
+  cargarDatosPersonas(): void {
+    this.personaService.findAll().subscribe({
+      next: (personas) => {
+        this.personas = personas;
+      },
+      error: (err) => {
+        console.error('Error cargando personas:', err);
+        this.personas = [];
+      }
+    });
+  }
+
 
   /**
    * Personaliza los textos del paginador a español
@@ -261,19 +282,18 @@ export class LeerContratoComponent implements OnInit {
     });
   }
 
-
   /**
    * Método para editar un registro existente
    * @param {any} contrato - El registro a editar
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(contrato: any): void {
-      const screenWidth = window.innerWidth;
-      const minWidth = screenWidth < 600 ? '90vw' : '800px';
-      const dialogRef = this.dialog.open(ActualizarContratoComponent, {
-        minWidth: minWidth,
-        data: contrato,
-      });
+    const screenWidth = window.innerWidth;
+    const minWidth = screenWidth < 600 ? '90vw' : '800px';
+    const dialogRef = this.dialog.open(ActualizarContratoComponent, {
+      minWidth: minWidth,
+      data: contrato,
+    });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -445,6 +465,7 @@ export class LeerContratoComponent implements OnInit {
       panelClass: type === 'error' ? ['error-snackbar'] : ['success-snackbar']
     });
   }
+
   generateSummary(value: any, defaultText: string = 'Sin datos'): string {
     if (!value || typeof value !== 'object') {
       return defaultText;
@@ -463,11 +484,14 @@ export class LeerContratoComponent implements OnInit {
       return defaultText;
     }
     return collection.map(item => this.generateSummary(item)).join('; ');
- }
-
-  onAlerta() {
-    // Implementar funcionalidad
-    this.showMessage('Funcionalidad no implementada', 'error');
   }
 
-   }
+  obtenerNombreCreador(username: string): string {
+    if (!this.personas || this.personas.length === 0) {
+      return username; // Devuelve el username si no hay personas cargadas
+    }
+
+    const persona = this.personas.find(p => p.correo === username);
+    return persona?.nombre || username;
+  }
+}
