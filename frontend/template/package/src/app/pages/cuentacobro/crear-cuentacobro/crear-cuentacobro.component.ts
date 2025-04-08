@@ -285,21 +285,6 @@ export class CrearCuentaCobroComponent implements OnInit {
         }
       },
       {
-        key: 'notificacionPago',
-        type: 'input',
-        className: 'field-container',
-        templateOptions: {
-          label: 'NotificacionPago',
-          placeholder: 'Ingrese notificacionPago',
-          required: false,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          }
-        },
-      },
-      {
         key: 'firmaGerente',
         type: 'file',
         templateOptions: {

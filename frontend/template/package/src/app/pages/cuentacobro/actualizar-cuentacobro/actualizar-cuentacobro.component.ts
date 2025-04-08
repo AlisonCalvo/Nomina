@@ -424,21 +424,6 @@ export class ActualizarCuentaCobroComponent implements OnInit {
         }
       },
       {
-        key: 'notificacionPago',
-        type: 'input',
-        className: 'field-container',
-        templateOptions: {
-          label: 'NotificacionPago',
-          placeholder: 'Ingrese notificacionPago',
-          required: false,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          }
-        },
-      },
-      {
         key: 'firmaGerente',
         type: 'file',
         templateOptions: {
@@ -531,7 +516,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
     }
 
     // Validar las firmas según el rol del usuario
-    
+
     // Validar la firma del gerente solo si el usuario es ADMINISTRADOR o GERENTE
     if (this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE'])) {
       if (modelData.firmaGerente && typeof modelData.firmaGerente !== 'string') {
@@ -568,7 +553,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
   }
 
   private updateEntity(modelData: any) {
-    
+
     this.cuentacobroService.update(modelData.id, modelData).subscribe({
       next: (response) => {
         console.log('Respuesta del servidor:', response);
@@ -597,7 +582,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
     console.log('Verificando cambios en el modelo');
     console.log('Modelo original:', this.originalModel);
     console.log('Modelo actual:', model);
-    
+
     for (const key in model) {
       const keyTyped = key as keyof CuentaCobroModel;
       const newValue = typeof model[keyTyped] === 'string' ? (model[keyTyped] as string).trim() : model[keyTyped];

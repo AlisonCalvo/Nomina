@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementación del servicio {@link CuentaCobroService} que proporciona
@@ -35,8 +37,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CuentaCobroServiceImpl implements CuentaCobroService {
 
-@Autowired
-private HibernateFilterActivator filterActivator;     /** Repositorio para acceder a los datos de la entidad */
+    private static final Logger log = LoggerFactory.getLogger(CuentaCobroServiceImpl.class);
+
+    @Autowired
+    private HibernateFilterActivator filterActivator;     /** Repositorio para acceder a los datos de la entidad */
     private final CuentaCobroRepository repository;
 
     @Autowired
@@ -204,7 +208,7 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
                 System.err.println("Error: La persona ID " + persona.getId() + " no tiene email definido");
                 return;
             }
-            
+
             // Crear el objeto JSON para la notificación
             ObjectMapper objectMapper = new ObjectMapper();
             ObjectNode rootNode = objectMapper.createObjectNode();
@@ -229,15 +233,17 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
             
             // Enviar el email de manera asíncrona
             CompletableFuture<String> future = notificacionEmailService.sendNotificationEmailAsync(
-                    email,
-                    "Notificación de Pago Realizado - Cuenta Cobro #" + cuentaCobro.getId(),
-                    rootNode);
+                email,
+                "Notificación de Pago Realizado - Cuenta Cobro #" + cuentaCobro.getId(),
+                rootNode);
             
             // Registrar el resultado del envío
             future.thenAccept(result -> {
                 System.out.println("Resultado del envío de email: " + result);
-                // Actualizar la cuenta de cobro con la fecha de notificación
-                cuentaCobro.setNotificacionPago("Notificación enviada el " + LocalDateTime.now());
+                // Actualizar la cuenta de cobro con la fecha de notificación en formato legible
+                LocalDateTime now = LocalDateTime.now();
+                String fechaFormateada = now.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                cuentaCobro.setNotificacionPago(fechaFormateada);
                 repository.save(cuentaCobro);
                 System.out.println("Cuenta de cobro actualizada con fecha de notificación");
             }).exceptionally(ex -> {
