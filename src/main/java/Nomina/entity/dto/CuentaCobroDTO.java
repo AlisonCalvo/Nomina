@@ -1,6 +1,7 @@
 package Nomina.entity.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.*;
 import Nomina.entity.entities.*;
 
@@ -72,5 +73,18 @@ public class CuentaCobroDTO {
      * Campo que representa el creador del registro.
      */
     private String creador;
+
+    /**
+     * Campo que representa fechaAprobacion
+     */
+    private LocalDateTime fechaAprobacion;
+
+    public LocalDateTime getFechaAprobacion() {
+        return fechaAprobacion;
+    }
+
+    public void setFechaAprobacion(LocalDateTime fechaAprobacion) {
+        this.fechaAprobacion = fechaAprobacion;
+    }
 
 }

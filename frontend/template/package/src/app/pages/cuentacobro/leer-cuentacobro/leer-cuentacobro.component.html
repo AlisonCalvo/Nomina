@@ -41,9 +41,17 @@
       <ng-container matColumnDef="estado">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
         <td mat-cell *matCellDef="let element">
-    <span [ngClass]="{'status-approved': element.estado, 'status-rejected': !element.estado}">
-      {{ element.estado ? 'Aprobada' : 'No aprobada' }}
-    </span>
+          <span [ngClass]="{'status-approved': element.estado, 'status-rejected': !element.estado}">
+            {{ element.estado ? 'Aprobada' : 'No aprobada' }}
+          </span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="fechaAprobacion">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha de Aprobación</th>
+        <td mat-cell *matCellDef="let element">
+          <span [ngClass]="{'status-approved': element.estado}">
+            {{ element.fechaAprobacion || '-' }}
+          </span>
         </td>
       </ng-container>
       <ng-container matColumnDef="numeroCuenta">

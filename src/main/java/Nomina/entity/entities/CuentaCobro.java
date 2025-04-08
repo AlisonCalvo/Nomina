@@ -130,6 +130,9 @@ public class CuentaCobro implements Serializable {
     @Column(name = "creador")
     private String creador;
 
+    @Column(name = "fecha_aprobacion")
+    private LocalDateTime fechaAprobacion;
+
     /**
      * 
      * Tipo de relación: Many to One

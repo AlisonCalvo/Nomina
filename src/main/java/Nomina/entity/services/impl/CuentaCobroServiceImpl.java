@@ -132,6 +132,9 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
             System.out.println("Estado de pago previo: " + pagoPrevio);
             System.out.println("Estado de pago nuevo: " + dto.isPago());
             
+            // Guardar el estado anterior
+            boolean estadoAnterior = cuentaCobro.isEstado();
+            
             // Guardar las relaciones actuales
             Contrato contratoActual = cuentaCobro.getContrato();
             Informe informeActual = cuentaCobro.getInforme();
@@ -145,6 +148,11 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
             cuentaCobro.setPago(dto.isPago());
             cuentaCobro.setFirmaGerente(dto.getFirmaGerente());
             cuentaCobro.setFirmaContratista(dto.getFirmaContratista());
+            
+            // Verificar si el estado cambió a aprobado
+            if (!estadoAnterior && cuentaCobro.isEstado()) {
+                cuentaCobro.setFechaAprobacion(LocalDateTime.now());
+            }
             
             // Manejar el contrato - Si el DTO tiene un contrato, lo usamos; de lo contrario, mantenemos el actual
             if (dto.getContrato() != null && dto.getContrato().getId() > 0) {
