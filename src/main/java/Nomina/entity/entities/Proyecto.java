@@ -175,6 +175,23 @@ public class Proyecto implements Serializable {
     private String contactoSupervisor;
 
     /**
+     * Observaciones adicionales del proyecto
+     *
+     * Restricciones: Opcional
+     */
+    @Column(name="observaciones", nullable=true)
+    private String observaciones;
+
+    /**
+     * Archivos adicionales del proyecto
+     *
+     * Restricciones: Opcional
+     */
+    @FilePath(type = "file")
+    @Column(name="archivosAdicionales", nullable=true)
+    private String archivosAdicionales;
+
+    /**
      * Constructor con parámetros.
      * Inicializa una nueva instancia de Proyecto con los valores especificados.
      *

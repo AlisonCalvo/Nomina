@@ -45,7 +45,8 @@ import {AuthService} from "../../../services/auth-service.service";
 import {LOCALE_ID} from '@angular/core';
 import {registerLocaleData} from '@angular/common';
 import localeEs from '@angular/common/locales/es-CO';
-import {PersonaComponent} from "../../persona/persona.component";
+import {ShowFilesListComponent} from "../../../showFiles.component";
+import {DownloadFileComponent} from "../../../downloadFile.component";
 
 // Registrar el locale
 registerLocaleData(localeEs);
@@ -98,7 +99,7 @@ export class LeerContratoComponent implements OnInit {
   mostrarBotonModificar: boolean;
   mostrarBotonEliminar: boolean;
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'numeroContrato', 'cargo', 'valorTotalContrato', 'numeroPagos', 'fechaInicioContrato', 'fechaFinContrato', 'estado', 'rutaArchivo', 'firmado', 'creador', 'proyecto', 'persona', 'tipoContrato', 'periodicidadPago', 'acciones'];
+  displayedColumns: string[] = ['id', 'numeroContrato', 'cargo', 'valorTotalContrato', 'numeroPagos', 'fechaInicioContrato', 'fechaFinContrato', 'estado', 'contratoPdf', 'firmado', 'creador', 'proyecto', 'persona', 'tipoContrato', 'periodicidadPago', 'observaciones', 'archivosAdicionales', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   contratos: ContratoComponent[] = [];
@@ -281,6 +282,7 @@ export class LeerContratoComponent implements OnInit {
       }
     });
   }
+
 
   /**
    * Método para editar un registro existente
@@ -484,6 +486,75 @@ export class LeerContratoComponent implements OnInit {
       return defaultText;
     }
     return collection.map(item => this.generateSummary(item)).join('; ');
+  }
+
+  onShowContratoPdf(element: any) {
+    const rawPaths = element.contratoPdf;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos de Contrato.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: {files: files}
+    });
+  }
+
+  onShowArchivosAdicionales(element: any) {
+    const rawPaths = element.archivosAdicionales;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos Adicionales.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: {files: files}
+    });
+  }
+
+  private extractFileName(fullPath: string): string {
+    const lastBackslash = fullPath.lastIndexOf('\\');
+    const lastSlash = fullPath.lastIndexOf('/');
+    const lastSeparator = Math.max(lastBackslash, lastSlash);
+    if (lastSeparator === -1) {
+      return fullPath;
+    }
+    return fullPath.substring(lastSeparator + 1);
+  }
+
+  onDownload(element: any) {
+    this.contratoService.getFilesByContratoServiceId(element.id)
+      .subscribe({
+        next: (files) => {
+          const dialogRef = this.dialog.open(DownloadFileComponent, {
+            maxWidth: 'none',
+            width: '500px',
+            data: {files: files}
+          });
+          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
+            if (selectedFiles && selectedFiles.length > 0) {
+              selectedFiles.forEach(selectedFile => {
+                this.contratoService.downloadFile(selectedFile).subscribe(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = selectedFile;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                });
+              });
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error al obtener archivos:', err);
+          this.showMessage('Error al obtener archivos del servidor.', 'error');
+        }
+      });
   }
 
   obtenerNombreCreador(username: string): string {

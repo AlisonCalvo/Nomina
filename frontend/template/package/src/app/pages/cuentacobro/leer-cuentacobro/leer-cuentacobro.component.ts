@@ -99,7 +99,7 @@ registerLocaleData(localeEs);
 export class LeerCuentaCobroComponent implements OnInit {
   mostrarBotonEliminar: boolean;
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'montoCobrar', 'fecha', 'estado', 'numeroCuenta', 'detalle', 'pago', 'notificacionPago', 'firmaGerente', 'firmaContratista', 'creador', 'contrato', 'acciones'];
+  displayedColumns: string[] = ['id', 'montoCobrar', 'periodoACobrar', 'fecha', 'estado','fechaAprobacion', 'numeroCuenta', 'detalle', 'pago', 'notificacionPago', 'firmaGerente', 'firmaContratista', 'creador', 'contrato', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   cuentacobros: CuentaCobroComponent[] = [];
@@ -194,7 +194,13 @@ export class LeerCuentaCobroComponent implements OnInit {
   loadData(): void {
     this.cuentacobroService.findAll().subscribe({
       next: data => {
-        this.dataSource.data = data.map(item => Object.assign(new CuentaCobroComponent(this.cuentacobroService), item));
+        this.dataSource.data = data.map(item => {
+          const formattedItem = Object.assign(new CuentaCobroComponent(this.cuentacobroService), item);
+          if (formattedItem.fechaAprobacion) {
+            formattedItem.fechaAprobacion = this.formatDateTime(formattedItem.fechaAprobacion);
+          }
+          return formattedItem;
+        });
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
       },
@@ -202,6 +208,18 @@ export class LeerCuentaCobroComponent implements OnInit {
         console.error('Error al obtener cuentacobros:', error);
         this.errorMessage = 'Error al cargar los datos.';
       }
+    });
+  }
+
+  formatDateTime(dateTime: string): string {
+    if (!dateTime) return '-';
+    const date = new Date(dateTime);
+    return date.toLocaleString('es-CO', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   }
 

@@ -34,7 +34,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProyectoService } from '../../../services/ProyectoService';
 import { PersonaService } from '../../../services/PersonaService';
-import {distinctUntilChanged, map} from "rxjs";
+import {distinctUntilChanged, forkJoin, map, Observable, of, throwError} from "rxjs";
+import {catchError, switchMap} from "rxjs/operators";
 
 interface ProyectoModel {
   nombre: string;
@@ -51,6 +52,8 @@ interface ProyectoModel {
   persona: any;
   supervisor: string;
   contactoSupervisor: string;
+  observaciones?: string;
+  archivosAdicionales?: string;
 }
 
 @Component({
@@ -109,9 +112,12 @@ export class CrearProyectoComponent implements OnInit {
     creador: '',
     persona: null,
     supervisor: '',
-    contactoSupervisor: ''
+    contactoSupervisor: '',
+    observaciones: '',
+    archivosAdicionales: ''
   };
   fields: FormlyFieldConfig[] = [];
+  isLoading: boolean;
 
   constructor(
     private dialogRef: MatDialogRef<CrearProyectoComponent>,
@@ -459,7 +465,7 @@ export class CrearProyectoComponent implements OnInit {
         type: 'input',
         className: 'field-container',
         templateOptions: {
-          label: 'Contacto de Supervisor',
+          label: 'Contacto del Supervisor',
           placeholder: 'Ingrese contacto del supervisor',
           required: true,
           appearance: 'outline',
@@ -475,8 +481,42 @@ export class CrearProyectoComponent implements OnInit {
           messages: {
             pattern: 'Solo se permiten números en este campo.',
             minlength: 'El contacto debe tener al menos 5 dígitos.',
-            required: 'Debe ingresar el contacto del  supervisor.'
+            required: 'Debe ingresar el contacto del supervisor.'
           }
+        }
+      },
+      {
+        key: 'observaciones',
+        type: 'textarea',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Observaciones',
+          placeholder: 'Ingrese observaciones adicionales del proyecto',
+          required: false,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          rows: 3,
+          maxLength: 500
+        }
+      },
+      {
+        key: 'archivosAdicionales',
+        type: 'file',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Archivos Adicionales',
+          placeholder: 'Seleccione archivos adicionales',
+          required: false,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          multiple: true,
+          accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'
         }
       }
     ];
@@ -509,6 +549,9 @@ export class CrearProyectoComponent implements OnInit {
 
     // 2. Copiamos el modelo para no mutarlo directamente
     const modelData = { ...this.model };
+    this.isLoading = true;
+
+
 
     // Limpiar valor de contrato para guardar solo el número
     if (modelData.valorContrato) {
@@ -525,8 +568,60 @@ export class CrearProyectoComponent implements OnInit {
       ? this.model.persona.map((id: number) => ({ id }))
       : [];
 
-    // Si no hay archivos a subir o no es un campo file, guardamos directo
-    this.saveEntity(modelData);
+    const uploadOperations: Observable<void>[] = [];
+    const fileFields: (keyof ProyectoModel)[] = ['archivosAdicionales'];
+
+    const handleFileUpload = (field: keyof ProyectoModel) => {
+      const files = this.model[field];
+
+      if (Array.isArray(files) && files.length > 0) {
+        const upload$ = this.proyectoService.uploadFiles(files).pipe(
+          switchMap(rutas => {
+            // @ts-ignore
+            modelData[field] = rutas.join(',');
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      } else if (files instanceof File) {
+        const upload$ = this.proyectoService.uploadFile(files).pipe(
+          switchMap(ruta => {
+            // @ts-ignore
+            modelData[field] = ruta;
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      }
+    };
+
+    fileFields.forEach(field => handleFileUpload(field));
+
+    if (uploadOperations.length > 0) {
+      forkJoin(uploadOperations).subscribe({
+        next: () => this.saveEntity(modelData),
+        error: () => this.isLoading = false
+      });
+    } else {
+      this.saveEntity(modelData);
+    }
+  }
+
+  private handleUploadError(field: string, error: any) {
+    console.error(`Error subiendo archivos en ${field}:`, error);
+    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+    this.isLoading = false;
   }
 
   private saveEntity(modelData: any) {

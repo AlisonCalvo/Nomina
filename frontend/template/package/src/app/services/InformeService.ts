@@ -101,6 +101,7 @@ export class InformeService {
     return this.httpClient.delete<void>(url, {headers});
   }
 
+
   // Método para uploadFiles
   uploadFiles(files: File[]): Observable<string[]> {
     const url = `${this.baseUrl}/informes/upload`;

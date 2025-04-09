@@ -33,7 +33,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProyectoService } from '../../../services/ProyectoService';
 import { PersonaService } from '../../../services/PersonaService';
-import {distinctUntilChanged, map} from "rxjs";
+import {distinctUntilChanged, forkJoin, map, Observable, of, throwError} from "rxjs";
+import {catchError, switchMap} from "rxjs/operators";
 
 interface ProyectoModel {
   /** id de la entidad */
@@ -62,6 +63,10 @@ interface ProyectoModel {
   creador: string;
   /** persona de la entidad */
   persona: any;
+  /** observaciones de la entidad */
+  observaciones?: string;
+  /** archivosAdicionales de la entidad */
+  archivosAdicionales?: string;
 }
 
 /**
@@ -119,6 +124,7 @@ export class ActualizarProyectoComponent implements OnInit {
   model: ProyectoModel = {} as ProyectoModel;
   originalModel: ProyectoModel = {} as ProyectoModel;
   fields: FormlyFieldConfig[] = [];
+  isLoading: boolean = false;
 
   /**
    * Constructor del componente
@@ -161,7 +167,9 @@ export class ActualizarProyectoComponent implements OnInit {
           fechaInicio: this.data.fechaInicio,
           fechaFin: this.data.fechaFin,
           creador: this.data.creador,
-          persona: this.data.persona ? this.data.persona.map((item:any) => item.id) : []
+          persona: this.data.persona ? this.data.persona.map((item:any) => item.id) : [],
+          observaciones: this.data.observaciones || '',
+          archivosAdicionales: this.data.archivosAdicionales || ''
         };
 
         // Copia del modelo original para detectar cambios
@@ -178,7 +186,9 @@ export class ActualizarProyectoComponent implements OnInit {
           fechaInicio: this.data.fechaInicio,
           fechaFin: this.data.fechaFin,
           creador: this.data.creador,
-          persona: this.data.persona ? this.data.persona.map((item:any) => item.id) : []
+          persona: this.data.persona ? this.data.persona.map((item:any) => item.id) : [],
+          observaciones: this.data.observaciones || '',
+          archivosAdicionales: this.data.archivosAdicionales || ''
         };
       } catch (error) {
         console.error('Error al procesar datos:', error);
@@ -608,8 +618,42 @@ export class ActualizarProyectoComponent implements OnInit {
             'class': 'modern-input'
           }
         }
+      },
+      {
+        key: 'observaciones',
+        type: 'textarea',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Observaciones',
+          placeholder: 'Ingrese observaciones adicionales del proyecto',
+          required: false,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          rows: 3,
+          maxLength: 500
+        }
+      },
+      {
+        key: 'archivosAdicionales',
+        type: 'file',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Archivos Adicionales',
+          placeholder: 'Seleccione archivos adicionales',
+          required: false,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          multiple: true,
+          accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'
+        }
       }
-  ];
+    ];
   }
 
   onSubmit() {
@@ -622,8 +666,60 @@ export class ActualizarProyectoComponent implements OnInit {
       ? modelData.persona.map((id: number) => ({ id }))
       : [];
 
-    // Si no se subieron archivos, procedemos a actualizar directamente
-    this.updateEntity(modelData);
+    const uploadOperations: Observable<void>[] = [];
+    const fileFields: (keyof ProyectoModel)[] = ['archivosAdicionales'];
+
+    const handleFileUpload = (field: keyof ProyectoModel) => {
+      const files = this.model[field];
+
+      if (Array.isArray(files) && files.length > 0) {
+        const upload$ = this.proyectoService.uploadFiles(files).pipe(
+          switchMap(rutas => {
+            // @ts-ignore
+            modelData[field] = rutas.join(',');
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      } else if (files instanceof File) {
+        const upload$ = this.proyectoService.uploadFile(files).pipe(
+          switchMap(ruta => {
+            // @ts-ignore
+            modelData[field] = ruta;
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      }
+    };
+
+    fileFields.forEach(field => handleFileUpload(field));
+
+    if (uploadOperations.length > 0) {
+      forkJoin(uploadOperations).subscribe({
+        next: () => this.updateEntity(modelData),
+        error: () => this.isLoading = false
+      });
+    } else {
+      this.updateEntity(modelData);
+    }
+  }
+
+  private handleUploadError(field: string, error: any) {
+    console.error(`Error subiendo archivos en ${field}:`, error);
+    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+    this.isLoading = false;
   }
 
   private updateEntity(modelData: any) {

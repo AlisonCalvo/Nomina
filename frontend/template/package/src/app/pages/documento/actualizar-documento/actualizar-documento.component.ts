@@ -53,8 +53,8 @@ interface DocumentoModel {
   formato: string;
   /** etiqueta de la entidad */
   etiqueta: string;
-  /** rutaArchivo de la entidad */
-  rutaArchivo: string;
+  /** archivoDocumento de la entidad */
+  archivoDocumento: string;
   /** creador de la entidad */
   creador: string;
   /** persona de la entidad */
@@ -164,7 +164,7 @@ export class ActualizarDocumentoComponent implements OnInit {
           estado: this.data.estado,
           formato: this.data.formato,
           etiqueta: this.data.etiqueta,
-          rutaArchivo: this.data.rutaArchivo,
+          archivoDocumento: this.data.archivoDocumento,
           creador: this.data.creador,
           persona: this.data.persona && this.data.persona.id ? this.data.persona.id : null,
           contrato: this.data.contrato && this.data.contrato.id ? this.data.contrato.id : null
@@ -179,7 +179,7 @@ export class ActualizarDocumentoComponent implements OnInit {
           estado: this.data.estado,
           formato: this.data.formato,
           etiqueta: this.data.etiqueta,
-          rutaArchivo: this.data.rutaArchivo,
+          archivoDocumento: this.data.archivoDocumento,
           creador: this.data.creador,
           persona: this.data.persona && this.data.persona.id ? this.data.persona.id : null,
           contrato: this.data.contrato && this.data.contrato.id ? this.data.contrato.id : null
@@ -385,22 +385,19 @@ export class ActualizarDocumentoComponent implements OnInit {
         }
       },
       {
-        key: 'rutaArchivo',
-        type: 'input',
-        className: 'field-container',
+        key: 'archivoDocumento',
+        type: 'file',
         templateOptions: {
-          label: 'RutaArchivo',
-          placeholder: 'Ingrese rutaArchivo',
+          label: 'Archivo Documento',
+          placeholder: 'Ingrese el archivo del documento',
           required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          }
+          multiple:true,
+          maxFileSize: 5 * 1024 * 1024,
         },
         validation: {
           messages: {
-            required: 'La ruta es obligatoria.'
+            required: 'El archivo del documento  es obligatorio.',
+            maxFileSize: 'El archivo debe tener un tamaño inferior a 5MB'
           }
         }
       },
@@ -483,8 +480,60 @@ export class ActualizarDocumentoComponent implements OnInit {
       modelData.contrato = { id: modelData.contrato };
     }
 
-    // Si no se subieron archivos, procedemos a actualizar directamente
-    this.updateEntity(modelData);
+    const uploadOperations: Observable<void>[] = [];
+    const fileFields: (keyof DocumentoModel)[] = ['archivoDocumento'];
+
+    const handleFileUpload = (field: keyof DocumentoModel) => {
+      const files = this.model[field];
+
+      if (Array.isArray(files) && files.length > 0) {
+        const upload$ = this.documentoService.uploadFiles(files).pipe(
+          switchMap(rutas => {
+            // @ts-ignore
+            modelData[field] = rutas.join(',');
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      } else if (files instanceof File) {
+        const upload$ = this.documentoService.uploadFile(files).pipe(
+          switchMap(ruta => {
+            // @ts-ignore
+            modelData[field] = ruta;
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      }
+    };
+
+    fileFields.forEach(field => handleFileUpload(field));
+
+    if (uploadOperations.length > 0) {
+      forkJoin(uploadOperations).subscribe({
+        next: () => this.updateEntity(modelData),
+        error: () => this.isLoading = false
+      });
+    } else {
+      this.updateEntity(modelData);
+    }
+  }
+
+  private handleUploadError(field: string, error: any) {
+    console.error(`Error subiendo archivos en ${field}:`, error);
+    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+    this.isLoading = false;
   }
 
   private updateEntity(modelData: any) {

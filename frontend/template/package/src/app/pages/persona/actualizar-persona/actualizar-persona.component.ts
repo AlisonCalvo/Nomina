@@ -121,7 +121,6 @@ export class ActualizarPersonaComponent implements OnInit {
   fields: FormlyFieldConfig[] = [];
   /** Lista de roles disponibles */
   roles: any[] = [];
-
   rolesMap: { [key: string]: number } = {};
 
   /**
@@ -704,7 +703,7 @@ export class ActualizarPersonaComponent implements OnInit {
         },
         validation: {
           messages: {
-            required: 'La experiencia profesional es obligatoria para este tipo de persona.',
+            required: 'La experiencia profesional es obligatoria.',
             minlength: 'La experiencia profesional debe tener al menos 5 caracteres.',
           }
         },
@@ -727,7 +726,7 @@ export class ActualizarPersonaComponent implements OnInit {
         },
         validation: {
           messages: {
-            required: 'El número de tarjeta profesional es obligatorio para este tipo de persona.',
+            required: 'El número de tarjeta profesional es obligatorio.',
             minlength: 'El número de tarjeta profesional debe tener al menos 5 caracteres.',
           }
         },
@@ -783,7 +782,7 @@ export class ActualizarPersonaComponent implements OnInit {
         },
         hooks: {
           onInit: (field) => {
-            if (!field || !field.formControl) return; // Verificamos que formControl exista
+            if (!field || !field.formControl) return;
 
             field.formControl.valueChanges.subscribe((value) => {
               if (value) {

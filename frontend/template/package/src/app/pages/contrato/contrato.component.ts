@@ -99,8 +99,8 @@ export class ContratoComponent {
   /** estado - Campo de tipo boolean */
   estado: boolean;
 
-  /** rutaArchivo - Campo de tipo string */
-  rutaArchivo: string;
+  /** contratoPdf - Campo de tipo string */
+  contratoPdf: string;
 
   /** firmado - Campo de tipo boolean */
   firmado: boolean;
@@ -143,7 +143,7 @@ export class ContratoComponent {
     { name: 'fechaInicioContrato', type: 'LocalDate' },
     { name: 'fechaFinContrato', type: 'LocalDate' },
     { name: 'estado', type: 'boolean' },
-    { name: 'rutaArchivo', type: 'String' },
+    { name: 'contratoPdf', type: 'String' },
     { name: 'firmado', type: 'boolean' },
     { name: 'creador', type: 'String' },
     { name: 'proyecto', type: 'Proyecto' },
@@ -180,7 +180,7 @@ export class ContratoComponent {
     this.fechaInicioContrato = new Date();
     this.fechaFinContrato = new Date();
     this.estado = false;
-    this.rutaArchivo = '';
+    this.contratoPdf = '';
     this.firmado = false;
     this.creador = '';
     this.proyecto = null;

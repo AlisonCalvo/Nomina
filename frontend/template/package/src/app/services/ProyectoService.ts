@@ -33,7 +33,11 @@ export interface Proyecto {
   /**Campo que representa el supervisor del proyecto*/
   supervisor: string;
   /**Campo que representa el contacto del supervisor del proyecto*/
-  contactoSupervisor: string ;
+  contactoSupervisor: string;
+  /**Campo que representa las observaciones del proyecto*/
+  observaciones?: string;
+  /**Campo que representa los archivos adicionales del proyecto*/
+  archivosAdicionales?: string;
 }
 
 /**
@@ -66,7 +70,11 @@ export interface ProyectoDTO {
   /**Campo que representa el supervisor del proyecto*/
   supervisor: string;
   /**Campo que representa el contacto del supervisor del proyecto*/
-  contactoSupervisor: string ;
+  contactoSupervisor: string;
+  /**Campo que representa las observaciones del proyecto*/
+  observaciones?: string;
+  /**Campo que representa los archivos adicionales del proyecto*/
+  archivosAdicionales?: string;
 }
 
 /**
@@ -126,6 +134,58 @@ export class ProyectoService {
     const url = `${this.baseUrl}/proyectos/visibles?personaId=${personaId}`;
     const headers = new HttpHeaders().set('Accion', 'findAll').set('Objeto', 'Proyecto');
     return this.httpClient.get<Proyecto[]>(url, { headers });
+  }
+
+  // Método para uploadFiles
+  uploadFiles(files: File[]): Observable<string[]> {
+    const url = `${this.baseUrl}/proyectos/upload`;
+    const formData: FormData = new FormData();
+
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    // Opcional: puedes ajustar headers
+    const headers = new HttpHeaders()
+      .set('Accion', 'save')
+      .set('Objeto', 'Proyecto');
+
+    // Observa que aquí esperamos un array de strings, según lo que el backend devuelve
+    return this.httpClient.post<string[]>(url, formData, { headers });
+  }
+
+  // Método para uploadFile
+  uploadFile(file: File): Observable<string> {
+    const url = `${this.baseUrl}/proyectos/upload`;
+    const formData: FormData = new FormData();
+    formData.append('files', file); // 'files' es el nombre del @RequestParam en el backend
+
+    const headers = new HttpHeaders()
+      .set('Accion', 'save')
+      .set('Objeto', 'Proyecto');
+
+    // Esperamos un array de rutas y tomamos la primera.
+    // Si el backend solo devuelve una ruta, ajusta en consecuencia.
+    return new Observable((observer) => {
+      this.httpClient.post<string[]>(url, formData, { headers })
+        .subscribe({
+          next: (paths: string[]) => {
+            observer.next(paths[0]);  // Tomamos la primera ruta
+            observer.complete();
+          },
+          error: (err) => observer.error(err)
+        });
+    });
+  }
+
+  getFilesByProyectoServiceId(id: number): Observable<string[]> {
+    const url = `${this.baseUrl}/proyectos/${id}/files`;
+    return this.httpClient.get<string[]>(url);
+  }
+
+  downloadFile(fileName: string): Observable<Blob> {
+    const url = `${this.baseUrl}/proyectos/download?file=${fileName}`;
+    return this.httpClient.get(url, { responseType: 'blob' });
   }
 
 }

@@ -10,6 +10,8 @@ import {environment} from '../../environments/environment';
 export interface CuentaCobro {
   /** montoCobrar - Campo de tipo long */
   montoCobrar: number;
+  /** periodoACobrar - Campo de texto */
+  periodoACobrar: string;
   /** fecha - Campo de tipo LocalDate */
   fecha: Date;
   /** estado - Campo de tipo boolean */
@@ -41,6 +43,8 @@ export interface CuentaCobro {
 export interface CuentaCobroDTO {
   /** montoCobrar - Campo de tipo long */
   montoCobrar: number;
+  /** periodoACobrar - Campo de texto */
+  periodoACobrar: string;
   /** fecha - Campo de tipo LocalDate */
   fecha: Date;
   /** estado - Campo de tipo boolean */
@@ -116,6 +120,7 @@ export class CuentaCobroService {
     const headers = new HttpHeaders().set('Accion', 'deleteById').set('Objeto', 'CuentaCobro');
     return this.httpClient.delete<void>(url, {headers});
   }
+
 
 
   // Método para uploadFiles

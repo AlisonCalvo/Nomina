@@ -247,10 +247,12 @@ export class LeerTipoContratoComponent implements OnInit {
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(tipocontrato: any): void {
-    const dialogRef = this.dialog.open(ActualizarTipoContratoComponent, {
-      minWidth: '800px',
-      data: tipocontrato,
-    });
+      const screenWidth = window.innerWidth;
+      const minWidth = screenWidth < 600 ? '90vw' : '800px';
+      const dialogRef = this.dialog.open(ActualizarTipoContratoComponent, {
+        minWidth: minWidth,
+        data: tipocontrato,
+      });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {

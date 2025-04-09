@@ -57,6 +57,14 @@ public class CuentaCobro implements Serializable {
     private long montoCobrar;
 
     /**
+     * periodo a cobrar
+     *
+     * Restricciones:
+     */
+    @Column(name="periodoACobrar", nullable=true)
+    private String periodoACobrar;
+
+    /**
      * fecha de entrega de la cuenta de cobro
      * 
      * Restricciones:
@@ -103,7 +111,7 @@ public class CuentaCobro implements Serializable {
      * 
      * Restricciones:
      */
-    @Column(name="notificacionPago")
+    @Column(name="notificacionPago",nullable=true)
     private String notificacionPago;
 
     /**
@@ -112,7 +120,7 @@ public class CuentaCobro implements Serializable {
      * Restricciones:
      */
     @FilePath(type = "file")
-    @Column(name="firmaGerente", columnDefinition = "TEXT")
+    @Column(name="firmaGerente", columnDefinition = "TEXT", nullable = true)
     private String firmaGerente;
 
     /**
@@ -129,6 +137,9 @@ public class CuentaCobro implements Serializable {
      */
     @Column(name = "creador")
     private String creador;
+
+    @Column(name = "fecha_aprobacion")
+    private LocalDateTime fechaAprobacion;
 
     /**
      * 
@@ -162,8 +173,9 @@ public class CuentaCobro implements Serializable {
      * @param informe 
      * @param creador Columna que representa el creador de la entidad.
      */
-    public CuentaCobro(long montoCobrar, LocalDate fecha, boolean estado, String numeroCuenta, String detalle, boolean pago, String notificacionPago, String firmaGerente, String firmaContratista, Contrato contrato, Informe informe, String creador) {
+    public CuentaCobro(long montoCobrar, String periodoACobrar, LocalDate fecha, boolean estado, String numeroCuenta, String detalle, boolean pago, String notificacionPago, String firmaGerente, String firmaContratista, Contrato contrato, Informe informe, String creador) {
         this.montoCobrar = montoCobrar;
+        this.periodoACobrar = periodoACobrar;
         this.fecha = fecha;
         this.estado = estado;
         this.numeroCuenta = numeroCuenta;

@@ -227,10 +227,12 @@ export class LeerPersonaComponent implements OnInit {
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(persona: any): void {
-    const dialogRef = this.dialog.open(ActualizarPersonaComponent, {
-      minWidth: '800px',
-      data: persona,
-    });
+      const screenWidth = window.innerWidth;
+      const minWidth = screenWidth < 600 ? '90vw' : '800px';
+      const dialogRef = this.dialog.open(ActualizarPersonaComponent, {
+        minWidth: minWidth,
+        data: persona,
+      });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {

@@ -1,5 +1,8 @@
 package Nomina.entity.services.impl;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -103,6 +106,37 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
      */
     @Override
     public void deleteById(Long id) {
+        Optional<Proyecto> optional = repository.findById(id);
+        if (optional.isEmpty()) {
+            throw new RuntimeException("Proyecto no encontrado con id: " + id);
+        }
+
+        Proyecto entity = optional.get();
+
+        List<String> filePaths = new ArrayList<>();
+
+        if (entity.getArchivosAdicionales() != null) {
+            String[] contratistaPaths = entity.getArchivosAdicionales().split(",");
+            for (String path : contratistaPaths) {
+                path = path.trim();
+                if (!path.isEmpty()) {
+                    filePaths.add(path);
+                }
+            }
+        }
+
+        for (String filePathString : filePaths) {
+            try {
+                Path filePath = Path.of(filePathString).toAbsolutePath().normalize();
+                Path uploadsDir = Path.of("uploads").toAbsolutePath().normalize();
+                if (filePath.startsWith(uploadsDir)) {
+                    Files.deleteIfExists(filePath);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         repository.deleteById(id);
     }
 

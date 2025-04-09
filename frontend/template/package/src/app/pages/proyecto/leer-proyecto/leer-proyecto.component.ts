@@ -45,6 +45,8 @@ import {AuthService} from "../../../services/auth-service.service";
 import {LOCALE_ID} from '@angular/core';
 import {registerLocaleData} from '@angular/common';
 import localeEs from '@angular/common/locales/es-CO';
+import {ShowFilesListComponent} from "../../../showFiles.component";
+import {DownloadFileComponent} from "../../../downloadFile.component";
 
 // Registrar el locale
 registerLocaleData(localeEs);
@@ -89,7 +91,7 @@ registerLocaleData(localeEs);
     MatProgressSpinnerModule,
     CurrencyPipe
   ],
-  providers: [CurrencyPipe, {provide: LOCALE_ID, useValue: 'es-CO'}],
+  providers: [CurrencyPipe, { provide: LOCALE_ID, useValue: 'es-CO' }],
   styleUrls: ['./leer-proyecto.component.scss']
 })
 export class LeerProyectoComponent implements OnInit {
@@ -98,7 +100,7 @@ export class LeerProyectoComponent implements OnInit {
   mostrarBotonEliminar: boolean;
 
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'nombre', 'valorContrato', 'tiempoContractual', 'objetoContractual', 'alcanceContractual', 'estado', 'numeroContrato', 'cliente', 'fechaInicio', 'fechaFin', 'creador', 'persona', 'supervisor', 'contactoSupervisor', 'acciones'];
+  displayedColumns: string[] = ['id', 'nombre', 'valorContrato', 'tiempoContractual', 'objetoContractual', 'alcanceContractual', 'estado', 'numeroContrato', 'cliente', 'fechaInicio', 'fechaFin', 'creador', 'persona', 'supervisor','contactoSupervisor', 'observaciones', 'archivosAdicionales', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   proyectos: ProyectoComponent[] = [];
@@ -289,10 +291,12 @@ export class LeerProyectoComponent implements OnInit {
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(proyecto: any): void {
-    const dialogRef = this.dialog.open(ActualizarProyectoComponent, {
-      minWidth: '800px',
-      data: proyecto,
-    });
+      const screenWidth = window.innerWidth;
+      const minWidth = screenWidth < 600 ? '90vw' : '800px';
+      const dialogRef = this.dialog.open(ActualizarProyectoComponent, {
+        minWidth: minWidth,
+        data: proyecto,
+      });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -387,8 +391,8 @@ export class LeerProyectoComponent implements OnInit {
         const formattedRow: any = {};
         displayedColumns.forEach(column => {
           if (column === 'estado') {
-            formattedRow[column] = row[column] ? 'curso' : 'Finalizado';
-          } else if (Array.isArray(row[column])) {
+          formattedRow[column] = row[column] ? 'curso' : 'Finalizado';
+        } else if (Array.isArray(row[column])) {
             // Procesar colecciones con getCollectionSummary
             formattedRow[column] = this.getCollectionSummary(row[column]);
           } else if (typeof row[column] === 'object' && row[column] !== null) {
@@ -481,6 +485,61 @@ export class LeerProyectoComponent implements OnInit {
       return defaultText;
     }
     return collection.map(item => this.generateSummary(item)).join('; ');
+  }
+
+  onShowArchivosAdicionales(element:any) {
+    const rawPaths = element.archivosAdicionales;
+    if (!rawPaths) {
+      this.showMessage('No hay Archivos Adicionales.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: { files: files }
+    });
+  }
+
+  private extractFileName(fullPath: string): string {
+    const lastBackslash = fullPath.lastIndexOf('\\');
+    const lastSlash = fullPath.lastIndexOf('/');
+    const lastSeparator = Math.max(lastBackslash, lastSlash);
+    if (lastSeparator === -1) {
+      return fullPath;
+    }
+    return fullPath.substring(lastSeparator + 1);
+  }
+
+  onDownload(element: any) {
+    this.proyectoService.getFilesByProyectoServiceId(element.id)
+      .subscribe({
+        next: (files) => {
+          const dialogRef = this.dialog.open(DownloadFileComponent, {
+            maxWidth: 'none',
+            width: '500px',
+            data: { files: files }
+          });
+          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
+            if (selectedFiles && selectedFiles.length > 0) {
+              selectedFiles.forEach(selectedFile => {
+                this.proyectoService.downloadFile(selectedFile).subscribe(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = selectedFile;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                });
+              });
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error al obtener archivos:', err);
+          this.showMessage('Error al obtener archivos del servidor.', 'error');
+        }
+      });
   }
 
   obtenerNombreCreador(username: string): string {

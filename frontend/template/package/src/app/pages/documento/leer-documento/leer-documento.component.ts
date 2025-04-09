@@ -43,6 +43,7 @@ import {ContratoService} from '../../../services/ContratoService';
 import {CommonModule} from '@angular/common';
 import {DownloadFileComponent} from "../../../downloadFile.component";
 import {CrearCuentaCobroComponent} from "../../cuentacobro/crear-cuentacobro/crear-cuentacobro.component";
+import {ShowFilesListComponent} from "../../../showFiles.component";
 import {PersonaService} from "../../../services/PersonaService";
 
 @Component({
@@ -88,7 +89,7 @@ import {PersonaService} from "../../../services/PersonaService";
 })
 export class LeerDocumentoComponent implements OnInit {
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'nombre', 'descripcion', 'fechaCarga', 'estado', 'formato', 'etiqueta', 'rutaArchivo', 'creador', 'persona', 'contrato', 'acciones'];
+  displayedColumns: string[] = ['id', 'nombre', 'descripcion', 'fechaCarga', 'estado', 'formato', 'etiqueta', 'archivoDocumento', 'creador', 'persona', 'contrato', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   documentos: DocumentoComponent[] = [];
@@ -291,37 +292,6 @@ export class LeerDocumentoComponent implements OnInit {
     }
   }
 
-  onDownload(element: any) {
-    this.documentoService.getFilesByDocumentoServiceId(element.id)
-      .subscribe({
-        next: (files) => {
-          const dialogRef = this.dialog.open(DownloadFileComponent, {
-            maxWidth: 'none',
-            width: '500px',
-            data: {files: files}
-          });
-          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
-            if (selectedFiles && selectedFiles.length > 0) {
-              selectedFiles.forEach(selectedFile => {
-                this.documentoService.downloadFile(selectedFile).subscribe(blob => {
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = selectedFile;
-                  a.click();
-                  window.URL.revokeObjectURL(url);
-                });
-              });
-            }
-          });
-        },
-        error: (err) => {
-          console.error('Error al obtener archivos:', err);
-          this.showMessage('Error al obtener archivos del servidor.', 'error');
-        }
-      });
-  }
-
   /**
    * Método de validación previo a la eliminación
    * @param {number} id - ID del registro a validar
@@ -474,6 +444,61 @@ export class LeerDocumentoComponent implements OnInit {
       return defaultText;
     }
     return collection.map(item => this.generateSummary(item)).join('; ');
+  }
+
+  onShowArchivoDocumento(element:any) {
+    const rawPaths = element.archivoDocumento;
+    if (!rawPaths) {
+      this.showMessage('No hay archivo del documento.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: { files: files }
+    });
+  }
+
+  private extractFileName(fullPath: string): string {
+    const lastBackslash = fullPath.lastIndexOf('\\');
+    const lastSlash = fullPath.lastIndexOf('/');
+    const lastSeparator = Math.max(lastBackslash, lastSlash);
+    if (lastSeparator === -1) {
+      return fullPath;
+    }
+    return fullPath.substring(lastSeparator + 1);
+  }
+
+  onDownload(element: any) {
+    this.documentoService.getFilesByDocumentoServiceId(element.id)
+      .subscribe({
+        next: (files) => {
+          const dialogRef = this.dialog.open(DownloadFileComponent, {
+            maxWidth: 'none',
+            width: '500px',
+            data: { files: files }
+          });
+          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
+            if (selectedFiles && selectedFiles.length > 0) {
+              selectedFiles.forEach(selectedFile => {
+                this.documentoService.downloadFile(selectedFile).subscribe(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = selectedFile;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                });
+              });
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error al obtener archivos:', err);
+          this.showMessage('Error al obtener archivos del servidor.', 'error');
+        }
+      });
   }
 
   obtenerNombreCreador(username: string): string {
