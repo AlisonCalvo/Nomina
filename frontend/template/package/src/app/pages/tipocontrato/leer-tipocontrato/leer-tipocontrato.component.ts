@@ -1,45 +1,47 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormGroup, FormsModule } from '@angular/forms';
-import { FormlyFieldConfig } from '@ngx-formly/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorIntl } from '@angular/material/paginator';
-import { Router, RouterLink, RouterModule } from '@angular/router';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {FormGroup, FormsModule} from '@angular/forms';
+import {FormlyFieldConfig} from '@ngx-formly/core';
+import {MatPaginator} from '@angular/material/paginator';
+import {MatSort} from '@angular/material/sort';
+import {MatDialog} from '@angular/material/dialog';
+import {MatTableDataSource} from '@angular/material/table';
+import {MatPaginatorIntl} from '@angular/material/paginator';
+import {Router, RouterLink, RouterModule} from '@angular/router';
 import * as XLSX from 'xlsx';
-import { TipoContratoService } from '../../../services/TipoContratoService';
-import { TipoContratoComponent } from '../tipocontrato.component';
-import { ActualizarTipoContratoComponent } from '../actualizar-tipocontrato/actualizar-tipocontrato.component';
-import { CrearTipoContratoComponent } from '../crear-tipocontrato/crear-tipocontrato.component';
+import {TipoContratoService} from '../../../services/TipoContratoService';
+import {TipoContratoComponent} from '../tipocontrato.component';
+import {ActualizarTipoContratoComponent} from '../actualizar-tipocontrato/actualizar-tipocontrato.component';
+import {CrearTipoContratoComponent} from '../crear-tipocontrato/crear-tipocontrato.component';
 import {environment} from '../../../../environments/environment';
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTabsModule } from '@angular/material/tabs';
-import { DateTime } from 'luxon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { CommonModule } from '@angular/common';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCard, MatCardContent, MatCardModule} from '@angular/material/card';
+import {MatIcon, MatIconModule} from '@angular/material/icon';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatFormField, MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import {MatNativeDateModule} from '@angular/material/core';
+import {MatRadioModule} from '@angular/material/radio';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {MatTableModule} from '@angular/material/table';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatSortModule} from '@angular/material/sort';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatSnackBarModule, MatSnackBar} from '@angular/material/snack-bar';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatListModule} from '@angular/material/list';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatTabsModule} from '@angular/material/tabs';
+import {DateTime} from 'luxon';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {CommonModule} from '@angular/common';
+import {PersonaService} from "../../../services/PersonaService";
+
 @Component({
   selector: 'app-leer-tipocontrato',
   templateUrl: './leer-tipocontrato.component.html',
@@ -87,6 +89,8 @@ export class LeerTipoContratoComponent implements OnInit {
 
   // Array para almacenar los datos de la entidad
   tipocontratos: TipoContratoComponent[] = [];
+  // Array para almacenar los datos de las personas
+  personas: any[] = [];
   // Mensaje para mostrar errores al usuario
   errorMessage: string = '';
 
@@ -112,6 +116,7 @@ export class LeerTipoContratoComponent implements OnInit {
    */
   constructor(
     private tipocontratoService: TipoContratoService,
+    private personaService: PersonaService,
     private router: Router,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
@@ -125,6 +130,7 @@ export class LeerTipoContratoComponent implements OnInit {
    * Carga los datos iniciales y configura el filtrado de la tabla
    */
   ngOnInit(): void {
+    this.cargarDatosPersonas();
     this.loadData();
     this.customizePaginator();
 
@@ -161,6 +167,21 @@ export class LeerTipoContratoComponent implements OnInit {
   }
 
   /**
+   * Metodo para cargar los datos de las personas
+   */
+  cargarDatosPersonas(): void {
+    this.personaService.findAll().subscribe({
+      next: (personas) => {
+        this.personas = personas;
+      },
+      error: (err) => {
+        console.error('Error cargando personas:', err);
+        this.personas = [];
+      }
+    });
+  }
+
+  /**
    * Carga los datos de la entidad desde el servicio
    * Configura el datasource, paginador y ordenamiento
    */
@@ -168,12 +189,12 @@ export class LeerTipoContratoComponent implements OnInit {
     this.tipocontratoService.findAll().subscribe({
       next: data => {
         this.dataSource.data = data.map(item => Object.assign(new TipoContratoComponent(this.tipocontratoService), item));
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-    },
-       error: error => {
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+      },
+      error: error => {
         console.error('Error al obtener tipocontratos:', error);
-      this.errorMessage = 'Error al cargar los datos.';
+        this.errorMessage = 'Error al cargar los datos.';
       }
     });
   }
@@ -397,6 +418,7 @@ export class LeerTipoContratoComponent implements OnInit {
       panelClass: type === 'error' ? ['error-snackbar'] : ['success-snackbar']
     });
   }
+
   generateSummary(value: any, defaultText: string = 'Sin datos'): string {
     if (!value || typeof value !== 'object') {
       return defaultText;
@@ -415,11 +437,15 @@ export class LeerTipoContratoComponent implements OnInit {
       return defaultText;
     }
     return collection.map(item => this.generateSummary(item)).join('; ');
- }
-
-  onAlerta() {
-    // Implementar funcionalidad
-    this.showMessage('Funcionalidad no implementada', 'error');
   }
 
-   }
+  obtenerNombreCreador(username: string): string {
+    if (!this.personas || this.personas.length === 0) {
+      return username; // Devuelve el username si no hay personas cargadas
+    }
+
+    const persona = this.personas.find(p => p.correo === username);
+    return persona?.nombre || username;
+  }
+
+}

@@ -44,6 +44,7 @@ import { ContratoService } from '../../../services/ContratoService';
 import { CommonModule } from '@angular/common';
 import {DownloadFileComponent} from "../../../downloadFile.component";
 import {ShowFilesListComponent} from "../../../showFiles.component";
+import {PersonaService} from "../../../services/PersonaService";
 
 @Component({
   selector: 'app-leer-informe',
@@ -91,6 +92,8 @@ export class LeerInformeComponent implements OnInit {
 
   // Array para almacenar los datos de la entidad
   informes: InformeComponent[] = [];
+  // Array para almacenar los datos de las personas
+  personas: any[] = [];
   // Mensaje para mostrar errores al usuario
   errorMessage: string = '';
 
@@ -116,6 +119,7 @@ export class LeerInformeComponent implements OnInit {
    */
   constructor(
     private informeService: InformeService,
+    private personaService: PersonaService,
     private router: Router,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
@@ -129,6 +133,7 @@ export class LeerInformeComponent implements OnInit {
    * Carga los datos iniciales y configura el filtrado de la tabla
    */
   ngOnInit(): void {
+    this.cargarDatosPersonas();
     this.loadData();
     this.customizePaginator();
 
@@ -162,6 +167,18 @@ export class LeerInformeComponent implements OnInit {
     });
 
     return combinedValues.toLowerCase();
+  }
+
+  cargarDatosPersonas(): void {
+    this.personaService.findAll().subscribe({
+      next: (personas) => {
+        this.personas = personas;
+      },
+      error: (err) => {
+        console.error('Error cargando personas:', err);
+        this.personas = [];
+      }
+    });
   }
 
   /**
@@ -481,6 +498,15 @@ export class LeerInformeComponent implements OnInit {
       return fullPath;
     }
     return fullPath.substring(lastSeparator + 1);
+  }
+
+  obtenerNombreCreador(username: string): string {
+    if (!this.personas || this.personas.length === 0) {
+      return username; // Devuelve el username si no hay personas cargadas
+    }
+
+    const persona = this.personas.find(p => p.correo === username);
+    return persona?.nombre || username;
   }
 
 }

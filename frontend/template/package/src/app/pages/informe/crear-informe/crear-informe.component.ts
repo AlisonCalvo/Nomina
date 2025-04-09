@@ -354,68 +354,68 @@ export class CrearInformeComponent implements OnInit {
     this.preCreate(this.model);
 
     // 2. Copiamos el modelo para no mutarlo directamente
-    const modelData = { ...this.model };
+    const modelData = {...this.model};
     this.isLoading = true;
 
-    modelData.cuentaCobro = { id: this.model.cuentaCobro };
-    modelData.proyecto = { id: this.model.proyecto };
-    modelData.contrato = { id: this.model.contrato };
+    modelData.cuentaCobro = {id: this.model.cuentaCobro};
+    modelData.proyecto = {id: this.model.proyecto};
+    modelData.contrato = {id: this.model.contrato};
 
     const uploadOperations: Observable<void>[] = [];
     const fileFields: (keyof InformeModel)[] = ['informePDF'];
 
-     const handleFileUpload = (field: keyof InformeModel) => {
-       const files = this.model[field];
+    const handleFileUpload = (field: keyof InformeModel) => {
+      const files = this.model[field];
 
-       if (Array.isArray(files) && files.length > 0) {
-         const upload$ = this.informeService.uploadFiles(files).pipe(
-           switchMap(rutas => {
+      if (Array.isArray(files) && files.length > 0) {
+        const upload$ = this.informeService.uploadFiles(files).pipe(
+          switchMap(rutas => {
             // @ts-ignore
-             modelData[field] = rutas.join(',');
-             return of(undefined);
-           }),
-           catchError(error => {
-             this.handleUploadError(field as string, error);
-             return throwError(error);
-           })
-         );
-         uploadOperations.push(upload$);
-       } else if (files instanceof File) {
-         const upload$ = this.informeService.uploadFile(files).pipe(
-           switchMap(ruta => {
+            modelData[field] = rutas.join(',');
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      } else if (files instanceof File) {
+        const upload$ = this.informeService.uploadFile(files).pipe(
+          switchMap(ruta => {
             // @ts-ignore
-             modelData[field] = ruta;
-             return of(undefined);
-           }),
-           catchError(error => {
-             this.handleUploadError(field as string, error);
-             return throwError(error);
-           })
-         );
-         uploadOperations.push(upload$);
-       }
+            modelData[field] = ruta;
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      }
     };
 
-     fileFields.forEach(field => handleFileUpload(field));
+    fileFields.forEach(field => handleFileUpload(field));
 
-     if (uploadOperations.length > 0) {
-       forkJoin(uploadOperations).subscribe({
-         next: () => this.saveEntity(modelData),
-         error: () => this.isLoading = false
-       });
-     } else {
-       this.saveEntity(modelData);
-       }
-     }
+    if (uploadOperations.length > 0) {
+      forkJoin(uploadOperations).subscribe({
+        next: () => this.saveEntity(modelData),
+        error: () => this.isLoading = false
+      });
+    } else {
+      this.saveEntity(modelData);
+    }
+  }
 
   private handleUploadError(field: string, error: any) {
-     console.error(`Error subiendo archivos en ${field}:`, error);
-     this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
-       duration: 3000,
-       panelClass: ['error-snackbar']
-     });
-     this.isLoading = false;
-   }
+    console.error(`Error subiendo archivos en ${field}:`, error);
+    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+    this.isLoading = false;
+  }
 
   private saveEntity(modelData: any) {
      this.informeService.save(modelData).subscribe({

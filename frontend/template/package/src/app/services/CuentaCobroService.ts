@@ -118,7 +118,6 @@ export class CuentaCobroService {
   }
 
 
-
   // Método para uploadFiles
   uploadFiles(files: File[]): Observable<string[]> {
     const url = `${this.baseUrl}/cuentacobros/upload`;
