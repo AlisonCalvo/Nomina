@@ -110,8 +110,8 @@ public class Contrato implements Serializable {
      * 
      * Restricciones:
      */
-    @Column(name="rutaArchivo", nullable=false)
-    private String rutaArchivo;
+    @Column(name="contratoPdf", nullable=false)
+    private String contratoPdf;
 
     /**
      * booleano si el contrato esta firmado o no
@@ -126,6 +126,23 @@ public class Contrato implements Serializable {
      */
     @Column(name = "creador")
     private String creador;
+
+    /**
+     * Observaciones adicionales del contrato
+     * 
+     * Restricciones: Opcional
+     */
+    @Column(name="observaciones", nullable=true)
+    private String observaciones;
+
+    /**
+     * Archivos adicionales del contrato
+     * 
+     * Restricciones: Opcional
+     */
+    @FilePath(type = "file")
+    @Column(name="archivosAdicionales", nullable=true)
+    private String archivosAdicionales;
 
     /**
      * 
@@ -193,7 +210,7 @@ public class Contrato implements Serializable {
      * @param fechaInicioContrato fecha de inicio del contrato
      * @param fechaFinContrato fecha finalizacion del contrato
      * @param estado estado del contrato
-     * @param rutaArchivo ruta del archivo
+     * @param contratoPdf ruta del archivo
      * @param firmado booleano si el contrato esta firmado o no
      * @param proyecto 
      * @param persona 
@@ -201,7 +218,7 @@ public class Contrato implements Serializable {
      * @param periodicidadPago 
      * @param creador Columna que representa el creador de la entidad.
      */
-    public Contrato(String numeroContrato,String cargo, long valorTotalContrato, int numeroPagos, LocalDate fechaInicioContrato, LocalDate fechaFinContrato, boolean estado, String rutaArchivo, boolean firmado, Proyecto proyecto, Persona persona, TipoContrato tipoContrato, PeriodicidadPago periodicidadPago, String creador) {
+    public Contrato(String numeroContrato,String cargo, long valorTotalContrato, int numeroPagos, LocalDate fechaInicioContrato, LocalDate fechaFinContrato, boolean estado, String contratoPdf, boolean firmado, Proyecto proyecto, Persona persona, TipoContrato tipoContrato, PeriodicidadPago periodicidadPago, String creador) {
         this.numeroContrato = numeroContrato;
         this.cargo = cargo;
         this.valorTotalContrato = valorTotalContrato;
@@ -209,7 +226,7 @@ public class Contrato implements Serializable {
         this.fechaInicioContrato = fechaInicioContrato;
         this.fechaFinContrato = fechaFinContrato;
         this.estado = estado;
-        this.rutaArchivo = rutaArchivo;
+        this.contratoPdf = contratoPdf;
         this.firmado = firmado;
         this.proyecto = proyecto;
         this.persona = persona;

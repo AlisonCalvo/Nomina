@@ -97,4 +97,14 @@ public class ProyectoDTO {
      */
     private String contactoSupervisor;
 
+    /**
+     * Campo que representa las observaciones del proyecto
+     */
+    private String observaciones;
+
+    /**
+     * Campo que representa los archivos adicionales del proyecto
+     */
+    private String archivosAdicionales;
+
 }

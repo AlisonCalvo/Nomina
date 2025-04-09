@@ -81,6 +81,9 @@ export class CuentaCobroComponent {
   /** montoCobrar - Campo de tipo number */
   montoCobrar: number;
 
+  /** periodoACobrar - Campo de tipo string */
+  periodoACobrar: string;
+
   /** fecha - Campo de tipo Date */
   fecha: Date;
 
@@ -153,6 +156,7 @@ export class CuentaCobroComponent {
     // Inicialización de atributos con valores por defecto
     this.id = 0;
     this.montoCobrar = 0;
+    this.periodoACobrar = '';
     this.fecha = new Date();
     this.estado = false;
     this.numeroCuenta = '';

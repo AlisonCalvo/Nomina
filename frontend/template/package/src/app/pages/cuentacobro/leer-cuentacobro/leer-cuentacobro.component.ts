@@ -98,7 +98,7 @@ registerLocaleData(localeEs);
 export class LeerCuentaCobroComponent implements OnInit {
   mostrarBotonEliminar: boolean;
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'montoCobrar', 'fecha', 'estado','fechaAprobacion', 'numeroCuenta', 'detalle', 'pago', 'notificacionPago', 'firmaGerente', 'firmaContratista', 'creador', 'contrato', 'acciones'];
+  displayedColumns: string[] = ['id', 'montoCobrar', 'periodoACobrar', 'fecha', 'estado','fechaAprobacion', 'numeroCuenta', 'detalle', 'pago', 'notificacionPago', 'firmaGerente', 'firmaContratista', 'creador', 'contrato', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   cuentacobros: CuentaCobroComponent[] = [];

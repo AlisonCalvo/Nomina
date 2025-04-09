@@ -148,6 +148,7 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
             cuentaCobro.setPago(dto.isPago());
             cuentaCobro.setFirmaGerente(dto.getFirmaGerente());
             cuentaCobro.setFirmaContratista(dto.getFirmaContratista());
+            cuentaCobro.setPeriodoACobrar(dto.getPeriodoACobrar());
             
             // Verificar si el estado cambió a aprobado
             if (!estadoAnterior && cuentaCobro.isEstado()) {

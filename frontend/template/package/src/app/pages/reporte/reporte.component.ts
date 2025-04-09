@@ -65,7 +65,7 @@ interface EntityAttribute {
     MatSnackBarModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
-    DatePipe, 
+    DatePipe,
     MatChipListbox,
     MatChip,
     MatChipSet
@@ -131,7 +131,7 @@ export class ReporteComponent implements OnInit {
       if (value) {
         // Limpiar atributos seleccionados al cambiar de entidad
         this.resetSelectedAttributes();
-        
+
         this.selectedEntity = value;
         this.loadEntityAttributes(value);
       }
@@ -253,7 +253,7 @@ export class ReporteComponent implements OnInit {
       { name: 'fechaInicioContrato', type: 'LocalDate', selected: false },
       { name: 'fechaFinContrato', type: 'LocalDate', selected: false },
       { name: 'estado', type: 'boolean', selected: false },
-      { name: 'rutaArchivo', type: 'String', selected: false },
+      { name: 'contratoPdf', type: 'String', selected: false },
       { name: 'firmado', type: 'boolean', selected: false },
       { name: 'creador', type: 'String', selected: false },
       { name: 'proyecto', type: 'Proyecto', selected: false },
@@ -287,7 +287,7 @@ export class ReporteComponent implements OnInit {
       { name: 'estado', type: 'boolean', selected: false },
       { name: 'formato', type: 'String', selected: false },
       { name: 'etiqueta', type: 'String', selected: false },
-      { name: 'rutaArchivo', type: 'String', selected: false },
+      { name: 'archivoDocumento', type: 'String', selected: false },
       { name: 'creador', type: 'String', selected: false },
       { name: 'persona', type: 'Persona', selected: false },
       { name: 'contrato', type: 'Contrato', selected: false },
@@ -368,7 +368,7 @@ export class ReporteComponent implements OnInit {
    */
   loadEntityAttributes(entityName: string): void {
     const attributes = this.entityAttributesMap.get(entityName) || [];
-    
+
     // Actualizar estado de selección basado en selectedAttributes
     attributes.forEach(attr => {
       const isSelected = this.selectedAttributes.some(
@@ -378,7 +378,7 @@ export class ReporteComponent implements OnInit {
     });
 
     this.attributesDataSource.data = attributes;
-    
+
     // Configurar paginador y ordenamiento después de que los datos están disponibles
     setTimeout(() => {
       if (this.paginator && this.sort) {
@@ -406,14 +406,14 @@ export class ReporteComponent implements OnInit {
   private resetSelectedAttributes(): void {
     // Limpiar el array de atributos seleccionados
     this.selectedAttributes = [];
-    
+
     // Si hay una entidad seleccionada, actualizar los checkboxes en la tabla
     if (this.selectedEntity) {
       const attributes = this.entityAttributesMap.get(this.selectedEntity) || [];
       attributes.forEach(attr => attr.selected = false);
       this.attributesDataSource.data = [...attributes]; // Forzar actualización de la UI
     }
-    
+
     // Mostrar mensaje de confirmación
     this.showMessage('Se han reiniciado los atributos seleccionados', 'success');
   }
@@ -579,7 +579,7 @@ export class ReporteComponent implements OnInit {
     });
 
     // Guardar el PDF
-    const pdfName = results.length === 1 
+    const pdfName = results.length === 1
       ? `Reporte_${results[0].entityName}_${this.datePipe.transform(new Date(), 'yyyyMMdd')}.pdf`
       : `Reporte_Multiple_${this.datePipe.transform(new Date(), 'yyyyMMdd')}.pdf`;
 
@@ -645,25 +645,25 @@ export class ReporteComponent implements OnInit {
         // Estilo para el nombre del atributo
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
-        
+
         // Obtener el valor del atributo
         try {
           const value = this.getAttributeValue(item, attr.name);
           const formattedValue = this.formatValueForReport(value, attr.type);
-          
+
           // Nombre del atributo
           doc.text(`${attr.name}:`, leftMargin + 5, yPos);
-          
+
           // Valor del atributo (con estilo normal)
           doc.setFont('helvetica', 'normal');
-          
+
           // Detectar si es un texto largo (mayor a 50 caracteres o contiene saltos de línea)
           const isLongText = formattedValue && (formattedValue.length > 50 || formattedValue.includes('\n'));
-          
+
           if (isLongText) {
             // Para textos largos, usar text con opciones de ajuste de texto (splitTextToSize)
             const textLines = doc.splitTextToSize(formattedValue || 'N/A', valueWidth);
-            
+
             // Si hay muchas líneas, verificar si necesitamos nueva página
             if (yPos + (textLines.length * lineHeight) > marginBottom) {
               doc.addPage();
@@ -673,13 +673,13 @@ export class ReporteComponent implements OnInit {
               doc.text(`${attr.name}:`, leftMargin + 5, yPos);
               doc.setFont('helvetica', 'normal');
             }
-            
+
             // Dibujar cada línea del texto
             textLines.forEach((line: string, index: number) => {
               const lineY = yPos + (index * lineHeight);
               doc.text(line, valueXPos, lineY);
             });
-            
+
             // Actualizar la posición Y después del texto multilínea
             yPos += (textLines.length * lineHeight);
           } else {
@@ -701,7 +701,7 @@ export class ReporteComponent implements OnInit {
         doc.setLineWidth(0.5);
         doc.line(leftMargin, yPos, pageWidth - leftMargin, yPos);
         yPos += 10; // Espacio después de la línea
-        
+
         // Verificar si necesitamos una nueva página para el próximo registro
         if (yPos > marginBottom - 20) {
           doc.addPage();
@@ -817,17 +817,17 @@ export class ReporteComponent implements OnInit {
     if (attributeName.includes('.')) {
       const parts = attributeName.split('.');
       let value = item;
-      
+
       for (const part of parts) {
         if (value === null || value === undefined) {
           return 'N/A';
         }
         value = value[part];
       }
-      
+
       return value;
     }
-    
+
     // Para casos simples, retornar directamente el valor
     return item[attributeName];
   }
@@ -870,10 +870,10 @@ export class ReporteComponent implements OnInit {
           // Manejar arrays (típicamente relaciones ManyToMany)
           if (Array.isArray(value)) {
             if (value.length === 0) return '[]';
-            
+
             // Obtener un valor representativo para cada elemento del array
             const displayValues = value.map(item => this.getDisplayValueForRelationship(item));
-            
+
             // Unir los valores con comas limitando a máximo 5 elementos para no sobrecargar el reporte
             if (value.length <= 5) {
               return displayValues.join(', ');
@@ -899,11 +899,11 @@ export class ReporteComponent implements OnInit {
    */
   private getDisplayValueForRelationship(obj: any): string {
     if (!obj) return 'N/A';
-    
+
     // Lista priorizada de posibles atributos a mostrar
     const priorityAttributes = [
-      'nombre', 'name', 
-      'descripcion', 'description', 
+      'nombre', 'name',
+      'descripcion', 'description',
       'codigo', 'code',
       'titulo', 'title',
       'valor', 'value',
@@ -913,31 +913,31 @@ export class ReporteComponent implements OnInit {
       'etiqueta', 'label',
       'detalle', 'detail'
     ];
-    
+
     // Primero intentar con atributos prioritarios
     for (const attr of priorityAttributes) {
       if (obj[attr] !== undefined && obj[attr] !== null) {
         return String(obj[attr]);
       }
     }
-    
+
     // Si no hay atributos prioritarios, buscar el primer atributo que no sea id y no sea un objeto
-    const keys = Object.keys(obj).filter(key => 
-      key.toLowerCase() !== 'id' && 
-      !key.toLowerCase().endsWith('id') && 
+    const keys = Object.keys(obj).filter(key =>
+      key.toLowerCase() !== 'id' &&
+      !key.toLowerCase().endsWith('id') &&
       typeof obj[key] !== 'object' &&
       typeof obj[key] !== 'function'
     );
-    
+
     if (keys.length > 0) {
       return String(obj[keys[0]]);
     }
-    
+
     // Si hay un ID, usarlo como último recurso
     if (obj.id !== undefined) {
       return `ID: ${obj.id}`;
     }
-    
+
     // Si todo falla, convertir a JSON
     return JSON.stringify(obj);
   }

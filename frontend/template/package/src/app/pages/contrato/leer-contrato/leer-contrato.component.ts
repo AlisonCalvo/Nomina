@@ -1,49 +1,51 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormGroup, FormsModule } from '@angular/forms';
-import { FormlyFieldConfig } from '@ngx-formly/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorIntl } from '@angular/material/paginator';
-import { Router, RouterLink, RouterModule } from '@angular/router';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {FormGroup, FormsModule} from '@angular/forms';
+import {FormlyFieldConfig} from '@ngx-formly/core';
+import {MatPaginator} from '@angular/material/paginator';
+import {MatSort} from '@angular/material/sort';
+import {MatDialog} from '@angular/material/dialog';
+import {MatTableDataSource} from '@angular/material/table';
+import {MatPaginatorIntl} from '@angular/material/paginator';
+import {Router, RouterLink, RouterModule} from '@angular/router';
 import * as XLSX from 'xlsx';
-import { ContratoService } from '../../../services/ContratoService';
-import { ContratoComponent } from '../contrato.component';
-import { ActualizarContratoComponent } from '../actualizar-contrato/actualizar-contrato.component';
-import { CrearContratoComponent } from '../crear-contrato/crear-contrato.component';
+import {ContratoService} from '../../../services/ContratoService';
+import {ContratoComponent} from '../contrato.component';
+import {ActualizarContratoComponent} from '../actualizar-contrato/actualizar-contrato.component';
+import {CrearContratoComponent} from '../crear-contrato/crear-contrato.component';
 import {environment} from '../../../../environments/environment';
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTabsModule } from '@angular/material/tabs';
-import { DateTime } from 'luxon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCard, MatCardContent, MatCardModule} from '@angular/material/card';
+import {MatIcon, MatIconModule} from '@angular/material/icon';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatFormField, MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import {MatNativeDateModule} from '@angular/material/core';
+import {MatRadioModule} from '@angular/material/radio';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {MatTableModule} from '@angular/material/table';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatSortModule} from '@angular/material/sort';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatSnackBarModule, MatSnackBar} from '@angular/material/snack-bar';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatListModule} from '@angular/material/list';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatTabsModule} from '@angular/material/tabs';
+import {DateTime} from 'luxon';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {CommonModule, CurrencyPipe} from '@angular/common';
 import {AuthService} from "../../../services/auth-service.service";
-import { LOCALE_ID } from '@angular/core';
-import { registerLocaleData } from '@angular/common';
+import {LOCALE_ID} from '@angular/core';
+import {registerLocaleData} from '@angular/common';
 import localeEs from '@angular/common/locales/es-CO';
+import {ShowFilesListComponent} from "../../../showFiles.component";
+import {DownloadFileComponent} from "../../../downloadFile.component";
 
 // Registrar el locale
 registerLocaleData(localeEs);
@@ -88,7 +90,7 @@ registerLocaleData(localeEs);
     MatProgressSpinnerModule,
     CurrencyPipe
   ],
-  providers: [CurrencyPipe, { provide: LOCALE_ID, useValue: 'es-CO' }],
+  providers: [CurrencyPipe, {provide: LOCALE_ID, useValue: 'es-CO'}],
   styleUrls: ['./leer-contrato.component.scss']
 })
 export class LeerContratoComponent implements OnInit {
@@ -96,7 +98,7 @@ export class LeerContratoComponent implements OnInit {
   mostrarBotonModificar: boolean;
   mostrarBotonEliminar: boolean;
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id','numeroContrato' ,'cargo', 'valorTotalContrato', 'numeroPagos', 'fechaInicioContrato', 'fechaFinContrato', 'estado', 'rutaArchivo', 'firmado', 'creador', 'proyecto', 'persona', 'tipoContrato', 'periodicidadPago', 'acciones'];
+  displayedColumns: string[] = ['id', 'numeroContrato', 'cargo', 'valorTotalContrato', 'numeroPagos', 'fechaInicioContrato', 'fechaFinContrato', 'estado', 'contratoPdf', 'firmado', 'creador', 'proyecto', 'persona', 'tipoContrato', 'periodicidadPago', 'observaciones', 'archivosAdicionales', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   contratos: ContratoComponent[] = [];
@@ -268,12 +270,12 @@ export class LeerContratoComponent implements OnInit {
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(contrato: any): void {
-      const screenWidth = window.innerWidth;
-      const minWidth = screenWidth < 600 ? '90vw' : '800px';
-      const dialogRef = this.dialog.open(ActualizarContratoComponent, {
-        minWidth: minWidth,
-        data: contrato,
-      });
+    const screenWidth = window.innerWidth;
+    const minWidth = screenWidth < 600 ? '90vw' : '800px';
+    const dialogRef = this.dialog.open(ActualizarContratoComponent, {
+      minWidth: minWidth,
+      data: contrato,
+    });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -445,6 +447,7 @@ export class LeerContratoComponent implements OnInit {
       panelClass: type === 'error' ? ['error-snackbar'] : ['success-snackbar']
     });
   }
+
   generateSummary(value: any, defaultText: string = 'Sin datos'): string {
     if (!value || typeof value !== 'object') {
       return defaultText;
@@ -463,11 +466,74 @@ export class LeerContratoComponent implements OnInit {
       return defaultText;
     }
     return collection.map(item => this.generateSummary(item)).join('; ');
- }
-
-  onAlerta() {
-    // Implementar funcionalidad
-    this.showMessage('Funcionalidad no implementada', 'error');
   }
 
-   }
+  onShowContratoPdf(element: any) {
+    const rawPaths = element.contratoPdf;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos de Contrato.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: {files: files}
+    });
+  }
+
+  onShowArchivosAdicionales(element: any) {
+    const rawPaths = element.archivosAdicionales;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos Adicionales.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: {files: files}
+    });
+  }
+
+  private extractFileName(fullPath: string): string {
+    const lastBackslash = fullPath.lastIndexOf('\\');
+    const lastSlash = fullPath.lastIndexOf('/');
+    const lastSeparator = Math.max(lastBackslash, lastSlash);
+    if (lastSeparator === -1) {
+      return fullPath;
+    }
+    return fullPath.substring(lastSeparator + 1);
+  }
+
+  onDownload(element: any) {
+    this.contratoService.getFilesByContratoServiceId(element.id)
+      .subscribe({
+        next: (files) => {
+          const dialogRef = this.dialog.open(DownloadFileComponent, {
+            maxWidth: 'none',
+            width: '500px',
+            data: {files: files}
+          });
+          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
+            if (selectedFiles && selectedFiles.length > 0) {
+              selectedFiles.forEach(selectedFile => {
+                this.contratoService.downloadFile(selectedFile).subscribe(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = selectedFile;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                });
+              });
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error al obtener archivos:', err);
+          this.showMessage('Error al obtener archivos del servidor.', 'error');
+        }
+      });
+  }
+}

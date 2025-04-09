@@ -43,6 +43,8 @@ interface CuentaCobroModel {
   id: number;
   /** montoCobrar de la entidad */
   montoCobrar: number;
+  /** periodoACobrar de la entidad */
+  periodoACobrar: string;
   /** fecha de la entidad */
   fecha: Date;
   /** estado de la entidad */
@@ -163,6 +165,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
         this.model = {
           id: this.data.id,
           montoCobrar: this.data.montoCobrar,
+          periodoACobrar: this.data.periodoACobrar,
           fecha: this.data.fecha,
           estado: this.data.estado,
           numeroCuenta: this.data.numeroCuenta,
@@ -180,6 +183,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
         this.originalModel = {
           id: this.data.id,
           montoCobrar: this.data.montoCobrar,
+          periodoACobrar: this.data.periodoACobrar,
           fecha: this.data.fecha,
           estado: this.data.estado,
           numeroCuenta: this.data.numeroCuenta,
@@ -311,6 +315,26 @@ export class ActualizarCuentaCobroComponent implements OnInit {
                   field.formControl?.setValue(formattedValue, { emitEvent: false });
                 }
               });
+          }
+        }
+      },
+      {
+        key: 'periodoACobrar',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Período a Cobrar',
+          placeholder: 'Ingrese el período a cobrar',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'El período a cobrar es obligatorio.'
           }
         }
       },

@@ -1,48 +1,50 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormGroup, FormsModule } from '@angular/forms';
-import { FormlyFieldConfig } from '@ngx-formly/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorIntl } from '@angular/material/paginator';
-import { Router, RouterLink, RouterModule } from '@angular/router';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {FormGroup, FormsModule} from '@angular/forms';
+import {FormlyFieldConfig} from '@ngx-formly/core';
+import {MatPaginator} from '@angular/material/paginator';
+import {MatSort} from '@angular/material/sort';
+import {MatDialog} from '@angular/material/dialog';
+import {MatTableDataSource} from '@angular/material/table';
+import {MatPaginatorIntl} from '@angular/material/paginator';
+import {Router, RouterLink, RouterModule} from '@angular/router';
 import * as XLSX from 'xlsx';
-import { DocumentoService } from '../../../services/DocumentoService';
-import { DocumentoComponent } from '../documento.component';
-import { ActualizarDocumentoComponent } from '../actualizar-documento/actualizar-documento.component';
-import { CrearDocumentoComponent } from '../crear-documento/crear-documento.component';
+import {DocumentoService} from '../../../services/DocumentoService';
+import {DocumentoComponent} from '../documento.component';
+import {ActualizarDocumentoComponent} from '../actualizar-documento/actualizar-documento.component';
+import {CrearDocumentoComponent} from '../crear-documento/crear-documento.component';
 import {environment} from '../../../../environments/environment';
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTabsModule } from '@angular/material/tabs';
-import { DateTime } from 'luxon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ContratoService } from '../../../services/ContratoService';
-import { CommonModule } from '@angular/common';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCard, MatCardContent, MatCardModule} from '@angular/material/card';
+import {MatIcon, MatIconModule} from '@angular/material/icon';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatFormField, MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import {MatNativeDateModule} from '@angular/material/core';
+import {MatRadioModule} from '@angular/material/radio';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {MatTableModule} from '@angular/material/table';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatSortModule} from '@angular/material/sort';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatSnackBarModule, MatSnackBar} from '@angular/material/snack-bar';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatListModule} from '@angular/material/list';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatTabsModule} from '@angular/material/tabs';
+import {DateTime} from 'luxon';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {ContratoService} from '../../../services/ContratoService';
+import {CommonModule} from '@angular/common';
 import {DownloadFileComponent} from "../../../downloadFile.component";
 import {CrearCuentaCobroComponent} from "../../cuentacobro/crear-cuentacobro/crear-cuentacobro.component";
+import {ShowFilesListComponent} from "../../../showFiles.component";
+
 @Component({
   selector: 'app-leer-documento',
   templateUrl: './leer-documento.component.html',
@@ -86,7 +88,7 @@ import {CrearCuentaCobroComponent} from "../../cuentacobro/crear-cuentacobro/cre
 })
 export class LeerDocumentoComponent implements OnInit {
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'nombre', 'descripcion', 'fechaCarga', 'estado', 'formato', 'etiqueta', 'rutaArchivo', 'creador', 'persona', 'contrato', 'acciones'];
+  displayedColumns: string[] = ['id', 'nombre', 'descripcion', 'fechaCarga', 'estado', 'formato', 'etiqueta', 'archivoDocumento', 'creador', 'persona', 'contrato', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   documentos: DocumentoComponent[] = [];
@@ -172,12 +174,12 @@ export class LeerDocumentoComponent implements OnInit {
     this.documentoService.findAll().subscribe({
       next: data => {
         this.dataSource.data = data.map(item => Object.assign(new DocumentoComponent(this.documentoService), item));
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-    },
-       error: error => {
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+      },
+      error: error => {
         console.error('Error al obtener documentos:', error);
-      this.errorMessage = 'Error al cargar los datos.';
+        this.errorMessage = 'Error al cargar los datos.';
       }
     });
   }
@@ -230,12 +232,12 @@ export class LeerDocumentoComponent implements OnInit {
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(documento: any): void {
-      const screenWidth = window.innerWidth;
-      const minWidth = screenWidth < 600 ? '90vw' : '800px';
-      const dialogRef = this.dialog.open(ActualizarDocumentoComponent, {
-        minWidth: minWidth,
-        data: documento,
-      });
+    const screenWidth = window.innerWidth;
+    const minWidth = screenWidth < 600 ? '90vw' : '800px';
+    const dialogRef = this.dialog.open(ActualizarDocumentoComponent, {
+      minWidth: minWidth,
+      data: documento,
+    });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -271,37 +273,6 @@ export class LeerDocumentoComponent implements OnInit {
       console.error('Error en preDelete:', error);
       this.showMessage('Acción cancelada o error en preDelete', 'error');
     }
-  }
-
-  onDownload(element: any) {
-    this.documentoService.getFilesByDocumentoServiceId(element.id)
-      .subscribe({
-        next: (files) => {
-          const dialogRef = this.dialog.open(DownloadFileComponent, {
-            maxWidth: 'none',
-            width: '500px',
-            data: { files: files }
-          });
-          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
-            if (selectedFiles && selectedFiles.length > 0) {
-              selectedFiles.forEach(selectedFile => {
-                this.documentoService.downloadFile(selectedFile).subscribe(blob => {
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = selectedFile;
-                  a.click();
-                  window.URL.revokeObjectURL(url);
-                });
-              });
-            }
-          });
-        },
-        error: (err) => {
-          console.error('Error al obtener archivos:', err);
-          this.showMessage('Error al obtener archivos del servidor.', 'error');
-        }
-      });
   }
 
   /**
@@ -437,6 +408,7 @@ export class LeerDocumentoComponent implements OnInit {
       panelClass: type === 'error' ? ['error-snackbar'] : ['success-snackbar']
     });
   }
+
   generateSummary(value: any, defaultText: string = 'Sin datos'): string {
     if (!value || typeof value !== 'object') {
       return defaultText;
@@ -455,11 +427,61 @@ export class LeerDocumentoComponent implements OnInit {
       return defaultText;
     }
     return collection.map(item => this.generateSummary(item)).join('; ');
- }
-
-  onAlerta() {
-    // Implementar funcionalidad
-    this.showMessage('Funcionalidad no implementada', 'error');
   }
 
-   }
+  onShowArchivoDocumento(element:any) {
+    const rawPaths = element.archivoDocumento;
+    if (!rawPaths) {
+      this.showMessage('No hay archivo del documento.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: { files: files }
+    });
+  }
+
+  private extractFileName(fullPath: string): string {
+    const lastBackslash = fullPath.lastIndexOf('\\');
+    const lastSlash = fullPath.lastIndexOf('/');
+    const lastSeparator = Math.max(lastBackslash, lastSlash);
+    if (lastSeparator === -1) {
+      return fullPath;
+    }
+    return fullPath.substring(lastSeparator + 1);
+  }
+
+  onDownload(element: any) {
+    this.documentoService.getFilesByDocumentoServiceId(element.id)
+      .subscribe({
+        next: (files) => {
+          const dialogRef = this.dialog.open(DownloadFileComponent, {
+            maxWidth: 'none',
+            width: '500px',
+            data: { files: files }
+          });
+          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
+            if (selectedFiles && selectedFiles.length > 0) {
+              selectedFiles.forEach(selectedFile => {
+                this.documentoService.downloadFile(selectedFile).subscribe(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = selectedFile;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                });
+              });
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error al obtener archivos:', err);
+          this.showMessage('Error al obtener archivos del servidor.', 'error');
+        }
+      });
+  }
+
+}

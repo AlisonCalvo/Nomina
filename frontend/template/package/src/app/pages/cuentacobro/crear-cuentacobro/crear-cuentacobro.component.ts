@@ -40,6 +40,7 @@ import { InformeService } from '../../../services/InformeService';
 
 interface CuentaCobroModel {
   montoCobrar: number;
+  periodoACobrar: string;
   fecha: Date;
   estado: boolean;
   numeroCuenta: string;
@@ -103,6 +104,7 @@ export class CrearCuentaCobroComponent implements OnInit {
   form = new FormGroup({});
   model: CuentaCobroModel = {
     montoCobrar: 0,
+    periodoACobrar: '',
     fecha: new Date(),
     estado: false,
     numeroCuenta: '',
@@ -178,6 +180,26 @@ export class CrearCuentaCobroComponent implements OnInit {
                   field.formControl?.setValue(formattedValue, { emitEvent: false });
                 }
               });
+          }
+        }
+      },
+      {
+        key: 'periodoACobrar',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Período a Cobrar',
+          placeholder: 'Ingrese el período a cobrar',
+          required: false,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'El período a cobrar es obligatorio.'
           }
         }
       },

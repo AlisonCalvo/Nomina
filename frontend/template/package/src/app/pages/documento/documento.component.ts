@@ -96,8 +96,8 @@ export class DocumentoComponent {
   /** etiqueta - Campo de tipo string */
   etiqueta: string;
 
-  /** rutaArchivo - Campo de tipo string */
-  rutaArchivo: string;
+  /** archivoDocumento - Campo de tipo string */
+  archivoDocumento: string;
 
   /** creador - Campo de tipo string */
   creador: string;
@@ -121,7 +121,7 @@ export class DocumentoComponent {
     { name: 'estado', type: 'boolean' },
     { name: 'formato', type: 'String' },
     { name: 'etiqueta', type: 'String' },
-    { name: 'rutaArchivo', type: 'String' },
+    { name: 'archivoDocumento', type: 'String' },
     { name: 'creador', type: 'String' },
     { name: 'persona', type: 'Persona' },
     { name: 'contrato', type: 'Contrato' },
@@ -146,7 +146,7 @@ export class DocumentoComponent {
     this.estado = false;
     this.formato = '';
     this.etiqueta = '';
-    this.rutaArchivo = '';
+    this.archivoDocumento = '';
     this.creador = '';
     this.persona = null;
     this.contrato = null;

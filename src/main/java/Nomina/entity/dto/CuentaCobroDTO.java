@@ -20,6 +20,11 @@ public class CuentaCobroDTO {
     private long montoCobrar;
 
     /**
+     * Campo que representa periodoACobrar
+     */
+    private String periodoACobrar;
+
+    /**
      * Campo que representa fecha
      */
     private LocalDate fecha;
@@ -78,13 +83,5 @@ public class CuentaCobroDTO {
      * Campo que representa fechaAprobacion
      */
     private LocalDateTime fechaAprobacion;
-
-    public LocalDateTime getFechaAprobacion() {
-        return fechaAprobacion;
-    }
-
-    public void setFechaAprobacion(LocalDateTime fechaAprobacion) {
-        this.fechaAprobacion = fechaAprobacion;
-    }
 
 }

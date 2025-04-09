@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormlyModule } from '@ngx-formly/core';
 // Importaciones del componente y servicio a probar
-import { ActualizarCuentacobroComponent } from './actualizar-cuentacobro.component';
+import { ActualizarCuentaCobroComponent } from "./actualizar-cuentacobro.component";
 import { CuentaCobroService } from '../../../services/CuentaCobroService';
 
 /**
@@ -11,16 +11,16 @@ import { CuentaCobroService } from '../../../services/CuentaCobroService';
  */
 describe('ActualizarCuentacobroComponent', () => {
   // Variables para el componente y su fixture
-  let component: ActualizarCuentacobroComponent;
-  let fixture: ComponentFixture<ActualizarCuentacobroComponent>;
+  let component: ActualizarCuentaCobroComponent;
+  let fixture: ComponentFixture<ActualizarCuentaCobroComponent>;
 
   /**
    * Configuración asíncrona del entorno de pruebas
    */
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ActualizarCuentacobroComponent ],
-      imports: [ 
+      declarations: [ ActualizarCuentaCobroComponent ],
+      imports: [
         ReactiveFormsModule,      // Para manejo de formularios reactivos
         FormlyModule.forRoot()    // Para formularios dinámicos
       ],
@@ -33,7 +33,7 @@ describe('ActualizarCuentacobroComponent', () => {
    * Creación y configuración del componente antes de cada test
    */
   beforeEach(() => {
-    fixture = TestBed.createComponent(ActualizarCuentacobroComponent);
+    fixture = TestBed.createComponent(ActualizarCuentaCobroComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
