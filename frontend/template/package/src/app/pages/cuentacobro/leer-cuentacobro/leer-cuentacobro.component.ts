@@ -49,6 +49,7 @@ import {registerLocaleData} from '@angular/common';
 import localeEs from '@angular/common/locales/es-CO';
 import {ShowFilesListComponent} from "../../../showFiles.component";
 import {CrearContratoComponent} from "../../contrato/crear-contrato/crear-contrato.component";
+import {PersonaService} from "../../../services/PersonaService";
 
 // Registrar el locale
 registerLocaleData(localeEs);
@@ -98,10 +99,12 @@ registerLocaleData(localeEs);
 export class LeerCuentaCobroComponent implements OnInit {
   mostrarBotonEliminar: boolean;
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'montoCobrar', 'periodoACobrar', 'fecha', 'estado','fechaAprobacion', 'numeroCuenta', 'detalle', 'pago', 'notificacionPago', 'firmaGerente', 'firmaContratista', 'creador', 'contrato', 'acciones'];
+  displayedColumns: string[] = ['id', 'montoCobrar', 'numeroCuentaCobro', 'periodoACobrar', 'fecha', 'estado','fechaAprobacion', 'numeroCuenta', 'detalle', 'pago', 'notificacionPago', 'firmaGerente', 'firmaContratista', 'planillaSeguridadSocial', 'creador', 'contrato', 'observaciones', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   cuentacobros: CuentaCobroComponent[] = [];
+  // Array para almacenar los datos de las personas
+  personas: any[] = [];
   // Mensaje para mostrar errores al usuario
   errorMessage: string = '';
 
@@ -127,6 +130,7 @@ export class LeerCuentaCobroComponent implements OnInit {
    */
   constructor(
     private cuentacobroService: CuentaCobroService,
+    private personaService: PersonaService,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
     private dialog: MatDialog,
@@ -142,6 +146,7 @@ export class LeerCuentaCobroComponent implements OnInit {
    * Carga los datos iniciales y configura el filtrado de la tabla
    */
   ngOnInit(): void {
+    this.cargarDatosPersonas();
     this.loadData();
     this.customizePaginator();
 
@@ -497,38 +502,55 @@ export class LeerCuentaCobroComponent implements OnInit {
     return collection.map(item => this.generateSummary(item)).join('; ');
  }
 
-  onAlerta() {
-    // Implementar funcionalidad
-    this.showMessage('Funcionalidad no implementada', 'error');
-  }
-
-  onShowFirmaGerente(element: any) {
+  onShowFirmaGerente(element: any): void {
     const rawPaths = element.firmaGerente;
     if (!rawPaths) {
-      this.showMessage('No hay archivos de FirmaGerente.', 'error');
+      this.showMessage('No hay archivos de firma de gerente.', 'error');
       return;
     }
     let files = rawPaths.split(',').map((path: string) => path.trim());
     files = files.map((path: string) => this.extractFileName(path));
     this.dialog.open(ShowFilesListComponent, {
       width: '500px',
-      data: {files: files}
+      data: {
+        files: files,
+        title: 'Firma del Gerente'
+      }
     });
   }
 
 
-  onShowFirmaContratista(element: any) {
+  onShowFirmaContratista(element: any): void {
     const rawPaths = element.firmaContratista;
     if (!rawPaths) {
-      this.showMessage('No hay archivos de FirmaContratista.', 'error');
+      this.showMessage('No hay archivos de firma de contratista.', 'error');
       return;
     }
     let files = rawPaths.split(',').map((path: string) => path.trim());
     files = files.map((path: string) => this.extractFileName(path));
-
     this.dialog.open(ShowFilesListComponent, {
       width: '500px',
-      data: {files: files}
+      data: {
+        files: files,
+        title: 'Firma del Contratista'
+      }
+    });
+  }
+
+  onShowPlanillaSeguridadSocial(element: any): void {
+    const rawPaths = element.planillaSeguridadSocial;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos de planilla de seguridad social.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: {
+        files: files,
+        title: 'Planilla de Seguridad Social'
+      }
     });
   }
 
@@ -543,5 +565,28 @@ export class LeerCuentaCobroComponent implements OnInit {
     return fullPath.substring(lastSeparator + 1);
   }
 
+  /**
+   * Metodo para cargar los datos de las personas
+   */
+  cargarDatosPersonas(): void {
+    this.personaService.findAll().subscribe({
+      next: (personas) => {
+        this.personas = personas;
+      },
+      error: (err) => {
+        console.error('Error cargando personas:', err);
+        this.personas = [];
+      }
+    });
+  }
+
+  obtenerNombreCreador(username: string): string {
+    if (!this.personas || this.personas.length === 0) {
+      return username; // Devuelve el username si no hay personas cargadas
+    }
+
+    const persona = this.personas.find(p => p.correo === username);
+    return persona?.nombre || username;
+  }
 
 }

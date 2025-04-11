@@ -36,6 +36,8 @@ import {PersonaService} from '../../../services/PersonaService';
 import {ProyectoService} from '../../../services/ProyectoService';
 import {TipoDocumentoService} from '../../../services/TipoDocumentoService';
 import {PermissionService} from "../../authentication/services/PermissionService";
+import {forkJoin, Observable, of, throwError} from "rxjs";
+import {catchError, switchMap} from "rxjs/operators";
 
 
 interface PersonaModel {
@@ -48,6 +50,9 @@ interface PersonaModel {
   fechaExpedicion: Date;
   fechaNacimiento: Date;
   nacionalidad: string;
+  documentosFormacionAcademica?: any;
+  documentosLegales?: any;
+  certificacionesLaborales?: any;
   creador: string;
   proyecto: any;
   tipoDocumento: any;
@@ -108,6 +113,9 @@ export class CrearPersonaComponent implements OnInit {
     fechaExpedicion: new Date(),
     fechaNacimiento: new Date(),
     nacionalidad: '',
+    documentosFormacionAcademica: '',
+    documentosLegales: '',
+    certificacionesLaborales: '',
     creador: '',
     proyecto: null,
     tipoDocumento: null,
@@ -116,6 +124,7 @@ export class CrearPersonaComponent implements OnInit {
     roles: [],
   };
   fields: FormlyFieldConfig[] = [];
+  isLoading: boolean = false;
 
   constructor(
     private dialogRef: MatDialogRef<CrearPersonaComponent>,
@@ -471,6 +480,57 @@ export class CrearPersonaComponent implements OnInit {
         }
       },
       {
+        key: 'documentosFormacionAcademica',
+        type: 'file',
+        templateOptions: {
+          label: 'Documentos de formación académica',
+          placeholder: 'Seleccione los documentos de formación académica',
+          multiple: true,
+          required: false,
+          accept: '.pdf, .doc, .xls, image/*',
+          maxFileSize: 100 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            maxFileSize: 'El tamaño de cada archivo no puede exceder 5MB'
+          }
+        },
+      },
+      {
+        key: 'documentosLegales',
+        type: 'file',
+        templateOptions: {
+          label: 'Documentos Legales',
+          placeholder: 'Seleccione los documentos legales',
+          multiple: true,
+          required: false,
+          accept: '.pdf, .doc, .xls, image/*',
+          maxFileSize: 5 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            maxFileSize: 'El tamaño de cada archivo no puede exceder 5MB'
+          }
+        },
+      },
+      {
+        key: 'certificacionesLaborales',
+        type: 'file',
+        templateOptions: {
+          label: 'Certificaciones laborales',
+          placeholder: 'Seleccione las certificaciones laborales',
+          multiple: true,
+          required: false,
+          accept: '.pdf, .doc, .xls, image/*',
+          maxFileSize: 5 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            maxFileSize: 'El tamaño de cada archivo no puede exceder 5MB'
+          }
+        },
+      },
+      {
         key: 'tituloProfesional',
         type: 'input',
         className: 'field-container',
@@ -615,8 +675,60 @@ export class CrearPersonaComponent implements OnInit {
     } else {
       delete modelData.roles;
     }
-    // Guardamos la entidad con los roles correctos
-    this.saveEntity(modelData);
+    const uploadOperations: Observable<void>[] = [];
+    const fileFields: (keyof PersonaModel)[] = [ 'documentosFormacionAcademica','documentosLegales', 'certificacionesLaborales'];
+
+    const handleFileUpload = (field: keyof PersonaModel) => {
+      const files = this.model[field];
+
+      if (Array.isArray(files) && files.length > 0) {
+        const upload$ = this.personaService.uploadFiles(files).pipe(
+          switchMap(rutas => {
+            // @ts-ignore
+            modelData[field] = rutas.join(',');
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      } else if (files instanceof File) {
+        const upload$ = this.personaService.uploadFile(files).pipe(
+          switchMap(ruta => {
+            // @ts-ignore
+            modelData[field] = ruta;
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      }
+    };
+
+    fileFields.forEach(field => handleFileUpload(field));
+
+    if (uploadOperations.length > 0) {
+      forkJoin(uploadOperations).subscribe({
+        next: () => this.saveEntity(modelData),
+        error: () => this.isLoading = false
+      });
+    } else {
+      this.saveEntity(modelData);
+    }
+  }
+
+  private handleUploadError(field: string, error: any) {
+    console.error(`Error subiendo archivos en ${field}:`, error);
+    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+    this.isLoading = false;
   }
 
   private saveEntity(modelData: any) {

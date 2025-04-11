@@ -552,11 +552,13 @@ export class ActualizarContratoComponent implements OnInit {
           placeholder: 'Ingrese el contrato en PDF',
           required: true,
           multiple: true,
-          accept: '.pdf,.doc,.xls'
+          accept: '.pdf,.doc,.xls',
+          maxFileSize: 5 * 1024 * 1024
         },
         validation: {
           messages: {
-            required: 'El archivo del contrato es obligatorio.'
+            required: 'El archivo del contrato es obligatorio.',
+            maxFileSize: 'El tamaño del archivo no puede exceder 5MB'
           }
         }
       },
@@ -719,7 +721,13 @@ export class ActualizarContratoComponent implements OnInit {
           placeholder: 'Ingrese los archivos adicionales',
           required: false,
           multiple: true,
-          accept: '.pdf,.doc,.xls'
+          accept: '.pdf,.doc,.xls',
+          maxFileSize: 5 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            maxFileSize: 'El tamaño del archivo no puede exceder 5MB'
+          }
         },
       }
     ];

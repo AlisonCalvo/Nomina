@@ -377,8 +377,14 @@ export class ActualizarInformeComponent implements OnInit {
           placeholder: 'Seleccione informePDF',
           multiple: true,
           required: true,
-          accept: '.pdf,.doc,.xls,.ppt'
-        }
+          accept: '.pdf,.doc,.xls,.ppt',
+          maxFileSize: 5 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            maxFileSize: 'El tamaño de los archivos no puede exceder 5MB'
+          }
+        },
       },
       {
         key: 'creador',

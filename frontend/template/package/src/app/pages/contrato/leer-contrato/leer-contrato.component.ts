@@ -9,6 +9,7 @@ import {MatPaginatorIntl} from '@angular/material/paginator';
 import {Router, RouterLink, RouterModule} from '@angular/router';
 import * as XLSX from 'xlsx';
 import {ContratoService} from '../../../services/ContratoService';
+import {PersonaService} from '../../../services/PersonaService';
 import {ContratoComponent} from '../contrato.component';
 import {ActualizarContratoComponent} from '../actualizar-contrato/actualizar-contrato.component';
 import {CrearContratoComponent} from '../crear-contrato/crear-contrato.component';
@@ -102,6 +103,8 @@ export class LeerContratoComponent implements OnInit {
 
   // Array para almacenar los datos de la entidad
   contratos: ContratoComponent[] = [];
+  // Array para almacenar los datos de las personas
+  personas: any[] = [];
   // Mensaje para mostrar errores al usuario
   errorMessage: string = '';
 
@@ -127,6 +130,7 @@ export class LeerContratoComponent implements OnInit {
    */
   constructor(
     private contratoService: ContratoService,
+    private personaService: PersonaService,
     private router: Router,
     private snackBar: MatSnackBar,
     private paginatorIntl: MatPaginatorIntl,
@@ -145,6 +149,7 @@ export class LeerContratoComponent implements OnInit {
    * Carga los datos iniciales y configura el filtrado de la tabla
    */
   ngOnInit(): void {
+    this.cargarDatosPersonas();
     this.loadData();
     this.customizePaginator();
 
@@ -218,6 +223,21 @@ export class LeerContratoComponent implements OnInit {
         }
       });
     }
+  }
+
+  /**
+   * Metodo para cargar los datos de las personas
+   */
+  cargarDatosPersonas(): void {
+    this.personaService.findAll().subscribe({
+      next: (personas) => {
+        this.personas = personas;
+      },
+      error: (err) => {
+        console.error('Error cargando personas:', err);
+        this.personas = [];
+      }
+    });
   }
 
 
@@ -535,5 +555,14 @@ export class LeerContratoComponent implements OnInit {
           this.showMessage('Error al obtener archivos del servidor.', 'error');
         }
       });
+  }
+
+  obtenerNombreCreador(username: string): string {
+    if (!this.personas || this.personas.length === 0) {
+      return username; // Devuelve el username si no hay personas cargadas
+    }
+
+    const persona = this.personas.find(p => p.correo === username);
+    return persona?.nombre || username;
   }
 }

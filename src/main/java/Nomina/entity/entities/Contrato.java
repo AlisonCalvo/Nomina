@@ -129,7 +129,7 @@ public class Contrato implements Serializable {
 
     /**
      * Observaciones adicionales del contrato
-     * 
+     *
      * Restricciones: Opcional
      */
     @Column(name="observaciones", nullable=true)
@@ -137,7 +137,7 @@ public class Contrato implements Serializable {
 
     /**
      * Archivos adicionales del contrato
-     * 
+     *
      * Restricciones: Opcional
      */
     @FilePath(type = "file")

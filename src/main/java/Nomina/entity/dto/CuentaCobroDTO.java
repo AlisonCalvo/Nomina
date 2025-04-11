@@ -20,6 +20,11 @@ public class CuentaCobroDTO {
     private long montoCobrar;
 
     /**
+     * Campo que representa numeroCuentaCobro
+     */
+    private long numeroCuentaCobro;
+
+    /**
      * Campo que representa periodoACobrar
      */
     private String periodoACobrar;
@@ -65,9 +70,19 @@ public class CuentaCobroDTO {
     private String firmaContratista;
 
     /**
+     * Campo que representa planillaSeguridadSocial
+     */
+    private String planillaSeguridadSocial;
+
+    /**
      * Representa la relación  con la entidad contrato
      */
     private Contrato contrato;
+
+    /**
+     * Campo que representa las observaciones de la cuenta de cobro
+     */
+    private String observaciones;
 
     /**
      * Representa la relación  con la entidad informe

@@ -176,7 +176,7 @@ public class Proyecto implements Serializable {
 
     /**
      * Observaciones adicionales del proyecto
-     * 
+     *
      * Restricciones: Opcional
      */
     @Column(name="observaciones", nullable=true)
@@ -184,7 +184,7 @@ public class Proyecto implements Serializable {
 
     /**
      * Archivos adicionales del proyecto
-     * 
+     *
      * Restricciones: Opcional
      */
     @FilePath(type = "file")

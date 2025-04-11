@@ -39,7 +39,6 @@ export interface Contrato {
   /**Campo que representa los archivos adicionales del contrato*/
   archivosAdicionales?: string;
 }
-
 /**
  * Interfaz que define la estructura del DTO para Contrato
  * Utilizada para la transferencia de datos entre el frontend y backend
@@ -205,6 +204,13 @@ export class ContratoService {
   downloadFile(fileName: string): Observable<Blob> {
     const url = `${this.baseUrl}/contratos/download?file=${fileName}`;
     return this.httpClient.get(url, { responseType: 'blob' });
+  }
+
+  //para buscar una forma diferente de ver el nombre del creador de un registro
+  obtenerUsuarios(): Observable<any> {
+    const headers = new HttpHeaders().set('Accion', 'findAll').set('Objeto', 'Contrato');
+    const url = `${this.baseUrl}/auth/getUsers`;
+    return this.httpClient.get<any>(url, {headers});
   }
 
 }
