@@ -14,7 +14,8 @@ public class GeneralRepository {
     public List<?> findByNombreObjetos(String className, List<String> nombreObjetos) throws ClassNotFoundException {
         Class<?> entityClass = Class.forName(className);
 
-        String query = "SELECT e FROM " + entityClass.getSimpleName() + " e WHERE e.nombreObjeto IN :nombreObjetos";
+        String query = "SELECT e FROM " + entityClass.getSimpleName() + " e WHERE e.nombreObjeto IN :nombreObjetos ORDER BY e.id ASC ";
+
         return entityManager.createQuery(query, entityClass)
                 .setParameter("nombreObjetos", nombreObjetos)
                 .getResultList();
