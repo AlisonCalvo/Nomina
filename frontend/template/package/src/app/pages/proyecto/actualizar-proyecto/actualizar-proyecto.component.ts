@@ -392,7 +392,7 @@ export class ActualizarProyectoComponent implements OnInit {
           },
           rows: 5,
           minLength: 5,
-          maxLength: 250
+          maxLength: 2000
         },
         validation: {
           messages: {

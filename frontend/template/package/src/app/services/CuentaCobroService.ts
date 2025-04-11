@@ -121,7 +121,6 @@ export class CuentaCobroService {
   update(id: number, dto: CuentaCobroDTO): Observable<CuentaCobro> {
     const url = `${this.baseUrl}/cuentacobros/${id}`;
     const headers = new HttpHeaders().set('Accion', 'update').set('Objeto', 'CuentaCobro');
-    console.log ("el dto:" + dto)
     return this.httpClient.put<CuentaCobro>(url, dto, {headers});
   }
 

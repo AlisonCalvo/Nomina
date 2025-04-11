@@ -521,27 +521,47 @@ export class CrearContratoComponent implements OnInit {
   private loadProyectoOptions() {
     this.proyectoService.findAll().subscribe(
       data => {
+        // Agregar la opción "No aplica" al inicio de la lista
+        const noAplicaOption = { id: -1, nombre: 'No aplica' };
+        const options = [noAplicaOption, ...data];
+
         const field = this.fields.find(f => f.key === 'proyecto');
         if (field && field.templateOptions) {
-          field.templateOptions.options = data;
+          field.templateOptions.options = options;
         }
       },
       error => console.error('Error al cargar proyecto:', error)
     );
   }
 
-  private loadPersonaOptions(id:number) {
-    this.personaService.obtenerPersonasPorProyecto(id).subscribe(
-      data => {
-        // Ordenar alfabéticamente por nombre
-        data.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
-        const field = this.fields.find(f => f.key === 'persona');
-        if (field && field.templateOptions) {
-          field.templateOptions.options = data;
-        }
-      },
-      error => console.error('Error al cargar persona:', error)
-    );
+  private loadPersonaOptions(id: number) {
+    if (id === -1) {
+      // Si se selecciona "No aplica", cargar todas las personas
+      this.personaService.findAll().subscribe(
+        data => {
+          // Ordenar alfabéticamente por nombre
+          data.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
+          const field = this.fields.find(f => f.key === 'persona');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar personas:', error)
+      );
+    } else {
+      // Cargar personas del proyecto seleccionado
+      this.personaService.obtenerPersonasPorProyecto(id).subscribe(
+        data => {
+          // Ordenar alfabéticamente por nombre
+          data.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
+          const field = this.fields.find(f => f.key === 'persona');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar persona:', error)
+      );
+    }
   }
 
   private loadTipoContratoOptions() {

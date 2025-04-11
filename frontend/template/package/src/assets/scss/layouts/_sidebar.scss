@@ -1,3 +1,6 @@
+$sidenav-desktop: 310px;
+$sidenav-mini: 80px;
+
 .mat-drawer.sidebarNav {
   width: $sidenav-desktop;
   flex-shrink: 0;
