@@ -81,6 +81,9 @@ export class CuentaCobroComponent {
   /** montoCobrar - Campo de tipo number */
   montoCobrar: number;
 
+  /** periodoACobrar - Campo de tipo string */
+  periodoACobrar: string;
+
   /** fecha - Campo de tipo Date */
   fecha: Date;
 
@@ -95,6 +98,9 @@ export class CuentaCobroComponent {
 
   /** pago - Campo de tipo boolean */
   pago: boolean;
+
+  /** fecha - Campo de tipo Date */
+  fechaAprobacion: string;
 
   /** notificacionPago - Campo de tipo string */
   notificacionPago: string;
@@ -127,6 +133,7 @@ export class CuentaCobroComponent {
     { name: 'numeroCuenta', type: 'String' },
     { name: 'detalle', type: 'String' },
     { name: 'pago', type: 'boolean' },
+    {name: 'fechaAprobacion', type: 'String'},
     { name: 'notificacionPago', type: 'String' },
     { name: 'firmaGerente', type: 'String' },
     { name: 'firmaContratista', type: 'String' },
@@ -149,11 +156,13 @@ export class CuentaCobroComponent {
     // Inicialización de atributos con valores por defecto
     this.id = 0;
     this.montoCobrar = 0;
+    this.periodoACobrar = '';
     this.fecha = new Date();
     this.estado = false;
     this.numeroCuenta = '';
     this.detalle = '';
     this.pago = false;
+    this.fechaAprobacion = '';
     this.notificacionPago = '';
     this.firmaGerente = '';
     this.firmaContratista = '';

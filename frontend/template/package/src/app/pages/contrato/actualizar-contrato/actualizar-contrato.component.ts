@@ -37,7 +37,8 @@ import { PersonaService } from '../../../services/PersonaService';
 import { TipoContratoService } from '../../../services/TipoContratoService';
 import { PeriodicidadPagoService } from '../../../services/PeriodicidadPagoService';
 import {AuthService} from "../../../services/auth-service.service";
-import {distinctUntilChanged, map} from "rxjs";
+import {distinctUntilChanged, forkJoin, map, Observable, of, throwError} from "rxjs";
+import {catchError, switchMap} from "rxjs/operators";
 
 interface ContratoModel {
   /** id de la entidad */
@@ -56,8 +57,8 @@ interface ContratoModel {
   fechaFinContrato: Date;
   /** estado de la entidad */
   estado: boolean;
-  /** rutaArchivo de la entidad */
-  rutaArchivo: string;
+  /** contrato de la entidad */
+  contratoPdf: any;
   /** firmado de la entidad */
   firmado: boolean;
   /** creador de la entidad */
@@ -70,6 +71,10 @@ interface ContratoModel {
   tipoContrato: any;
   /** periodicidadPago de la entidad */
   periodicidadPago: any;
+  /** observaciones de la entidad */
+  observaciones?: string;
+  /** archivosAdicionales de la entidad */
+  archivosAdicionales?: any;
 }
 
 /**
@@ -133,6 +138,7 @@ export class ActualizarContratoComponent implements OnInit {
   model: ContratoModel = {} as ContratoModel;
   originalModel: ContratoModel = {} as ContratoModel;
   fields: FormlyFieldConfig[] = [];
+  isLoading: boolean = false;
 
   /**
    * Constructor del componente
@@ -181,13 +187,15 @@ export class ActualizarContratoComponent implements OnInit {
           fechaInicioContrato: this.data.fechaInicioContrato,
           fechaFinContrato: this.data.fechaFinContrato,
           estado: this.data.estado,
-          rutaArchivo: this.data.rutaArchivo,
+          contratoPdf: this.data.contratoPdf,
           firmado: this.data.firmado,
           creador: this.data.creador,
           proyecto: this.data.proyecto && this.data.proyecto.id ? this.data.proyecto.id : null,
           persona: this.data.persona && this.data.persona.id ? this.data.persona.id : null,
           tipoContrato: this.data.tipoContrato && this.data.tipoContrato.id ? this.data.tipoContrato.id : null,
-          periodicidadPago: this.data.periodicidadPago && this.data.periodicidadPago.id ? this.data.periodicidadPago.id : null
+          periodicidadPago: this.data.periodicidadPago && this.data.periodicidadPago.id ? this.data.periodicidadPago.id : null,
+          observaciones: this.data.observaciones || '',
+          archivosAdicionales: this.data.archivosAdicionales || ''
         };
 
         // Copia del modelo original para detectar cambios
@@ -200,13 +208,15 @@ export class ActualizarContratoComponent implements OnInit {
           fechaInicioContrato: this.data.fechaInicioContrato,
           fechaFinContrato: this.data.fechaFinContrato,
           estado: this.data.estado,
-          rutaArchivo: this.data.rutaArchivo,
+          contratoPdf: this.data.contratoPdf,
           firmado: this.data.firmado,
           creador: this.data.creador,
           proyecto: this.data.proyecto && this.data.proyecto.id ? this.data.proyecto.id : null,
           persona: this.data.persona && this.data.persona.id ? this.data.persona.id : null,
           tipoContrato: this.data.tipoContrato && this.data.tipoContrato.id ? this.data.tipoContrato.id : null,
-          periodicidadPago: this.data.periodicidadPago && this.data.periodicidadPago.id ? this.data.periodicidadPago.id : null
+          periodicidadPago: this.data.periodicidadPago && this.data.periodicidadPago.id ? this.data.periodicidadPago.id : null,
+          observaciones: this.data.observaciones || '',
+          archivosAdicionales: this.data.archivosAdicionales || ''
         };
       } catch (error) {
         console.error('Error al procesar datos:', error);
@@ -535,22 +545,20 @@ export class ActualizarContratoComponent implements OnInit {
         }
       },
       {
-        key: 'rutaArchivo',
-        type: 'input',
-        className: 'field-container',
+        key: 'contratoPdf',
+        type: 'file',
         templateOptions: {
-          label: 'RutaArchivo',
-          placeholder: 'Ingrese rutaArchivo',
+          label: 'Contrato PDF',
+          placeholder: 'Ingrese el contrato en PDF',
           required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          }
+          multiple: true,
+          accept: '.pdf,.doc,.xls',
+          maxFileSize: 5 * 1024 * 1024
         },
         validation: {
           messages: {
-            required: 'La ruta de archivo es obligatoria.'
+            required: 'El archivo del contrato es obligatorio.',
+            maxFileSize: 'El tamaño del archivo no puede exceder 5MB'
           }
         }
       },
@@ -689,6 +697,38 @@ export class ActualizarContratoComponent implements OnInit {
             required: 'La periodicidad de pago es obligatoria.'
           }
         }
+      },
+      {
+        key: 'observaciones',
+        type: 'textarea',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Observaciones',
+          placeholder: 'Ingrese observaciones',
+          required: false,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          }
+        }
+      },
+      {
+        key: 'archivosAdicionales',
+        type: 'file',
+        templateOptions: {
+          label: 'Archivos Adicionales',
+          placeholder: 'Ingrese los archivos adicionales',
+          required: false,
+          multiple: true,
+          accept: '.pdf,.doc,.xls',
+          maxFileSize: 5 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            maxFileSize: 'El tamaño del archivo no puede exceder 5MB'
+          }
+        },
       }
     ];
   }
@@ -715,8 +755,60 @@ export class ActualizarContratoComponent implements OnInit {
       modelData.periodicidadPago = { id: modelData.periodicidadPago };
     }
 
-    // Si no se subieron archivos, procedemos a actualizar directamente
-    this.updateEntity(modelData);
+    const uploadOperations: Observable<void>[] = [];
+    const fileFields: (keyof ContratoModel)[] = ['contratoPdf','archivosAdicionales'];
+
+    const handleFileUpload = (field: keyof ContratoModel) => {
+      const files = this.model[field];
+
+      if (Array.isArray(files) && files.length > 0) {
+        const upload$ = this.contratoService.uploadFiles(files).pipe(
+          switchMap(rutas => {
+            // @ts-ignore
+            modelData[field] = rutas.join(',');
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      } else if (files instanceof File) {
+        const upload$ = this.contratoService.uploadFile(files).pipe(
+          switchMap(ruta => {
+            // @ts-ignore
+            modelData[field] = ruta;
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      }
+    };
+
+    fileFields.forEach(field => handleFileUpload(field));
+
+    if (uploadOperations.length > 0) {
+      forkJoin(uploadOperations).subscribe({
+        next: () => this.updateEntity(modelData),
+        error: () => this.isLoading = false
+      });
+    } else {
+      this.updateEntity(modelData);
+    }
+  }
+
+  private handleUploadError(field: string, error: any) {
+    console.error(`Error subiendo archivos en ${field}:`, error);
+    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+    this.isLoading = false;
   }
 
   private updateEntity(modelData: any) {

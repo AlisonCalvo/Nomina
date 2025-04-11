@@ -128,6 +128,33 @@ public class Persona implements Serializable {
     private String nacionalidad;
 
     /**
+     * Archivos adicionales del contrato
+     *
+     * Restricciones: Opcional
+     */
+    @FilePath(type = "file")
+    @Column(name="documentosFormacionAcademica", nullable=true)
+    private String documentosFormacionAcademica;
+
+    /**
+     * Archivos adicionales del contrato
+     *
+     * Restricciones: Opcional
+     */
+    @FilePath(type = "file")
+    @Column(name="documentosLegales", nullable=true)
+    private String documentosLegales;
+
+    /**
+     * Archivos adicionales del contrato
+     *
+     * Restricciones: Opcional
+     */
+    @FilePath(type = "file")
+    @Column(name="certificacionesLaborales", nullable=true)
+    private String certificacionesLaborales;
+
+    /**
      * Columna que representa el creador de la entidad.
      */
     @Column(name = "creador")

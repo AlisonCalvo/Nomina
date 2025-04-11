@@ -37,7 +37,8 @@ import { ProyectoService } from '../../../services/ProyectoService';
 import { PersonaService } from '../../../services/PersonaService';
 import { TipoContratoService } from '../../../services/TipoContratoService';
 import { PeriodicidadPagoService } from '../../../services/PeriodicidadPagoService';
-import {distinctUntilChanged, map} from "rxjs";
+import {distinctUntilChanged, forkJoin, map, Observable, of, throwError} from "rxjs";
+import {catchError, switchMap} from "rxjs/operators";
 
 interface ContratoModel {
   numeroContrato: string;
@@ -47,13 +48,15 @@ interface ContratoModel {
   fechaInicioContrato: Date;
   fechaFinContrato: Date;
   estado: boolean;
-  rutaArchivo: string;
+  contratoPdf: any;
   firmado: boolean;
   creador: string;
   proyecto: any;
   persona: any;
   tipoContrato: any;
   periodicidadPago: any;
+  observaciones?: string;
+  archivosAdicionales?: string;
 }
 
 @Component({
@@ -105,16 +108,19 @@ export class CrearContratoComponent implements OnInit {
     numeroPagos: 0,
     fechaInicioContrato: new Date(),
     fechaFinContrato: new Date(),
-    estado: false,
-    rutaArchivo: '',
+    estado: true,
+    contratoPdf: '',
     firmado: false,
     creador: '',
     proyecto: null,
     persona: null,
     tipoContrato: null,
-    periodicidadPago: null
+    periodicidadPago: null,
+    observaciones: '',
+    archivosAdicionales: ''
   };
   fields: FormlyFieldConfig[] = [];
+  isLoading: boolean= false;
 
   constructor(
     private dialogRef: MatDialogRef<CrearContratoComponent>,
@@ -245,14 +251,14 @@ export class CrearContratoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          min: 0,
+          min: 1,
           max: 2147483647,
           step: 1
         },
         validation: {
           messages: {
             required: 'El número de pagos es obligatorio.',
-            min: 'El número de pagos debe ser mayor o igual a 0.',
+            min: 'El número de pagos debe ser mayor a 0.',
             max: 'El número de pagos es demasiado grande.'
           }
         }
@@ -339,22 +345,20 @@ export class CrearContratoComponent implements OnInit {
         }
       },
       {
-        key: 'rutaArchivo',
-        type: 'input',
-        className: 'field-container',
+        key: 'contratoPdf',
+        type: 'file',
         templateOptions: {
-          label: 'RutaArchivo',
-          placeholder: 'Ingrese rutaArchivo',
+          label: 'Contrato PDF',
+          placeholder: 'Ingrese el contrato en PDF',
+          multiple: true,
           required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          }
+          accept: '.pdf, .doc, .xls',
+          maxFileSize: 5 * 1024 * 1024,
         },
         validation: {
           messages: {
-            required: 'La ruta de archivo es obligatoria.'
+            required: 'El archivo del contrato es obligatorio.',
+            maxFileSize: 'El archivo debe tener un tamaño inferior a 5MB'
           }
         }
       },
@@ -477,6 +481,35 @@ export class CrearContratoComponent implements OnInit {
             required: 'La periodicidad de pago es obligatoria.'
           }
         }
+      },
+      {
+        key: 'observaciones',
+        type: 'textarea',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Observaciones',
+          placeholder: 'Ingrese observaciones adicionales del contrato',
+          required: false,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          rows: 3,
+          maxLength: 500
+        }
+      },
+      {
+        key: 'archivosAdicionales',
+        type: 'file',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Archivos Adicionales',
+          placeholder: 'Seleccione archivos adicionales',
+          required: false,
+          multiple: true,
+          accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'
+        }
       }
     ];
 
@@ -488,27 +521,47 @@ export class CrearContratoComponent implements OnInit {
   private loadProyectoOptions() {
     this.proyectoService.findAll().subscribe(
       data => {
+        // Agregar la opción "No aplica" al inicio de la lista
+        const noAplicaOption = { id: -1, nombre: 'No aplica' };
+        const options = [noAplicaOption, ...data];
+
         const field = this.fields.find(f => f.key === 'proyecto');
         if (field && field.templateOptions) {
-          field.templateOptions.options = data;
+          field.templateOptions.options = options;
         }
       },
       error => console.error('Error al cargar proyecto:', error)
     );
   }
 
-  private loadPersonaOptions(id:number) {
-    this.personaService.obtenerPersonasPorProyecto(id).subscribe(
-      data => {
-        // Ordenar alfabéticamente por nombre
-        data.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
-        const field = this.fields.find(f => f.key === 'persona');
-        if (field && field.templateOptions) {
-          field.templateOptions.options = data;
-        }
-      },
-      error => console.error('Error al cargar persona:', error)
-    );
+  private loadPersonaOptions(id: number) {
+    if (id === -1) {
+      // Si se selecciona "No aplica", cargar todas las personas
+      this.personaService.findAll().subscribe(
+        data => {
+          // Ordenar alfabéticamente por nombre
+          data.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
+          const field = this.fields.find(f => f.key === 'persona');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar personas:', error)
+      );
+    } else {
+      // Cargar personas del proyecto seleccionado
+      this.personaService.obtenerPersonasPorProyecto(id).subscribe(
+        data => {
+          // Ordenar alfabéticamente por nombre
+          data.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
+          const field = this.fields.find(f => f.key === 'persona');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = data;
+          }
+        },
+        error => console.error('Error al cargar persona:', error)
+      );
+    }
   }
 
   private loadTipoContratoOptions() {
@@ -545,7 +598,7 @@ export class CrearContratoComponent implements OnInit {
 
     // 2. Copiamos el modelo para no mutarlo directamente
     const modelData = { ...this.model };
-
+    this.isLoading = true;
     // Limpiar valor de contrato para guardar solo el número
     if (modelData.valorTotalContrato) {
       // Remover prefijo de moneda, separadores de miles y cualquier carácter no numérico
@@ -562,8 +615,60 @@ export class CrearContratoComponent implements OnInit {
     modelData.tipoContrato = { id: this.model.tipoContrato };
     modelData.periodicidadPago = { id: this.model.periodicidadPago };
 
-    // Si no hay archivos a subir o no es un campo file, guardamos directo
-    this.saveEntity(modelData);
+    const uploadOperations: Observable<void>[] = [];
+    const fileFields: (keyof ContratoModel)[] = [ 'contratoPdf','archivosAdicionales' ];
+
+    const handleFileUpload = (field: keyof ContratoModel) => {
+      const files = this.model[field];
+
+      if (Array.isArray(files) && files.length > 0) {
+        const upload$ = this.contratoService.uploadFiles(files).pipe(
+          switchMap(rutas => {
+            // @ts-ignore
+            modelData[field] = rutas.join(',');
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      } else if (files instanceof File) {
+        const upload$ = this.contratoService.uploadFile(files).pipe(
+          switchMap(ruta => {
+            // @ts-ignore
+            modelData[field] = ruta;
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      }
+    };
+
+    fileFields.forEach(field => handleFileUpload(field));
+
+    if (uploadOperations.length > 0) {
+      forkJoin(uploadOperations).subscribe({
+        next: () => this.saveEntity(modelData),
+        error: () => this.isLoading = false
+      });
+    } else {
+      this.saveEntity(modelData);
+    }
+  }
+
+  private handleUploadError(field: string, error: any) {
+    console.error(`Error subiendo archivos en ${field}:`, error);
+    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+    this.isLoading = false;
   }
 
   private saveEntity(modelData: any) {

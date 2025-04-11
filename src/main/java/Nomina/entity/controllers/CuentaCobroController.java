@@ -100,12 +100,28 @@ public class CuentaCobroController {
      * o ResponseEntity.notFound si la entidad no existe
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CuentaCobro> update(@PathVariable Long id, @RequestBody CuentaCobroDTO dto) {
-        if (service.findById(id).isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody CuentaCobroDTO dto) {
+        try {
+            // Verificar si la entidad existe
+            if (service.findById(id).isEmpty()) {
+                System.out.println("No se encontró la cuenta de cobro con ID: " + id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("No se encontró la cuenta de cobro con ID: " + id);
+            }
+
+            System.out.println("Llamando a service.update con ID: " + id);
+            CuentaCobro updatedEntity = service.update(id, dto);
+            System.out.println("Actualización completada. Entidad actualizada con ID: " + updatedEntity.getId());
+
+            return ResponseEntity.ok(updatedEntity);
+        } catch (Exception e) {
+            System.err.println("Error al actualizar la cuenta de cobro: " + e.getMessage());
+            e.printStackTrace();
+
+            // Devolver un mensaje de error más descriptivo
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al actualizar la cuenta de cobro: " + e.getMessage());
         }
-        CuentaCobro updatedEntity = service.update(id, dto);
-        return ResponseEntity.ok(updatedEntity);
     }
 
     /**
@@ -131,71 +147,78 @@ public class CuentaCobroController {
      * @return ResponseEntity con la lista de rutas de archivo subidas,
      * o un INTERNAL_SERVER_ERROR si ocurre un problema.
      */
-//    @PostMapping("/upload")
-//    public ResponseEntity<List<String>> uploadFiles(@RequestParam("files") List<MultipartFile> files) {
-//        // Lista donde guardaremos las rutas resultantes de cada archivo
-//        List<String> filePaths = new ArrayList<>();
-//
-//        String uploadDir = "uploads"; // Carpeta local donde se suben los archivos
-//        Path uploadPath = Paths.get(uploadDir);
-//
-//        try {
-//            // Crear carpeta si no existe
-//            if (!Files.exists(uploadPath)) {
-//                Files.createDirectories(uploadPath);
-//            }
-//
-//            // Guardar cada archivo con un número aleatorio de 4 dígitos en su nombre
-//            for (MultipartFile file : files) {
-//                if (!file.isEmpty()) {
-//                    String originalFilename = StringUtils.cleanPath(
-//                            Objects.requireNonNull(file.getOriginalFilename())
-//                    );
-//                    // Generar un número aleatorio de 5 dígitos
-//                    int randomNumber = (int) (Math.random() * 90000) + 10000;
-//                    String newFilename = randomNumber + "_" + originalFilename;
-//                    Path destinationFilePath = uploadPath.resolve(newFilename);
-//                    Files.copy(file.getInputStream(), destinationFilePath, StandardCopyOption.REPLACE_EXISTING);
-//                    // Agregamos la ruta donde quedó almacenado el archivo
-//                    filePaths.add(destinationFilePath.toString());
-//                }
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//        }
-//
-//        // Retornamos las rutas de todos los archivos subidos
-//        return ResponseEntity.ok(filePaths);
-//    }
-//
-//    @GetMapping("/{id}/files")
-//    public ResponseEntity<List<String>> listarArchivosPorId(@PathVariable Long id) {
-//        Optional<CuentaCobro> optionalEntity = service.findById(id);
-//        if (optionalEntity.isEmpty()) {
-//            return ResponseEntity.notFound().build();
-//        }
-//
-//        CuentaCobro cuentaCobro = optionalEntity.get();
-//        List<String> archivos = new ArrayList<>();
-//
-//        if (cuentaCobro.getFirmaContratista() != null) {
-//            String[] contratistaPaths = cuentaCobro.getFirmaContratista().split(",");
-//            for (String path : contratistaPaths) {
-//                String fileName = extractFileName(path.trim());
-//                archivos.add(fileName);
-//            }
-//        }
-//        if (cuentaCobro.getFirmaGerente() != null) {
-//            String[] gerentePaths = cuentaCobro.getFirmaGerente().split(",");
-//            for (String path : gerentePaths) {
-//                String fileName = extractFileName(path.trim());
-//                archivos.add(fileName);
-//            }
-//        }
-//
-//        return ResponseEntity.ok(archivos);
-//    }
+    @PostMapping("/upload")
+    public ResponseEntity<List<String>> uploadFiles(@RequestParam("files") List<MultipartFile> files) {
+        // Lista donde guardaremos las rutas resultantes de cada archivo
+        List<String> filePaths = new ArrayList<>();
+
+        String uploadDir = "uploads"; // Carpeta local donde se suben los archivos
+        Path uploadPath = Paths.get(uploadDir);
+
+        try {
+            // Crear carpeta si no existe
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            // Guardar cada archivo con un número aleatorio de 4 dígitos en su nombre
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    String originalFilename = StringUtils.cleanPath(
+                            Objects.requireNonNull(file.getOriginalFilename())
+                    );
+                    // Generar un número aleatorio de 5 dígitos
+                    int randomNumber = (int) (Math.random() * 90000) + 10000;
+                    String newFilename = randomNumber + "_" + originalFilename;
+                    Path destinationFilePath = uploadPath.resolve(newFilename);
+                    Files.copy(file.getInputStream(), destinationFilePath, StandardCopyOption.REPLACE_EXISTING);
+                    // Agregamos la ruta donde quedó almacenado el archivo
+                    filePaths.add(destinationFilePath.toString());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        // Retornamos las rutas de todos los archivos subidos
+        return ResponseEntity.ok(filePaths);
+    }
+
+    @GetMapping("/{id}/files")
+    public ResponseEntity<List<String>> listarArchivosPorId(@PathVariable Long id) {
+        Optional<CuentaCobro> optionalEntity = service.findById(id);
+        if (optionalEntity.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        CuentaCobro cuentaCobro = optionalEntity.get();
+        List<String> archivos = new ArrayList<>();
+
+        if (cuentaCobro.getFirmaContratista() != null) {
+            String[] contratistaPaths = cuentaCobro.getFirmaContratista().split(",");
+            for (String path : contratistaPaths) {
+                String fileName = extractFileName(path.trim());
+                archivos.add(fileName);
+            }
+        }
+        if (cuentaCobro.getFirmaGerente() != null) {
+            String[] gerentePaths = cuentaCobro.getFirmaGerente().split(",");
+            for (String path : gerentePaths) {
+                String fileName = extractFileName(path.trim());
+                archivos.add(fileName);
+            }
+        }
+        if (cuentaCobro.getPlanillaSeguridadSocial() != null) {
+            String[] gerentePaths = cuentaCobro.getPlanillaSeguridadSocial().split(",");
+            for (String path : gerentePaths) {
+                String fileName = extractFileName(path.trim());
+                archivos.add(fileName);
+            }
+        }
+
+        return ResponseEntity.ok(archivos);
+    }
 
     /**
      * Extrae el nombre del archivo de una ruta completa
@@ -211,14 +234,14 @@ public class CuentaCobroController {
     }
 
     // Endpoint para descargar un archivo
-//    @GetMapping("/download")
-//    public ResponseEntity<Resource> downloadFile(@RequestParam("file") String fileName) throws MalformedURLException {
-//        Path filePath = Paths.get("uploads").resolve(fileName).normalize();
-//        Resource resource = new UrlResource(filePath.toUri());
-//        return ResponseEntity.ok()
-//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-//                .body(resource);
-//    }
+    @GetMapping("/download")
+    public ResponseEntity<Resource> downloadFile(@RequestParam("file") String fileName) throws MalformedURLException {
+        Path filePath = Paths.get("uploads").resolve(fileName).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .body(resource);
+    }
 
 }

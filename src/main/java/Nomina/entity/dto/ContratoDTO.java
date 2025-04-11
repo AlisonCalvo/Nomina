@@ -50,9 +50,9 @@ public class ContratoDTO {
     private boolean estado;
 
     /**
-     * Campo que representa rutaArchivo
+     * Campo que representa contratoPdf
      */
-    private String rutaArchivo;
+    private String contratoPdf;
 
     /**
      * Campo que representa firmado
@@ -101,5 +101,15 @@ public class ContratoDTO {
      * Campo que representa el creador del registro.
      */
     private String creador;
+
+    /**
+     * Campo que representa las observaciones del contrato
+     */
+    private String observaciones;
+
+    /**
+     * Campo que representa los archivos adicionales del contrato
+     */
+    private String archivosAdicionales;
 
 }

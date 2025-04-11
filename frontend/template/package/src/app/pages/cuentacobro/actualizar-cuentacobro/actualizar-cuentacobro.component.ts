@@ -1,12 +1,12 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {AbstractControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import { FormlyFieldConfig, FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormlyMatDatepickerModule } from '@ngx-formly/material/datepicker';
-import {Observable, forkJoin, of, throwError, distinctUntilChanged} from 'rxjs';
+import {Observable, forkJoin, of, throwError, distinctUntilChanged, map} from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
@@ -43,6 +43,10 @@ interface CuentaCobroModel {
   id: number;
   /** montoCobrar de la entidad */
   montoCobrar: number;
+  /** numeroCuentaCobro de la entidad */
+  numeroCuentaCobro: number;
+  /** periodoACobrar de la entidad */
+  periodoACobrar: string;
   /** fecha de la entidad */
   fecha: Date;
   /** estado de la entidad */
@@ -60,11 +64,15 @@ interface CuentaCobroModel {
   /** firmaContratista de la entidad */
   firmaContratista: any;
   /** creador de la entidad */
+  planillaSeguridadSocial?: any;
+  /** creador de la entidad */
   creador: string;
   /** contrato de la entidad */
   contrato: any;
   /** informe de la entidad */
   informe: any;
+  /** observaciones de la entidad */
+  observaciones?: string;
 }
 
 /**
@@ -163,6 +171,8 @@ export class ActualizarCuentaCobroComponent implements OnInit {
         this.model = {
           id: this.data.id,
           montoCobrar: this.data.montoCobrar,
+          numeroCuentaCobro: this.data.numeroCuentaCobro,
+          periodoACobrar: this.data.periodoACobrar,
           fecha: this.data.fecha,
           estado: this.data.estado,
           numeroCuenta: this.data.numeroCuenta,
@@ -171,15 +181,19 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           notificacionPago: this.data.notificacionPago,
           firmaGerente: this.data.firmaGerente,
           firmaContratista: this.data.firmaContratista,
+          planillaSeguridadSocial: this.data.planillaSeguridadSocial,
           creador: this.data.creador,
           contrato: this.data.contrato && this.data.contrato.id ? this.data.contrato.id : null,
-          informe: this.data.informe && this.data.informe.id ? this.data.informe.id : null
+          informe: this.data.informe && this.data.informe.id ? this.data.informe.id : null,
+          observaciones: this.data.observaciones || '',
         };
 
         // Copia del modelo original para detectar cambios
         this.originalModel = {
           id: this.data.id,
           montoCobrar: this.data.montoCobrar,
+          numeroCuentaCobro: this.data.numeroCuentaCobro,
+          periodoACobrar: this.data.periodoACobrar,
           fecha: this.data.fecha,
           estado: this.data.estado,
           numeroCuenta: this.data.numeroCuenta,
@@ -188,9 +202,11 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           notificacionPago: this.data.notificacionPago,
           firmaGerente: this.data.firmaGerente,
           firmaContratista: this.data.firmaContratista,
+          planillaSeguridadSocial: this.data.planillaSeguridadSocial,
           creador: this.data.creador,
           contrato: this.data.contrato && this.data.contrato.id ? this.data.contrato.id : null,
-          informe: this.data.informe && this.data.informe.id ? this.data.informe.id : null
+          informe: this.data.informe && this.data.informe.id ? this.data.informe.id : null,
+          observaciones: this.data.observaciones || '',
         };
       } catch (error) {
         console.error('Error al procesar datos:', error);
@@ -214,7 +230,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
   private loadContratoOptions() {
     this.contratoService.findAll().subscribe(
       data => {
-        this.contratos = data;
+        this.contratos = data.filter(contrato => contrato.estado);
         this.updateFieldOptions('contrato', data);
       },
       error => console.error('Error al cargar contrato:', error)
@@ -311,6 +327,42 @@ export class ActualizarCuentaCobroComponent implements OnInit {
                   field.formControl?.setValue(formattedValue, { emitEvent: false });
                 }
               });
+          }
+        }
+      },
+      {
+        key: 'numeroCuentaCobro',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Número de Cuenta de Cobro',
+          placeholder: 'Número de la cuenta de cobro actual',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          disabled: true,
+          attributes: {
+            'class': 'modern-input'
+          }
+        }
+      },
+      {
+        key: 'periodoACobrar',
+        type: 'input',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Período a Cobrar',
+          placeholder: 'Ingrese el período a cobrar (escriba mes y año)',
+          required: true,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          }
+        },
+        validation: {
+          messages: {
+            required: 'El período a cobrar es obligatorio.'
           }
         }
       },
@@ -415,44 +467,66 @@ export class ActualizarCuentaCobroComponent implements OnInit {
             'class': 'modern-input'
           },
           options: [{ value: true, label: 'Realizado' }, { value: false, label: 'Pendiente' }]
-        }
-      },
-      {
-        key: 'notificacionPago',
-        type: 'input',
-        className: 'field-container',
-        templateOptions: {
-          label: 'NotificacionPago',
-          placeholder: 'Ingrese notificacionPago',
-          required: false,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          }
         },
+        expressionProperties: {
+          'model.pago': (model: any) => {
+            console.log('Valor actual de pago:', model.pago);
+            return model.pago;
+          }
+        }
       },
       {
         key: 'firmaGerente',
         type: 'file',
         templateOptions: {
-          label: 'FirmaGerente',
-          placeholder: 'Seleccione firmaGerente',
-          multiple: true,
-          required: true,
-          accept: '.pdf,.doc,.xls,.ppt'
-        }
+          label: 'Firma Gerente',
+          placeholder: 'Seleccione la firma del Gerente',
+          multiple: false,
+          required: false,
+          accept: 'image/*',
+          maxFileSize: 5 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            maxFileSize: 'El tamaño del archivo no puede exceder 5MB'
+          }
+        },
+        hideExpression: () => !this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE']),
       },
       {
         key: 'firmaContratista',
         type: 'file',
         templateOptions: {
-          label: 'FirmaContratista',
-          placeholder: 'Seleccione firmaContratista',
-          multiple: true,
+          label: 'Firma Contratista',
+          placeholder: 'Seleccione la firma del Contratista',
+          multiple: false,
           required: true,
-          accept: '.pdf,.doc,.xls,.ppt'
+          accept: 'image/*',
+          maxFileSize: 5 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            required: 'La firma del contratista es obligatoria.',
+            maxFileSize: 'El tamaño del archivo no puede exceder 5MB'
+          }
         }
+      },
+      {
+        key: 'planillaSeguridadSocial',
+        type: 'file',
+        templateOptions: {
+          label: 'Planilla Seguridad Social',
+          placeholder: 'Seleccione la planilla de seguridad social',
+          multiple: true,
+          required: false,
+          accept: '.pdf, .doc, .xls',
+          maxFileSize: 5 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            maxFileSize: 'El tamaño del archivo no puede exceder 5MB'
+          }
+        },
       },
       {
         key: 'creador',
@@ -491,19 +565,65 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           messages: {
             required: 'El contrato es obligatorio.'
           }
+        },
+        asyncValidators: {
+          validarNumeroCuentasCobro: {
+            expression: (control: AbstractControl, field: FormlyFieldConfig): Observable<boolean> => {
+              if (!control.value || !this.data?.id) {
+                return of(true);
+              }
+              return this.contratoService.getDetalleContrato(control.value).pipe(
+                map(response => {
+                  const cuentaActual = this.data?.contrato?.id === control.value ? 1 : 0;
+                  return (response.numeroCuentasCobro - cuentaActual) < response.numeroPagosPermitidos;
+                }),
+                catchError(() => of(false))
+              );
+            },
+            message: 'No se pueden crear más cuentas de cobro para el contrato seleccionado.',
+          }
         }
+      },
+      {
+        key: 'observaciones',
+        type: 'textarea',
+        className: 'field-container',
+        templateOptions: {
+          label: 'Observaciones',
+          placeholder: 'Ingrese observaciones adicionales',
+          required: false,
+          appearance: 'outline',
+          floatLabel: 'always',
+          attributes: {
+            'class': 'modern-input'
+          },
+          rows: 3,
+          maxLength: 500
+        },
+        validation: {
+          messages: {
+            maxlength: 'Las observaciones no pueden contener mas de 500 caracteres.'
+          }
+        },
+        hideExpression: () => !this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE', 'CONTADOR']),
       }
     ];
   }
 
   onSubmit() {
     // 1. Acciones previas
+    try {
     this.preUpdate(this.model);
+    } catch (error) {
+      console.error('Error en preUpdate:', error);
+      this.isLoading = false;
+      return;
+    }
 
-    const modelData = { ...this.model };
-
+    const modelData = { ...this.model,};
     this.isLoading = true;
 
+    // Convertir ID a objetos para las relaciones
     if (modelData.contrato) {
       modelData.contrato = { id: modelData.contrato };
     }
@@ -512,9 +632,16 @@ export class ActualizarCuentaCobroComponent implements OnInit {
       modelData.informe = { id: modelData.informe };
     }
 
+    // Limpiar valor de monto a cobrar si es necesario (convertir de formato moneda a número)
+    if (typeof modelData.montoCobrar === 'string') {
+      const cleanedValue = (modelData.montoCobrar as string).replace(/[^\d]/g, '');
+      modelData.montoCobrar = cleanedValue ? Number(cleanedValue) : 0;
+    }
+    console.log("datos de model: \n" + modelData)
+
 
     const uploadOperations: Observable<void>[] = [];
-    const fileFields: (keyof CuentaCobroModel)[] = ['firmaGerente', 'firmaContratista'];
+    const fileFields: (keyof CuentaCobroModel)[] = ['firmaGerente','firmaContratista', 'planillaSeguridadSocial'];
 
     const handleFileUpload = (field: keyof CuentaCobroModel) => {
       const files = this.model[field];
@@ -557,6 +684,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
       });
     } else {
       this.updateEntity(modelData);
+      console.log(modelData)
     }
   }
 
@@ -570,16 +698,17 @@ export class ActualizarCuentaCobroComponent implements OnInit {
   }
 
   private updateEntity(modelData: any) {
+
     this.cuentacobroService.update(modelData.id, modelData).subscribe({
       next: (response) => {
         this.isLoading = false;
         this.postUpdate(response);
       },
       error: (error) => {
+        console.error('Error completo al actualizar CuentaCobro:', error);
         this.isLoading = false;
-        console.error('Error al actualizar CuentaCobro:', error);
-        this.snackBar.open('Error al actualizar CuentaCobro', 'Cerrar', {
-          duration: 3000,
+        this.snackBar.open('Error al actualizar CuentaCobro: ' + (error.message || 'Error desconocido'), 'Cerrar', {
+          duration: 5000,
           panelClass: ['error-snackbar'],
         });
       },
@@ -594,6 +723,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
    * Verifica si hay cambios entre el model actual y el original.
    */
   private hasChanges(model: CuentaCobroModel): boolean {
+
     for (const key in model) {
       const keyTyped = key as keyof CuentaCobroModel;
       const newValue = typeof model[keyTyped] === 'string' ? (model[keyTyped] as string).trim() : model[keyTyped];
@@ -648,6 +778,64 @@ export class ActualizarCuentaCobroComponent implements OnInit {
     });
     this.dialogRef.close(true);
     console.log('Acciones postUpdate completadas.');
+  }
+
+  handleImageChange(field: FormlyFieldConfig, event: Event, fieldName: 'firmaGerente' | 'firmaContratista') {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    // Validación de tipo de imagen
+    if (!file.type.match('image.*')) {
+      this.snackBar.open('Solo se permiten archivos de imagen', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    // Validación de tamaño (2MB máximo)
+    if (file.size > 2 * 1024 * 1024) {
+      this.snackBar.open('La imagen no debe exceder 2MB', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      if (e.target?.result) {
+        const base64 = e.target.result as string;
+
+        // 1. Actualizar el modelo
+        this.model[fieldName] = base64;
+
+        // 2. Actualizar previsualización
+        if (field.templateOptions) {
+          (field.templateOptions as any).preview = base64;
+        }
+
+        // 3. Actualizar vista
+        setTimeout(() => {
+          this.fields = [...this.fields];
+        }, 0);
+      }
+    };
+
+    reader.onerror = () => {
+      this.snackBar.open('Error al leer la imagen', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+
+      // Limpiar el input en caso de error
+      input.value = '';
+    };
+
+    reader.readAsDataURL(file);
   }
 
 }

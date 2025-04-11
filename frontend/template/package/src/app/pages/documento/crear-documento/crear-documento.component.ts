@@ -45,7 +45,7 @@ interface DocumentoModel {
   estado: boolean;
   formato: string;
   etiqueta: string;
-  rutaArchivo: string;
+  archivoDocumento: any;
   creador: string;
   persona: any;
   contrato: any;
@@ -100,7 +100,7 @@ export class CrearDocumentoComponent implements OnInit {
     estado: false,
     formato: '',
     etiqueta: '',
-    rutaArchivo: '',
+    archivoDocumento: '',
     creador: '',
     persona: null,
     contrato: null
@@ -245,22 +245,19 @@ export class CrearDocumentoComponent implements OnInit {
         }
       },
       {
-        key: 'rutaArchivo',
-        type: 'input',
-        className: 'field-container',
+        key: 'archivoDocumento',
+        type: 'file',
         templateOptions: {
-          label: 'RutaArchivo',
-          placeholder: 'Ingrese rutaArchivo',
+          label: 'Archivo Documento',
+          placeholder: 'Ingrese el archivo del documento',
           required: true,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          }
+          multiple:true,
+          maxFileSize: 5 * 1024 * 1024,
         },
         validation: {
           messages: {
-            required: 'La ruta es obligatoria.'
+            required: 'El archivo del documento  es obligatorio.',
+            maxFileSize: 'El tamaño del archivo no puede exceder 5MB'
           }
         }
       },
@@ -352,8 +349,61 @@ export class CrearDocumentoComponent implements OnInit {
     const modelData = { ...this.model };
     modelData.persona = { id: this.model.persona };
     modelData.contrato = { id: this.model.contrato };
-    // Si no hay archivos a subir o no es un campo file, guardamos directo
-    this.saveEntity(modelData);
+
+    const uploadOperations: Observable<void>[] = [];
+    const fileFields: (keyof DocumentoModel)[] = ['archivoDocumento'];
+
+    const handleFileUpload = (field: keyof DocumentoModel) => {
+      const files = this.model[field];
+
+      if (Array.isArray(files) && files.length > 0) {
+        const upload$ = this.documentoService.uploadFiles(files).pipe(
+          switchMap(rutas => {
+            // @ts-ignore
+            modelData[field] = rutas.join(',');
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      } else if (files instanceof File) {
+        const upload$ = this.documentoService.uploadFile(files).pipe(
+          switchMap(ruta => {
+            // @ts-ignore
+            modelData[field] = ruta;
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      }
+    };
+
+    fileFields.forEach(field => handleFileUpload(field));
+
+    if (uploadOperations.length > 0) {
+      forkJoin(uploadOperations).subscribe({
+        next: () => this.saveEntity(modelData),
+        error: () => this.isLoading = false
+      });
+    } else {
+      this.saveEntity(modelData);
+    }
+  }
+
+  private handleUploadError(field: string, error: any) {
+    console.error(`Error subiendo archivos en ${field}:`, error);
+    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+    this.isLoading = false;
   }
 
   private saveEntity(modelData: any) {

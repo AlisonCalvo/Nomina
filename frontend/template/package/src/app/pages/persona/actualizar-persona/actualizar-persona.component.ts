@@ -36,6 +36,8 @@ import { ProyectoService } from '../../../services/ProyectoService';
 import { TipoDocumentoService } from '../../../services/TipoDocumentoService';
 import {AuthService} from "../../../services/auth-service.service";
 import {PermissionService} from "../../authentication/services/PermissionService";
+import {forkJoin, Observable, of, throwError} from "rxjs";
+import {catchError, switchMap} from "rxjs/operators";
 
 interface PersonaModel {
   id: number;
@@ -48,6 +50,9 @@ interface PersonaModel {
   fechaExpedicion: Date;
   fechaNacimiento: Date;
   nacionalidad: string;
+  documentosFormacionAcademica: any;
+  documentosLegales: any;
+  certificacionesLaborales: any;
   creador: string;
   proyecto: any;
   tipoDocumento: any;
@@ -121,8 +126,9 @@ export class ActualizarPersonaComponent implements OnInit {
   fields: FormlyFieldConfig[] = [];
   /** Lista de roles disponibles */
   roles: any[] = [];
-
   rolesMap: { [key: string]: number } = {};
+
+  isLoading: boolean = false;
 
   /**
    * Constructor del componente
@@ -176,6 +182,9 @@ export class ActualizarPersonaComponent implements OnInit {
           fechaExpedicion: this.data.fechaExpedicion,
           fechaNacimiento: this.data.fechaNacimiento,
           nacionalidad: this.data.nacionalidad,
+          documentosFormacionAcademica: this.data.documentosFormacionAcademica || '',
+          documentosLegales: this.data.documentosLegales || '',
+          certificacionesLaborales: this.data.certificacionesLaborales || '',
           creador: this.data.creador,
           proyecto: this.data.proyecto && this.data.proyecto.id ? this.data.proyecto.id : null,
           tipoDocumento: this.data.tipoDocumento && this.data.tipoDocumento.id ? this.data.tipoDocumento.id : null,
@@ -200,6 +209,9 @@ export class ActualizarPersonaComponent implements OnInit {
           fechaExpedicion: this.data.fechaExpedicion,
           fechaNacimiento: this.data.fechaNacimiento,
           nacionalidad: this.data.nacionalidad,
+          documentosFormacionAcademica: this.data.documentosFormacionAcademica || '',
+          documentosLegales: this.data.documentosLegales || '',
+          certificacionesLaborales: this.data.certificacionesLaborales || '',
           creador: this.data.creador,
           proyecto: this.data.proyecto && this.data.proyecto.id ? this.data.proyecto.id : null,
           tipoDocumento: this.data.tipoDocumento && this.data.tipoDocumento.id ? this.data.tipoDocumento.id : null,
@@ -662,6 +674,57 @@ export class ActualizarPersonaComponent implements OnInit {
         }
       },
       {
+        key: 'documentosFormacionAcademica',
+        type: 'file',
+        templateOptions: {
+          label: 'Documentos de formación académica',
+          placeholder: 'Seleccione los documentos de formación académica',
+          multiple: true,
+          required: false,
+          accept: '.pdf, .doc, .xls, image/*',
+          maxFileSize: 5 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            maxFileSize: 'El tamaño de cada archivo no puede exceder 5MB'
+          }
+        },
+      },
+      {
+        key: 'documentosLegales',
+        type: 'file',
+        templateOptions: {
+          label: 'Documentos Legales',
+          placeholder: 'Seleccione los documentos legales',
+          multiple: true,
+          required: false,
+          accept: '.pdf, .doc, .xls, image/*',
+          maxFileSize: 5 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            maxFileSize: 'El tamaño de cada archivo no puede exceder 5MB'
+          }
+        },
+      },
+      {
+        key: 'certificacionesLaborales',
+        type: 'file',
+        templateOptions: {
+          label: 'Certificaciones laborales',
+          placeholder: 'Seleccione las certificaciones laborales',
+          multiple: true,
+          required: false,
+          accept: '.pdf, .doc, .xls, image/*',
+          maxFileSize: 5 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            maxFileSize: 'El tamaño de cada archivo no puede exceder 5MB'
+          }
+        },
+      },
+      {
         key: 'tituloProfesional',
         type: 'input',
         className: 'field-container',
@@ -704,7 +767,7 @@ export class ActualizarPersonaComponent implements OnInit {
         },
         validation: {
           messages: {
-            required: 'La experiencia profesional es obligatoria para este tipo de persona.',
+            required: 'La experiencia profesional es obligatoria.',
             minlength: 'La experiencia profesional debe tener al menos 5 caracteres.',
           }
         },
@@ -727,7 +790,7 @@ export class ActualizarPersonaComponent implements OnInit {
         },
         validation: {
           messages: {
-            required: 'El número de tarjeta profesional es obligatorio para este tipo de persona.',
+            required: 'El número de tarjeta profesional es obligatorio.',
             minlength: 'El número de tarjeta profesional debe tener al menos 5 caracteres.',
           }
         },
@@ -783,7 +846,7 @@ export class ActualizarPersonaComponent implements OnInit {
         },
         hooks: {
           onInit: (field) => {
-            if (!field || !field.formControl) return; // Verificamos que formControl exista
+            if (!field || !field.formControl) return;
 
             field.formControl.valueChanges.subscribe((value) => {
               if (value) {
@@ -868,8 +931,60 @@ export class ActualizarPersonaComponent implements OnInit {
       modelData.firmaDigital = null;
     }
 
-    // Si no se subieron archivos, procedemos a actualizar directamente
-    this.updateEntity(modelData);
+    const uploadOperations: Observable<void>[] = [];
+    const fileFields: (keyof PersonaModel)[] = ['documentosFormacionAcademica','documentosLegales', 'certificacionesLaborales'];
+
+    const handleFileUpload = (field: keyof PersonaModel) => {
+      const files = this.model[field];
+
+      if (Array.isArray(files) && files.length > 0) {
+        const upload$ = this.personaService.uploadFiles(files).pipe(
+          switchMap(rutas => {
+            // @ts-ignore
+            modelData[field] = rutas.join(',');
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      } else if (files instanceof File) {
+        const upload$ = this.personaService.uploadFile(files).pipe(
+          switchMap(ruta => {
+            // @ts-ignore
+            modelData[field] = ruta;
+            return of(undefined);
+          }),
+          catchError(error => {
+            this.handleUploadError(field as string, error);
+            return throwError(error);
+          })
+        );
+        uploadOperations.push(upload$);
+      }
+    };
+
+    fileFields.forEach(field => handleFileUpload(field));
+
+    if (uploadOperations.length > 0) {
+      forkJoin(uploadOperations).subscribe({
+        next: () => this.updateEntity(modelData),
+        error: () => this.isLoading = false
+      });
+    } else {
+      this.updateEntity(modelData);
+    }
+  }
+
+  private handleUploadError(field: string, error: any) {
+    console.error(`Error subiendo archivos en ${field}:`, error);
+    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+    this.isLoading = false;
   }
 
   private updateEntity(modelData: any) {

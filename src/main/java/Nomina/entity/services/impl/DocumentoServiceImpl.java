@@ -7,10 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import Nomina.entity.dto.DocumentoDTO;
-import Nomina.entity.entities.Contrato;
-import Nomina.entity.entities.Documento;
-import Nomina.entity.entities.Informe;
-import Nomina.entity.entities.Persona;
+import Nomina.entity.entities.*;
 import Nomina.entity.repositories.DocumentoRepository;
 import Nomina.entity.services.DocumentoService;
 import Nomina.seguridad.Interceptor.HibernateFilterActivator;
@@ -108,6 +105,37 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
      */
     @Override
     public void deleteById(Long id) {
+        Optional<Documento> optional = repository.findById(id);
+        if (optional.isEmpty()) {
+            throw new RuntimeException("Documento no encontrado con id: " + id);
+        }
+
+        Documento entity = optional.get();
+
+        List<String> filePaths = new ArrayList<>();
+
+        if (entity.getArchivoDocumento() != null) {
+            String[] contratistaPaths = entity.getArchivoDocumento().split(",");
+            for (String path : contratistaPaths) {
+                path = path.trim();
+                if (!path.isEmpty()) {
+                    filePaths.add(path);
+                }
+            }
+        }
+
+        for (String filePathString : filePaths) {
+            try {
+                Path filePath = Path.of(filePathString).toAbsolutePath().normalize();
+                Path uploadsDir = Path.of("uploads").toAbsolutePath().normalize();
+                if (filePath.startsWith(uploadsDir)) {
+                    Files.deleteIfExists(filePath);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         repository.deleteById(id);
     }
 

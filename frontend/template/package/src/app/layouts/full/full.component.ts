@@ -14,6 +14,7 @@ import { NgScrollbarModule } from 'ngx-scrollbar';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { HeaderComponent } from './header/header.component';
 import { PermissionService } from '../../pages/authentication/services/PermissionService';
+import {NavItem} from "./sidebar/nav-item/nav-item";
 
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
@@ -43,7 +44,7 @@ const BELOWMONITOR = 'screen and (max-width: 1023px)';
 
 export class FullComponent implements OnInit {
 
-  navItems = [];
+  navItems: any [] = [];
 
   @ViewChild('leftsidenav')
   public sidenav: MatSidenav | any;
@@ -78,10 +79,20 @@ export class FullComponent implements OnInit {
     this.cargarMenu();
   }
 
-  cargarMenu(){
+  formatearNombre(nombre: string | null | undefined): string {
+    if (!nombre) {
+      return ''; // Devuelve una cadena vacía si el nombre es null o undefined
+    }
+    return nombre.replace(/([a-z])([A-Z])/g, '$1 $2');
+  }
+
+  cargarMenu() {
     this.permissionService.getObjetos("OpcionMenu").subscribe({
-      next: menu => {
-        this.navItems = menu;
+      next: (menu: NavItem[]) => {
+        this.navItems = menu.map((item: NavItem) => ({
+          ...item,
+          displayName: this.formatearNombre(item.displayName)
+        }));
       },
       error: error => {
         console.error('Error al cargar el menu:', error);

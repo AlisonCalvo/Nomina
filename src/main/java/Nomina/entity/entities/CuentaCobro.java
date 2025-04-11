@@ -57,6 +57,22 @@ public class CuentaCobro implements Serializable {
     private long montoCobrar;
 
     /**
+     * numero de cuenta de cobro
+     *
+     * Restricciones:
+     */
+    @Column(name="numeroCuentaCobro", nullable=false)
+    private long numeroCuentaCobro;
+
+    /**
+     * periodo a cobrar
+     *
+     * Restricciones:
+     */
+    @Column(name="periodoACobrar", nullable=true)
+    private String periodoACobrar;
+
+    /**
      * fecha de entrega de la cuenta de cobro
      * 
      * Restricciones:
@@ -103,7 +119,7 @@ public class CuentaCobro implements Serializable {
      * 
      * Restricciones:
      */
-    @Column(name="notificacionPago")
+    @Column(name="notificacionPago",nullable=true)
     private String notificacionPago;
 
     /**
@@ -112,7 +128,7 @@ public class CuentaCobro implements Serializable {
      * Restricciones:
      */
     @FilePath(type = "file")
-    @Column(name="firmaGerente", columnDefinition = "TEXT")
+    @Column(name="firmaGerente", nullable = true)
     private String firmaGerente;
 
     /**
@@ -121,14 +137,27 @@ public class CuentaCobro implements Serializable {
      * Restricciones:
      */
     @FilePath(type = "file")
-    @Column(name="firmaContratista", columnDefinition = "TEXT")
+    @Column(name="firmaContratista")
     private String firmaContratista;
+
+    /**
+     * firma del contratista
+     *
+     * Restricciones:
+     */
+    @FilePath(type = "file")
+    @Column(name="planillaSeguridadSocial")
+    private String planillaSeguridadSocial;
+
 
     /**
      * Columna que representa el creador de la entidad.
      */
     @Column(name = "creador")
     private String creador;
+
+    @Column(name = "fecha_aprobacion")
+    private LocalDateTime fechaAprobacion;
 
     /**
      * 
@@ -137,6 +166,14 @@ public class CuentaCobro implements Serializable {
     @ManyToOne
 	@JoinColumn(name = "contrato")
     private Contrato contrato;
+
+    /**
+     * Observaciones adicionales de la cuenta de cobro
+     *
+     * Restricciones: Opcional
+     */
+    @Column(name="observaciones", nullable=true)
+    private String observaciones;
 
     /**
      * 
@@ -150,6 +187,7 @@ public class CuentaCobro implements Serializable {
      * Inicializa una nueva instancia de CuentaCobro con los valores especificados.
      *
      * @param montoCobrar monto a cobrar 
+     * @param numeroCuentaCobro numero de cuenta de cobro
      * @param fecha fecha de entrega de la cuenta de cobro
      * @param estado estado de la cuenta de cobro
      * @param numeroCuenta numero de la cuenta bancaria del contratista
@@ -158,12 +196,15 @@ public class CuentaCobro implements Serializable {
      * @param notificacionPago notificacion de cuando se realiza el pago
      * @param firmaGerente firma del gerente que contrata
      * @param firmaContratista firma del contratista
-     * @param contrato 
-     * @param informe 
+     * @param planillaSeguridadSocial firma del contratista
+     * @param contrato
+     * @param informe
      * @param creador Columna que representa el creador de la entidad.
      */
-    public CuentaCobro(long montoCobrar, LocalDate fecha, boolean estado, String numeroCuenta, String detalle, boolean pago, String notificacionPago, String firmaGerente, String firmaContratista, Contrato contrato, Informe informe, String creador) {
+    public CuentaCobro(long montoCobrar, long numeroCuentaCobro, String periodoACobrar, LocalDate fecha, boolean estado, String numeroCuenta, String detalle, boolean pago, String notificacionPago, String firmaGerente, String firmaContratista, String planillaSeguridadSocial, Contrato contrato, Informe informe, String creador) {
+        this.numeroCuentaCobro = numeroCuentaCobro;
         this.montoCobrar = montoCobrar;
+        this.periodoACobrar = periodoACobrar;
         this.fecha = fecha;
         this.estado = estado;
         this.numeroCuenta = numeroCuenta;
@@ -172,9 +213,9 @@ public class CuentaCobro implements Serializable {
         this.notificacionPago = notificacionPago;
         this.firmaGerente = firmaGerente;
         this.firmaContratista = firmaContratista;
+        this.planillaSeguridadSocial = planillaSeguridadSocial;
         this.contrato = contrato;
         this.informe = informe;
         this.creador = creador;
     }
-
 }

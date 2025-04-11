@@ -58,13 +58,16 @@
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Etiqueta</th>
         <td mat-cell *matCellDef="let element">{{element.etiqueta}}</td>
       </ng-container>
-      <ng-container matColumnDef="rutaArchivo">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Ruta Archivo</th>
-        <td mat-cell *matCellDef="let element">{{element.rutaArchivo}}</td>
+      <ng-container matColumnDef="archivoDocumento">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Archivo Documento</th>
+        <td mat-cell *matCellDef="let element">
+          <button mat-button color="accent" style="display: inline-flex; align-items: center; gap: 6px;" (click)="onShowArchivoDocumento(element)" matTooltip="Ver Archivos Adicionales">
+            <mat-icon>folder</mat-icon><strong>Archivos</strong>
+          </button></td>
       </ng-container>
       <ng-container matColumnDef="creador">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Creador</th>
-        <td mat-cell *matCellDef="let element">{{element.creador}}</td>
+        <td mat-cell *matCellDef="let element">{{ obtenerNombreCreador(element.creador) }}</td>
       </ng-container>
       <ng-container matColumnDef="persona">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Persona</th>
@@ -77,6 +80,9 @@
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef>Acciones</th>
         <td mat-cell *matCellDef="let element">
+          <button mat-icon-button color="accent" (click)="onDownload(element)" matTooltip="Descargar Archivos">
+            <mat-icon>file_download</mat-icon>
+          </button>
           <button mat-icon-button color="primary" (click)="onEdit(element)" matTooltip="Modificar">
             <mat-icon>edit</mat-icon>
           </button>

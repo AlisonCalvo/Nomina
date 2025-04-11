@@ -1,46 +1,49 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormGroup, FormsModule } from '@angular/forms';
-import { FormlyFieldConfig } from '@ngx-formly/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorIntl } from '@angular/material/paginator';
-import { Router, RouterLink, RouterModule } from '@angular/router';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {FormGroup, FormsModule} from '@angular/forms';
+import {FormlyFieldConfig} from '@ngx-formly/core';
+import {MatPaginator} from '@angular/material/paginator';
+import {MatSort} from '@angular/material/sort';
+import {MatDialog} from '@angular/material/dialog';
+import {MatTableDataSource} from '@angular/material/table';
+import {MatPaginatorIntl} from '@angular/material/paginator';
+import {Router, RouterLink, RouterModule} from '@angular/router';
 import * as XLSX from 'xlsx';
-import { PersonaService } from '../../../services/PersonaService';
-import { PersonaComponent } from '../persona.component';
-import { ActualizarPersonaComponent } from '../actualizar-persona/actualizar-persona.component';
-import { CrearPersonaComponent } from '../crear-persona/crear-persona.component';
+import {PersonaService} from '../../../services/PersonaService';
+import {PersonaComponent} from '../persona.component';
+import {ActualizarPersonaComponent} from '../actualizar-persona/actualizar-persona.component';
+import {CrearPersonaComponent} from '../crear-persona/crear-persona.component';
 import {environment} from '../../../../environments/environment';
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatCard, MatCardContent, MatCardModule } from '@angular/material/card';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatFormField, MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTabsModule } from '@angular/material/tabs';
-import { DateTime } from 'luxon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ProyectoService } from '../../../services/ProyectoService';
-import { CommonModule } from '@angular/common';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCard, MatCardContent, MatCardModule} from '@angular/material/card';
+import {MatIcon, MatIconModule} from '@angular/material/icon';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatFormField, MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import {MatNativeDateModule} from '@angular/material/core';
+import {MatRadioModule} from '@angular/material/radio';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {MatTableModule} from '@angular/material/table';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatSortModule} from '@angular/material/sort';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatSnackBarModule, MatSnackBar} from '@angular/material/snack-bar';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatListModule} from '@angular/material/list';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatTabsModule} from '@angular/material/tabs';
+import {DateTime} from 'luxon';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {ProyectoService} from '../../../services/ProyectoService';
+import {CommonModule} from '@angular/common';
+import {ShowFilesListComponent} from "../../../showFiles.component";
+import {DownloadFileComponent} from "../../../downloadFile.component";
+
 @Component({
   selector: 'app-leer-persona',
   templateUrl: './leer-persona.component.html',
@@ -84,7 +87,10 @@ import { CommonModule } from '@angular/common';
 })
 export class LeerPersonaComponent implements OnInit {
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'nombre', 'correo', 'numeroDocumento', 'tituloProfesional', 'direccion', 'telefono', 'fechaExpedicion', 'fechaNacimiento', 'nacionalidad', 'creador', 'tipoDocumento', 'acciones'];
+  displayedColumns: string[] = ['id', 'nombre', 'correo', 'numeroDocumento', 'tituloProfesional',
+    'direccion', 'telefono', 'fechaExpedicion', 'fechaNacimiento', 'nacionalidad', 'documentosFormacionAcademica',
+    'documentosLegales', 'certificacionesLaborales', 'creador',
+    'tipoDocumento', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   personas: PersonaComponent[] = [];
@@ -169,12 +175,12 @@ export class LeerPersonaComponent implements OnInit {
     this.personaService.findAll().subscribe({
       next: data => {
         this.dataSource.data = data.map(item => Object.assign(new PersonaComponent(this.personaService), item));
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-    },
-       error: error => {
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+      },
+      error: error => {
         console.error('Error al obtener personas:', error);
-      this.errorMessage = 'Error al cargar los datos.';
+        this.errorMessage = 'Error al cargar los datos.';
       }
     });
   }
@@ -227,8 +233,10 @@ export class LeerPersonaComponent implements OnInit {
    * @description Abre un diálogo modal para editar el registro seleccionado
    */
   onEdit(persona: any): void {
+    const screenWidth = window.innerWidth;
+    const minWidth = screenWidth < 600 ? '90vw' : '800px';
     const dialogRef = this.dialog.open(ActualizarPersonaComponent, {
-      minWidth: '800px',
+      minWidth: minWidth,
       data: persona,
     });
 
@@ -398,6 +406,7 @@ export class LeerPersonaComponent implements OnInit {
       panelClass: type === 'error' ? ['error-snackbar'] : ['success-snackbar']
     });
   }
+
   generateSummary(value: any, defaultText: string = 'Sin datos'): string {
     if (!value || typeof value !== 'object') {
       return defaultText;
@@ -416,11 +425,97 @@ export class LeerPersonaComponent implements OnInit {
       return defaultText;
     }
     return collection.map(item => this.generateSummary(item)).join('; ');
- }
-
-  onAlerta() {
-    // Implementar funcionalidad
-    this.showMessage('Funcionalidad no implementada', 'error');
   }
 
-   }
+  onShowDocumentosFormacionAcademica(element: any) {
+    const rawPaths = element.documentosFormacionAcademica;
+    if (!rawPaths) {
+      this.showMessage('No hay documentos de formacion académica.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: {
+        files: files,
+        title: 'Documentos Formacion Academica'
+      }
+    });
+  }
+
+  onShowDocumentosLegales(element: any) {
+    const rawPaths = element.documentosLegales;
+    if (!rawPaths) {
+      this.showMessage('No hay documentos legales.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: {
+        files: files,
+        title: 'Documentos Legales'
+      }
+    });
+  }
+
+  onShowCertificacionesLaborales(element: any) {
+    const rawPaths = element.certificacionesLaborales;
+    if (!rawPaths) {
+      this.showMessage('No hay certificaciones laborales.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: {
+        files: files,
+        title: 'Certificaciones Laborales'
+      }
+    });
+  }
+
+  private extractFileName(fullPath: string): string {
+    const lastBackslash = fullPath.lastIndexOf('\\');
+    const lastSlash = fullPath.lastIndexOf('/');
+    const lastSeparator = Math.max(lastBackslash, lastSlash);
+    if (lastSeparator === -1) {
+      return fullPath;
+    }
+    return fullPath.substring(lastSeparator + 1);
+  }
+
+  onDownload(element: any) {
+    this.personaService.getFilesByPersonaServiceId(element.id)
+      .subscribe({
+        next: (files) => {
+          const dialogRef = this.dialog.open(DownloadFileComponent, {
+            maxWidth: 'none',
+            width: '500px',
+            data: {files: files}
+          });
+          dialogRef.afterClosed().subscribe((selectedFiles: string[]) => {
+            if (selectedFiles && selectedFiles.length > 0) {
+              selectedFiles.forEach(selectedFile => {
+                this.personaService.downloadFile(selectedFile).subscribe(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = selectedFile;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                });
+              });
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error al obtener archivos:', err);
+          this.showMessage('Error al obtener archivos del servidor.', 'error');
+        }
+      });
+  }
+}

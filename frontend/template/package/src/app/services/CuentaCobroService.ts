@@ -10,6 +10,10 @@ import {environment} from '../../environments/environment';
 export interface CuentaCobro {
   /** montoCobrar - Campo de tipo long */
   montoCobrar: number;
+  /** numeroCuentaCobro - Campo de tipo long */
+  numeroCuentaCobro: number;
+  /** periodoACobrar - Campo de texto */
+  periodoACobrar: string;
   /** fecha - Campo de tipo LocalDate */
   fecha: Date;
   /** estado - Campo de tipo boolean */
@@ -23,11 +27,15 @@ export interface CuentaCobro {
   /** notificacionPago - Campo de texto */
   notificacionPago: string;
   /** firmaGerente - Campo de texto */
-  firmaGerente: string;
+  firmaGerente?: string;
   /** firmaContratista - Campo de texto */
   firmaContratista: string;
-  /** contrato - Campo de tipo Contrato */
+  /** planillaSeguridadSocial - Campo de texto */
+  planillaSeguridadSocial: string;
+  /** contrato - Campo de texto */
   contrato: any;
+  /** observaciones - Campo de texto */
+  observaciones?: string;
   /** informe - Campo de tipo Informe */
   informe: any;
   /** creador - Campo de texto */
@@ -41,6 +49,8 @@ export interface CuentaCobro {
 export interface CuentaCobroDTO {
   /** montoCobrar - Campo de tipo long */
   montoCobrar: number;
+  /** periodoACobrar - Campo de texto */
+  periodoACobrar: string;
   /** fecha - Campo de tipo LocalDate */
   fecha: Date;
   /** estado - Campo de tipo boolean */
@@ -54,11 +64,15 @@ export interface CuentaCobroDTO {
   /** notificacionPago - Campo de texto */
   notificacionPago: string;
   /** firmaGerente - Campo de texto */
-  firmaGerente: string;
+  firmaGerente?: string;
   /** firmaContratista - Campo de texto */
   firmaContratista: string;
+  /** planillaSeguridadSocial - Campo de texto */
+  planillaSeguridadSocial: string;
   /** contrato - Campo de tipo Contrato */
   contrato: any;
+  /** observaciones - Campo de texto */
+  observaciones?: string;
   /** informe - Campo de tipo Informe */
   informe: any;
   /** creador - Campo de texto */
@@ -171,7 +185,6 @@ export class CuentaCobroService {
     return this.httpClient.get(url, { responseType: 'blob' });
   }
 
-  // Método para obtener personas por proyecto
   obtenerCuentasCobroPorContrato(username: String, id: number): Observable<CuentaCobro[]> {
     const headers = new HttpHeaders().set('Accion', 'findAll').set('Objeto', 'Contrato');
     const url = `${this.baseUrl}/contratos/${username}/${id}/cuentascobro`;

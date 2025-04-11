@@ -20,8 +20,8 @@ export interface Contrato {
   fechaFinContrato: Date;
   /** estado - Campo de tipo boolean */
   estado: boolean;
-  /** rutaArchivo - Campo de texto */
-  rutaArchivo: string;
+  /** contratoPdf - Campo de texto */
+  contratoPdf: string;
   /** firmado - Campo de tipo boolean */
   firmado: boolean;
   /** proyecto - Campo de tipo Proyecto */
@@ -34,8 +34,11 @@ export interface Contrato {
   periodicidadPago: any;
   /** creador - Campo de texto */
   creador: string;
+  /**Campo que representa las observaciones del contrato*/
+  observaciones?: string;
+  /**Campo que representa los archivos adicionales del contrato*/
+  archivosAdicionales?: string;
 }
-
 /**
  * Interfaz que define la estructura del DTO para Contrato
  * Utilizada para la transferencia de datos entre el frontend y backend
@@ -53,8 +56,8 @@ export interface ContratoDTO {
   fechaFinContrato: Date;
   /** estado - Campo de tipo boolean */
   estado: boolean;
-  /** rutaArchivo - Campo de texto */
-  rutaArchivo: string;
+  /** contratoPdf - Campo de texto */
+  contratoPdf: String;
   /** firmado - Campo de tipo boolean */
   firmado: boolean;
   /** proyecto - Campo de tipo Proyecto */
@@ -67,6 +70,10 @@ export interface ContratoDTO {
   periodicidadPago: any;
   /** creador - Campo de texto */
   creador: string;
+  /**Campo que representa las observaciones del contrato*/
+  observaciones?: string;
+  /**Campo que representa los archivos adicionales del contrato*/
+  archivosAdicionales?: string;
 }
 
 /**
@@ -147,6 +154,63 @@ export class ContratoService {
     return this.httpClient.get<any>(url, { headers });
   }
 
+  // Método para uploadFiles
+  uploadFiles(files: File[]): Observable<string[]> {
+    const url = `${this.baseUrl}/contratos/upload`;
+    const formData: FormData = new FormData();
 
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    // Opcional: puedes ajustar headers
+    const headers = new HttpHeaders()
+      .set('Accion', 'save')
+      .set('Objeto', 'Contrato');
+
+    // Observa que aquí esperamos un array de strings, según lo que el backend devuelve
+    return this.httpClient.post<string[]>(url, formData, { headers });
+  }
+
+  // Método para uploadFile
+  uploadFile(file: File): Observable<string> {
+    const url = `${this.baseUrl}/contratos/upload`;
+    const formData: FormData = new FormData();
+    formData.append('files', file); // 'files' es el nombre del @RequestParam en el backend
+
+    const headers = new HttpHeaders()
+      .set('Accion', 'save')
+      .set('Objeto', 'Contrato');
+
+    // Esperamos un array de rutas y tomamos la primera.
+    // Si el backend solo devuelve una ruta, ajusta en consecuencia.
+    return new Observable((observer) => {
+      this.httpClient.post<string[]>(url, formData, { headers })
+        .subscribe({
+          next: (paths: string[]) => {
+            observer.next(paths[0]);  // Tomamos la primera ruta
+            observer.complete();
+          },
+          error: (err) => observer.error(err)
+        });
+    });
+  }
+
+  getFilesByContratoServiceId(id: number): Observable<string[]> {
+    const url = `${this.baseUrl}/contratos/${id}/files`;
+    return this.httpClient.get<string[]>(url);
+  }
+
+  downloadFile(fileName: string): Observable<Blob> {
+    const url = `${this.baseUrl}/contratos/download?file=${fileName}`;
+    return this.httpClient.get(url, { responseType: 'blob' });
+  }
+
+  //para buscar una forma diferente de ver el nombre del creador de un registro
+  obtenerUsuarios(): Observable<any> {
+    const headers = new HttpHeaders().set('Accion', 'findAll').set('Objeto', 'Contrato');
+    const url = `${this.baseUrl}/auth/getUsers`;
+    return this.httpClient.get<any>(url, {headers});
+  }
 
 }

@@ -104,8 +104,8 @@ public class Documento implements Serializable {
      *
      * Restricciones:
      */
-    @Column(name="rutaArchivo", nullable=false)
-    private String rutaArchivo;
+    @Column(name="archivoDocumento", nullable=false)
+    private String archivoDocumento;
 
     /**
      * Columna que representa el creador de la entidad.
@@ -139,19 +139,19 @@ public class Documento implements Serializable {
      * @param estado estado del documento
      * @param formato formato del documento
      * @param etiqueta etiqueta del documento(publico o privado)
-     * @param rutaArchivo ruta del archivo
+     * @param archivoDocumento ruta del archivo
      * @param persona 
      * @param contrato 
      * @param creador Columna que representa el creador de la entidad.
      */
-    public Documento(String nombre, String descripcion, LocalDate fechaCarga, boolean estado, String formato, String etiqueta, String rutaArchivo, Persona persona, Contrato contrato, String creador) {
+    public Documento(String nombre, String descripcion, LocalDate fechaCarga, boolean estado, String formato, String etiqueta, String archivoDocumento, Persona persona, Contrato contrato, String creador) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.fechaCarga = fechaCarga;
         this.estado = estado;
         this.formato = formato;
         this.etiqueta = etiqueta;
-        this.rutaArchivo = rutaArchivo;
+        this.archivoDocumento = archivoDocumento;
         this.persona = persona;
         this.contrato = contrato;
         this.creador = creador;
