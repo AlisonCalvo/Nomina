@@ -108,7 +108,7 @@ export class CrearContratoComponent implements OnInit {
     numeroPagos: 0,
     fechaInicioContrato: new Date(),
     fechaFinContrato: new Date(),
-    estado: false,
+    estado: true,
     contratoPdf: '',
     firmado: false,
     creador: '',
@@ -251,14 +251,14 @@ export class CrearContratoComponent implements OnInit {
           attributes: {
             'class': 'modern-input'
           },
-          min: 0,
+          min: 1,
           max: 2147483647,
           step: 1
         },
         validation: {
           messages: {
             required: 'El número de pagos es obligatorio.',
-            min: 'El número de pagos debe ser mayor o igual a 0.',
+            min: 'El número de pagos debe ser mayor a 0.',
             max: 'El número de pagos es demasiado grande.'
           }
         }
@@ -353,10 +353,12 @@ export class CrearContratoComponent implements OnInit {
           multiple: true,
           required: true,
           accept: '.pdf, .doc, .xls',
+          maxFileSize: 5 * 1024 * 1024,
         },
         validation: {
           messages: {
-            required: 'El archivo del contrato es obligatorio.'
+            required: 'El archivo del contrato es obligatorio.',
+            maxFileSize: 'El archivo debe tener un tamaño inferior a 5MB'
           }
         }
       },

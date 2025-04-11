@@ -64,6 +64,24 @@ public class PersonaDTO {
     private String nacionalidad;
 
     /**
+     * Campo que representa documentosFormacionAcademica
+     */
+    private String documentosFormacionAcademica;
+
+
+    /**
+     * Campo que representa documentosLegales
+     */
+    private String documentosLegales;
+
+
+    /**
+     * Campo que representa certificacionesLaborales
+     */
+    private String certificacionesLaborales;
+
+
+    /**
      * Representa la relación  con la entidad proyecto
      * Este campo representa una colección de elementos.
      */

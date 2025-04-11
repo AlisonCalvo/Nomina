@@ -510,13 +510,14 @@ export class CrearProyectoComponent implements OnInit {
           label: 'Archivos Adicionales',
           placeholder: 'Seleccione archivos adicionales',
           required: false,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          },
           multiple: true,
-          accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'
+          accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png',
+          maxFileSize: 5 * 1024 * 1024
+        },
+        validation: {
+          messages: {
+            maxFileSize: 'El tamaño de los archivos no puede exceder 5MB'
+          }
         }
       }
     ];

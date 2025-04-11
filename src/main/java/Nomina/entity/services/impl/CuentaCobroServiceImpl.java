@@ -40,7 +40,10 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
     private static final Logger log = LoggerFactory.getLogger(CuentaCobroServiceImpl.class);
 
     @Autowired
-    private HibernateFilterActivator filterActivator;     /** Repositorio para acceder a los datos de la entidad */
+    private HibernateFilterActivator filterActivator;
+    /**
+     * Repositorio para acceder a los datos de la entidad
+     */
     private final CuentaCobroRepository repository;
 
     @Autowired
@@ -54,6 +57,7 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
 
     /**
      * Constructor que inicializa el servicio con su repositorio correspondiente.
+     *
      * @param repository Repositorio para la entidad CuentaCobro
      */
     @Autowired
@@ -80,7 +84,7 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
         }
 
         //Si no es ADMIN/GERENTE, aplicar filtros
-       return repository.findByUsuario(usuarioActual, esContador, esAdminGerente);
+        return repository.findByUsuario(usuarioActual, esContador, esAdminGerente);
     }
 
 
@@ -125,7 +129,7 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
         try {
             // Buscar la entidad existente
             CuentaCobro cuentaCobro = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No se encontró la entidad CuentaCobro con ID: " + id));
+                    .orElseThrow(() -> new RuntimeException("No se encontró la entidad CuentaCobro con ID: " + id));
 
             // Verificar el estado actual del pago para saber si necesitaremos enviar notificación
             boolean pagoPrevio = cuentaCobro.isPago();
@@ -149,6 +153,7 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
             cuentaCobro.setFirmaGerente(dto.getFirmaGerente());
             cuentaCobro.setFirmaContratista(dto.getFirmaContratista());
             cuentaCobro.setPeriodoACobrar(dto.getPeriodoACobrar());
+            cuentaCobro.setObservaciones(dto.getObservaciones());
 
             // Verificar si el estado cambió a aprobado
             if (!estadoAnterior && cuentaCobro.isEstado()) {
@@ -158,7 +163,7 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
             // Manejar el contrato - Si el DTO tiene un contrato, lo usamos; de lo contrario, mantenemos el actual
             if (dto.getContrato() != null && dto.getContrato().getId() > 0) {
                 Contrato contrato = contratoRepository.findById(dto.getContrato().getId())
-                    .orElse(contratoActual);
+                        .orElse(contratoActual);
                 cuentaCobro.setContrato(contrato);
             } else {
                 cuentaCobro.setContrato(contratoActual);
@@ -225,13 +230,13 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
             // Agregar información de la cuenta de cobro
             rootNode.put("ID Cuenta Cobro", String.valueOf(cuentaCobro.getId()));
             rootNode.put("Fecha", cuentaCobro.getFecha() != null ?
-                cuentaCobro.getFecha().toString() : "No disponible");
+                    cuentaCobro.getFecha().toString() : "No disponible");
             rootNode.put("Valor", String.valueOf(cuentaCobro.getMontoCobrar()));
 
             // Agregar información del contrato
             rootNode.put("Contrato ID", String.valueOf(contrato.getId()));
             rootNode.put("Tipo Contrato", contrato.getTipoContrato() != null ?
-                contrato.getTipoContrato().getNombreTipoContrato() : "No disponible");
+                    contrato.getTipoContrato().getNombreTipoContrato() : "No disponible");
 
             // Agregar información de la persona
             rootNode.put("Nombre", persona.getNombre());
@@ -242,9 +247,9 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
 
             // Enviar el email de manera asíncrona
             CompletableFuture<String> future = notificacionEmailService.sendNotificationEmailAsync(
-                email,
-                "Notificación de Pago Realizado - Cuenta Cobro #" + cuentaCobro.getId(),
-                rootNode);
+                    email,
+                    "Notificación de Pago Realizado - Cuenta Cobro #" + cuentaCobro.getId(),
+                    rootNode);
 
             // Registrar el resultado del envío
             future.thenAccept(result -> {
@@ -275,45 +280,43 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
         Optional<CuentaCobro> optional = repository.findById(id);
         if (optional.isEmpty()) {
             throw new RuntimeException("CuentaCobro no encontrada con id: " + id);
+        }
 
+        CuentaCobro entity = optional.get();
 
-            //Se guardan ahora como imagenes en un base64 en la base de datos,
-            // entonces ya no se requiere eliminacion de archivos
-//        CuentaCobro entity = optional.get();
-//
-//        List<String> filePaths = new ArrayList<>();
-//
-//        if (entity.getFirmaContratista() != null) {
-//            String[] contratistaPaths = entity.getFirmaContratista().split(",");
-//            for (String path : contratistaPaths) {
-//                path = path.trim();
-//                if (!path.isEmpty()) {
-//                    filePaths.add(path);
-//                }
-//            }
-//        }
-//
-//        if (entity.getFirmaGerente() != null) {
-//            String[] gerentePaths = entity.getFirmaGerente().split(",");
-//            for (String path : gerentePaths) {
-//                path = path.trim();
-//                if (!path.isEmpty()) {
-//                    filePaths.add(path);
-//                }
-//            }
-//        }
-//
-//        for (String filePathString : filePaths) {
-//            try {
-//                Path filePath = Path.of(filePathString).toAbsolutePath().normalize();
-//                Path uploadsDir = Path.of("uploads").toAbsolutePath().normalize();
-//                if (filePath.startsWith(uploadsDir)) {
-//
-//                    Files.deleteIfExists(filePath);
-//                }
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
+        List<String> filePaths = new ArrayList<>();
+
+        if (entity.getFirmaContratista() != null) {
+            String[] contratistaPaths = entity.getFirmaContratista().split(",");
+            for (String path : contratistaPaths) {
+                path = path.trim();
+                if (!path.isEmpty()) {
+                    filePaths.add(path);
+                }
+            }
+        }
+
+        if (entity.getFirmaGerente() != null) {
+            String[] gerentePaths = entity.getFirmaGerente().split(",");
+            for (String path : gerentePaths) {
+                path = path.trim();
+                if (!path.isEmpty()) {
+                    filePaths.add(path);
+                }
+            }
+        }
+
+        for (String filePathString : filePaths) {
+            try {
+                Path filePath = Path.of(filePathString).toAbsolutePath().normalize();
+                Path uploadsDir = Path.of("uploads").toAbsolutePath().normalize();
+                if (filePath.startsWith(uploadsDir)) {
+
+                    Files.deleteIfExists(filePath);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         repository.deleteById(id);
     }
@@ -334,5 +337,4 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
     public List<CuentaCobro> findByInforme(Informe informe) {
         return repository.findByInforme(informe);
     }
-
 }

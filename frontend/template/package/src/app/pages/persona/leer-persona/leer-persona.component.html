@@ -66,6 +66,27 @@
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Nacionalidad</th>
         <td mat-cell *matCellDef="let element">{{element.nacionalidad}}</td>
       </ng-container>
+      <ng-container matColumnDef="documentosFormacionAcademica">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Documentos Formación Académica</th>
+        <td mat-cell *matCellDef="let element">
+          <button mat-button color="accent" style="display: inline-flex; align-items: center; gap: 6px;" (click)="onShowDocumentosFormacionAcademica(element)" matTooltip="Ver Documentos Formacion Academica">
+            <mat-icon>folder</mat-icon><strong>Archivos</strong>
+          </button></td>
+      </ng-container>
+      <ng-container matColumnDef="documentosLegales">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Documentos Legales</th>
+        <td mat-cell *matCellDef="let element">
+          <button mat-button color="accent" style="display: inline-flex; align-items: center; gap: 6px;" (click)="onShowDocumentosLegales(element)" matTooltip="Ver Documentos Legales">
+            <mat-icon>folder</mat-icon><strong>Archivos</strong>
+          </button></td>
+      </ng-container>
+      <ng-container matColumnDef="certificacionesLaborales">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Certificaciones Laborales</th>
+        <td mat-cell *matCellDef="let element">
+          <button mat-button color="accent" style="display: inline-flex; align-items: center; gap: 6px;" (click)="onShowCertificacionesLaborales(element)" matTooltip="Ver Certificaciones Laborales">
+            <mat-icon>folder</mat-icon><strong>Archivos</strong>
+          </button></td>
+      </ng-container>
       <ng-container matColumnDef="creador">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Creador</th>
         <td mat-cell *matCellDef="let element">{{ element.nombre }}</td>
@@ -91,6 +112,9 @@
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef>Acciones</th>
         <td mat-cell *matCellDef="let element">
+          <button mat-icon-button color="accent" (click)="onDownload(element)" matTooltip="Descargar Archivos">
+            <mat-icon>file_download</mat-icon>
+          </button>
           <button mat-icon-button color="primary" (click)="onEdit(element)" matTooltip="Modificar">
             <mat-icon>edit</mat-icon>
           </button>

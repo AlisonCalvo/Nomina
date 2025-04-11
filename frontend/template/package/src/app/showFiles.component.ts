@@ -22,11 +22,6 @@ import { MatListModule } from '@angular/material/list';
     <h1 mat-dialog-title>{{ data.title || 'Archivos disponibles' }}</h1>
 
     <div mat-dialog-content>
-      <!-- Caso para imágenes base64 -->
-      <div *ngIf="isImageMode" class="image-container">
-        <img [src]="imageSrc" alt="Imagen" class="preview-image">
-      </div>
-
       <!-- Caso para lista de archivos -->
       <div *ngIf="!isImageMode">
         <mat-list>

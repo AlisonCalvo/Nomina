@@ -99,7 +99,7 @@ registerLocaleData(localeEs);
 export class LeerCuentaCobroComponent implements OnInit {
   mostrarBotonEliminar: boolean;
   // Columnas que se mostrarán en la tabla
-  displayedColumns: string[] = ['id', 'montoCobrar', 'periodoACobrar', 'fecha', 'estado','fechaAprobacion', 'numeroCuenta', 'detalle', 'pago', 'notificacionPago', 'firmaGerente', 'firmaContratista', 'creador', 'contrato', 'acciones'];
+  displayedColumns: string[] = ['id', 'montoCobrar', 'numeroCuentaCobro', 'periodoACobrar', 'fecha', 'estado','fechaAprobacion', 'numeroCuenta', 'detalle', 'pago', 'notificacionPago', 'firmaGerente', 'firmaContratista', 'planillaSeguridadSocial', 'creador', 'contrato', 'observaciones', 'acciones'];
 
   // Array para almacenar los datos de la entidad
   cuentacobros: CuentaCobroComponent[] = [];
@@ -502,22 +502,18 @@ export class LeerCuentaCobroComponent implements OnInit {
     return collection.map(item => this.generateSummary(item)).join('; ');
  }
 
-  onAlerta() {
-    // Implementar funcionalidad
-    this.showMessage('Funcionalidad no implementada', 'error');
-  }
-
   onShowFirmaGerente(element: any): void {
-    if (!element.firmaGerente) {
-      this.showMessage('No hay firma del gerente disponible', 'error');
+    const rawPaths = element.firmaGerente;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos de firma de gerente.', 'error');
       return;
     }
-
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
     this.dialog.open(ShowFilesListComponent, {
-      width: '600px',
-      maxHeight: '90vh',
+      width: '500px',
       data: {
-        files: [element.firmaGerente], // Pasar como array para mantener compatibilidad
+        files: files,
         title: 'Firma del Gerente'
       }
     });
@@ -525,17 +521,35 @@ export class LeerCuentaCobroComponent implements OnInit {
 
 
   onShowFirmaContratista(element: any): void {
-    if (!element.firmaContratista) {
-      this.showMessage('No hay firma del contratista disponible', 'error');
+    const rawPaths = element.firmaContratista;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos de firma de contratista.', 'error');
       return;
     }
-
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
     this.dialog.open(ShowFilesListComponent, {
-      width: '600px',
-      maxHeight: '90vh',
+      width: '500px',
       data: {
-        files: [element.firmaContratista],
+        files: files,
         title: 'Firma del Contratista'
+      }
+    });
+  }
+
+  onShowPlanillaSeguridadSocial(element: any): void {
+    const rawPaths = element.planillaSeguridadSocial;
+    if (!rawPaths) {
+      this.showMessage('No hay archivos de planilla de seguridad social.', 'error');
+      return;
+    }
+    let files = rawPaths.split(',').map((path: string) => path.trim());
+    files = files.map((path: string) => this.extractFileName(path));
+    this.dialog.open(ShowFilesListComponent, {
+      width: '500px',
+      data: {
+        files: files,
+        title: 'Planilla de Seguridad Social'
       }
     });
   }

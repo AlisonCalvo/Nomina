@@ -1,4 +1,9 @@
 <div class="page-container" style="max-height: calc(100vh - 100px); overflow-y: auto;">
+  <!-- Spinner de carga -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner></mat-spinner>
+    <p>Cargando, por favor espere...</p>
+  </div>
   <!-- Welcome Section -->
   <mat-card class="welcome-section">
     <mat-card-content>

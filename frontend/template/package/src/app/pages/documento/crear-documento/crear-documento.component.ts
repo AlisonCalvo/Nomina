@@ -257,7 +257,7 @@ export class CrearDocumentoComponent implements OnInit {
         validation: {
           messages: {
             required: 'El archivo del documento  es obligatorio.',
-            maxFileSize: 'El archivo debe tener un tamaño inferior a 5MB'
+            maxFileSize: 'El tamaño del archivo no puede exceder 5MB'
           }
         }
       },

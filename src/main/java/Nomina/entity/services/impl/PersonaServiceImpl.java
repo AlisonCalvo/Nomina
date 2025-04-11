@@ -1,4 +1,7 @@
 package Nomina.entity.services.impl;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 import java.util.Optional;
@@ -116,6 +119,9 @@ public class PersonaServiceImpl implements PersonaService {
         persona.setFechaExpedicion(dto.getFechaExpedicion());
         persona.setFechaNacimiento(dto.getFechaNacimiento());
         persona.setNacionalidad(dto.getNacionalidad());
+        persona.setDocumentosFormacionAcademica(dto.getDocumentosFormacionAcademica());
+        persona.setDocumentosLegales(dto.getDocumentosLegales());
+        persona.setCertificacionesLaborales(dto.getCertificacionesLaborales());
         persona.setTipoDocumento(dto.getTipoDocumento());
         persona.setCreador(dto.getCreador());
 
@@ -246,6 +252,9 @@ public class PersonaServiceImpl implements PersonaService {
         persona.setFechaExpedicion(dto.getFechaExpedicion());
         persona.setFechaNacimiento(dto.getFechaNacimiento());
         persona.setNacionalidad(dto.getNacionalidad());
+        persona.setDocumentosFormacionAcademica(dto.getDocumentosFormacionAcademica());
+        persona.setDocumentosLegales(dto.getDocumentosLegales());
+        persona.setCertificacionesLaborales(dto.getCertificacionesLaborales());
         persona.setTipoDocumento(dto.getTipoDocumento());
         persona.setCreador(dto.getCreador());
 
@@ -372,6 +381,58 @@ public class PersonaServiceImpl implements PersonaService {
      */
     @Override
     public void deleteById(Long id) {
+
+        Optional<Persona> optional = repository.findById(id);
+        if (optional.isEmpty()) {
+            throw new RuntimeException("Contrato no encontrado con id: " + id);
+        }
+
+        Persona entity = optional.get();
+
+        List<String> filePaths = new ArrayList<>();
+
+        if (entity.getDocumentosFormacionAcademica() != null) {
+            String[] contratistaPaths = entity.getDocumentosFormacionAcademica().split(",");
+            for (String path : contratistaPaths) {
+                path = path.trim();
+                if (!path.isEmpty()) {
+                    filePaths.add(path);
+                }
+            }
+        }
+
+        if (entity.getDocumentosLegales() != null) {
+            String[] contratistaPaths = entity.getDocumentosLegales().split(",");
+            for (String path : contratistaPaths) {
+                path = path.trim();
+                if (!path.isEmpty()) {
+                    filePaths.add(path);
+                }
+            }
+        }
+
+        if (entity.getCertificacionesLaborales() != null) {
+            String[] contratistaPaths = entity.getCertificacionesLaborales().split(",");
+            for (String path : contratistaPaths) {
+                path = path.trim();
+                if (!path.isEmpty()) {
+                    filePaths.add(path);
+                }
+            }
+        }
+
+        for (String filePathString : filePaths) {
+            try {
+                Path filePath = Path.of(filePathString).toAbsolutePath().normalize();
+                Path uploadsDir = Path.of("uploads").toAbsolutePath().normalize();
+                if (filePath.startsWith(uploadsDir)) {
+                    Files.deleteIfExists(filePath);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         repository.deleteById(id);
     }
 
