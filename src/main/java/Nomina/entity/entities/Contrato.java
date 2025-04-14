@@ -149,7 +149,7 @@ public class Contrato implements Serializable {
      * Tipo de relación: Many to One
      */
     @ManyToOne
-	@JoinColumn(name = "proyecto")
+    @JoinColumn(name = "proyecto", nullable = true)
     private Proyecto proyecto;
 
     /**

@@ -55,12 +55,6 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
     @Autowired
     private ContratoRepository contratoRepository;
 
-    @Autowired
-    private NotificacionEmailServiceImpl notificacionEmailService;
-
-    @Autowired
-    private ContratoRepository contratoRepository;
-
     /**
      * Constructor que inicializa el servicio con su repositorio correspondiente.
      *

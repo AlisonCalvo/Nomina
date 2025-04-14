@@ -519,40 +519,6 @@ export class CrearProyectoComponent implements OnInit {
             maxFileSize: 'El tamaño de los archivos no puede exceder 5MB'
           }
         }
-      },
-      {
-        key: 'observaciones',
-        type: 'textarea',
-        className: 'field-container',
-        templateOptions: {
-          label: 'Observaciones',
-          placeholder: 'Ingrese observaciones adicionales del proyecto',
-          required: false,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          },
-          rows: 3,
-          maxLength: 500
-        }
-      },
-      {
-        key: 'archivosAdicionales',
-        type: 'file',
-        className: 'field-container',
-        templateOptions: {
-          label: 'Archivos Adicionales',
-          placeholder: 'Seleccione archivos adicionales',
-          required: false,
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          },
-          multiple: true,
-          accept: '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png'
-        }
       }
     ];
 

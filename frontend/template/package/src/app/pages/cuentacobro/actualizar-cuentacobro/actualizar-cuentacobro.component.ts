@@ -613,23 +613,23 @@ export class ActualizarCuentaCobroComponent implements OnInit {
   onSubmit() {
     // 1. Acciones previas
     try {
-    this.preUpdate(this.model);
+      this.preUpdate(this.model);
     } catch (error) {
       console.error('Error en preUpdate:', error);
       this.isLoading = false;
       return;
     }
 
-    const modelData = { ...this.model,};
+    const modelData = {...this.model,};
     this.isLoading = true;
 
     // Convertir ID a objetos para las relaciones
     if (modelData.contrato) {
-      modelData.contrato = { id: modelData.contrato };
+      modelData.contrato = {id: modelData.contrato};
     }
 
     if (modelData.informe) {
-      modelData.informe = { id: modelData.informe };
+      modelData.informe = {id: modelData.informe};
     }
 
     // Validar las firmas según el rol del usuario
@@ -644,82 +644,83 @@ export class ActualizarCuentaCobroComponent implements OnInit {
         this.isLoading = false;
         return;
       }
-    // Limpiar valor de monto a cobrar si es necesario (convertir de formato moneda a número)
-    if (typeof modelData.montoCobrar === 'string') {
-      const cleanedValue = (modelData.montoCobrar as string).replace(/[^\d]/g, '');
-      modelData.montoCobrar = cleanedValue ? Number(cleanedValue) : 0;
-    }
-    console.log("datos de model: \n" + modelData)
-
-
-    const uploadOperations: Observable<void>[] = [];
-    const fileFields: (keyof CuentaCobroModel)[] = ['firmaGerente','firmaContratista', 'planillaSeguridadSocial'];
-
-    const handleFileUpload = (field: keyof CuentaCobroModel) => {
-      const files = this.model[field];
-
-      if (Array.isArray(files) && files.length > 0) {
-        const upload$ = this.cuentacobroService.uploadFiles(files).pipe(
-          switchMap(rutas => {
-            // @ts-ignore
-            modelData[field] = rutas.join(',');
-            return of(undefined);
-          }),
-          catchError(error => {
-            this.handleUploadError(field as string, error);
-            return throwError(error);
-          })
-        );
-        uploadOperations.push(upload$);
-      } else if (files instanceof File) {
-        const upload$ = this.cuentacobroService.uploadFile(files).pipe(
-          switchMap(ruta => {
-            // @ts-ignore
-            modelData[field] = ruta;
-            return of(undefined);
-          }),
-          catchError(error => {
-            this.handleUploadError(field as string, error);
-            return throwError(error);
-          })
-        );
-        uploadOperations.push(upload$);
+      // Limpiar valor de monto a cobrar si es necesario (convertir de formato moneda a número)
+      if (typeof modelData.montoCobrar === 'string') {
+        const cleanedValue = (modelData.montoCobrar as string).replace(/[^\d]/g, '');
+        modelData.montoCobrar = cleanedValue ? Number(cleanedValue) : 0;
       }
-    };
+      console.log("datos de model: \n" + modelData)
 
-    fileFields.forEach(field => handleFileUpload(field));
 
-    if (uploadOperations.length > 0) {
-      forkJoin(uploadOperations).subscribe({
-        next: () => this.updateEntity(modelData),
-        error: () => this.isLoading = false
-      });
-    } else {
+      const uploadOperations: Observable<void>[] = [];
+      const fileFields: (keyof CuentaCobroModel)[] = ['firmaGerente', 'firmaContratista', 'planillaSeguridadSocial'];
+
+      const handleFileUpload = (field: keyof CuentaCobroModel) => {
+        const files = this.model[field];
+
+        if (Array.isArray(files) && files.length > 0) {
+          const upload$ = this.cuentacobroService.uploadFiles(files).pipe(
+            switchMap(rutas => {
+              // @ts-ignore
+              modelData[field] = rutas.join(',');
+              return of(undefined);
+            }),
+            catchError(error => {
+              this.handleUploadError(field as string, error);
+              return throwError(error);
+            })
+          );
+          uploadOperations.push(upload$);
+        } else if (files instanceof File) {
+          const upload$ = this.cuentacobroService.uploadFile(files).pipe(
+            switchMap(ruta => {
+              // @ts-ignore
+              modelData[field] = ruta;
+              return of(undefined);
+            }),
+            catchError(error => {
+              this.handleUploadError(field as string, error);
+              return throwError(error);
+            })
+          );
+          uploadOperations.push(upload$);
+        }
+      };
+
+      fileFields.forEach(field => handleFileUpload(field));
+
+      if (uploadOperations.length > 0) {
+        forkJoin(uploadOperations).subscribe({
+          next: () => this.updateEntity(modelData),
+          error: () => this.isLoading = false
+        });
+      } else {
+        this.updateEntity(modelData);
+        console.log(modelData)
+      }
+
+      // Validar la firma del contratista solo si el usuario no es GERENTE ni CONTADOR
+      // o si es ADMINISTRADOR (que puede editar todo)
+      if (!this.authService.tieneRoles(['GERENTE', 'CONTADOR']) || this.authService.tieneRoles(['ADMINISTRADOR'])) {
+        if (!modelData.firmaContratista || typeof modelData.firmaContratista !== 'string') {
+          this.snackBar.open('La firma del contratista es obligatoria y debe ser una imagen válida', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['error-snackbar']
+          });
+          this.isLoading = false;
+          return;
+        }
+      }
+
+      // Limpiar valor de monto a cobrar si es necesario (convertir de formato moneda a número)
+      if (typeof modelData.montoCobrar === 'string') {
+        const cleanedValue = (modelData.montoCobrar as string).replace(/[^\d]/g, '');
+        modelData.montoCobrar = cleanedValue ? Number(cleanedValue) : 0;
+      }
+
+      // Actualizar la entidad
       this.updateEntity(modelData);
-      console.log(modelData)
     }
-
-    // Validar la firma del contratista solo si el usuario no es GERENTE ni CONTADOR
-    // o si es ADMINISTRADOR (que puede editar todo)
-    if (!this.authService.tieneRoles(['GERENTE', 'CONTADOR']) || this.authService.tieneRoles(['ADMINISTRADOR'])) {
-      if (!modelData.firmaContratista || typeof modelData.firmaContratista !== 'string') {
-        this.snackBar.open('La firma del contratista es obligatoria y debe ser una imagen válida', 'Cerrar', {
-      duration: 3000,
-      panelClass: ['error-snackbar']
-    });
-    this.isLoading = false;
-        return;
-      }
-    }
-
-    // Limpiar valor de monto a cobrar si es necesario (convertir de formato moneda a número)
-    if (typeof modelData.montoCobrar === 'string') {
-      const cleanedValue = (modelData.montoCobrar as string).replace(/[^\d]/g, '');
-      modelData.montoCobrar = cleanedValue ? Number(cleanedValue) : 0;
-    }
-
-    // Actualizar la entidad
-    this.updateEntity(modelData);
   }
 
   private updateEntity(modelData: any) {
@@ -761,7 +762,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
 
       if (Array.isArray(newValue) && Array.isArray(originalValue)) {
         if (newValue.length !== originalValue.length ||
-            newValue.some((item, index) => item.id !== originalValue[index]?.id)) {
+          newValue.some((item, index) => item.id !== originalValue[index]?.id)) {
           return true; // Cambios en arrays
         }
       } else if (newValue !== originalValue) {
@@ -867,6 +868,15 @@ export class ActualizarCuentaCobroComponent implements OnInit {
     };
 
     reader.readAsDataURL(file);
+  }
+
+  private handleUploadError(field: string, error: any) {
+    console.error(`Error subiendo archivos en ${field}:`, error);
+    this.snackBar.open(`Error subiendo ${field}`, 'Cerrar', {
+      duration: 3000,
+      panelClass: ['error-snackbar']
+    });
+    this.isLoading = false;
   }
 
 }

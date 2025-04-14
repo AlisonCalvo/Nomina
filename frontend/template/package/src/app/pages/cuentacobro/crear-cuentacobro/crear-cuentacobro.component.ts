@@ -510,31 +510,6 @@ export class CrearCuentaCobroComponent implements OnInit {
 
     this.isLoading = true;
 
-    // Validar la firma del gerente solo si se ha proporcionado una y el usuario es ADMINISTRADOR o GERENTE
-    if (this.authService.tieneRoles(['ADMINISTRADOR', 'GERENTE'])) {
-      if (modelData.firmaGerente && (typeof modelData.firmaGerente !== 'string' || !modelData.firmaGerente.startsWith('data:image'))) {
-        this.snackBar.open('La firma del gerente debe ser una imagen válida', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['error-snackbar']
-        });
-        this.isLoading = false;
-        return;
-      }
-    }
-
-    // Validar la firma del contratista solo si el usuario no es GERENTE ni CONTADOR
-    // o si es ADMINISTRADOR (que puede editar todo)
-    if (!this.authService.tieneRoles(['GERENTE', 'CONTADOR']) || this.authService.tieneRoles(['ADMINISTRADOR'])) {
-      if (typeof modelData.firmaContratista !== 'string' || !modelData.firmaContratista.startsWith('data:image')) {
-        this.snackBar.open('La firma del contratista debe ser una imagen válida', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['error-snackbar']
-        });
-        this.isLoading = false;
-        return;
-      }
-    }
-
     // Limpiar valor de monto a cobrar para guardar solo el número
     if (modelData.montoCobrar) {
       const cleanedValue = String(modelData.montoCobrar)
