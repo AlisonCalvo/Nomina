@@ -276,7 +276,12 @@ export class CrearDocumentoComponent implements OnInit {
           },
           options: [],
           valueProp: 'id',
-          labelProp: 'nombre'
+          labelProp: 'nombre',
+          change: (field, event) => {
+            if (event.value) {
+              this.loadContratosByPersona(event.value);
+            }
+          }
         },
         validation: {
           messages: {
@@ -310,7 +315,20 @@ export class CrearDocumentoComponent implements OnInit {
     ];
 
     this.loadPersonaOptions();
-    this.loadContratoOptions();
+  }
+
+  private loadContratosByPersona(personaId: number) {
+    this.contratoService.findByPersonaId(personaId).subscribe(
+      data => {
+        const field = this.fields.find(f => f.key === 'contrato');
+        if (field && field.templateOptions) {
+          field.templateOptions.options = data;
+          // Resetear el valor del contrato cuando cambia la persona
+          this.model.contrato = null;
+        }
+      },
+      error => console.error('Error al cargar contratos por persona:', error)
+    );
   }
 
   private loadPersonaOptions() {
@@ -322,18 +340,6 @@ export class CrearDocumentoComponent implements OnInit {
         }
       },
       error => console.error('Error al cargar persona:', error)
-    );
-  }
-
-  private loadContratoOptions() {
-    this.contratoService.findAll().subscribe(
-      data => {
-        const field = this.fields.find(f => f.key === 'contrato');
-        if (field && field.templateOptions) {
-          field.templateOptions.options = data;
-        }
-      },
-      error => console.error('Error al cargar contrato:', error)
     );
   }
 

@@ -113,4 +113,12 @@ public interface ContratoService {
 
     List<CuentaCobro> obtenerCuentasCobroPorContrato(String username,Long contratoId);
 
+    /**
+     * Obtiene los contratos asociados a una persona específica.
+     *
+     * @param personaId Identificador de la persona
+     * @return Lista de contratos asociados a la persona
+     */
+    List<Contrato> findByPersonaId(Long personaId);
+
 }

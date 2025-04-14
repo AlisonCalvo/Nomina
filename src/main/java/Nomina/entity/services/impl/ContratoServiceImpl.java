@@ -75,7 +75,17 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
             try {
                 java.lang.reflect.Field entityField = entity.getClass().getDeclaredField(field.getName());
                 entityField.setAccessible(true);
-                entityField.set(entity, field.get(dto));
+                Object value = field.get(dto);
+
+                // Manejar el caso especial del proyecto con ID -1
+                if (field.getName().equals("proyecto") && value != null) {
+                    Proyecto proyecto = (Proyecto) value;
+                    if (proyecto.getId() == -1) {
+                        value = null;
+                    }
+                }
+
+                entityField.set(entity, value);
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -239,5 +249,10 @@ private HibernateFilterActivator filterActivator;     /** Repositorio para acced
 
         // Devolver lista vacía si no se encuentra el contrato
         return new ArrayList<>();
+    }
+
+    @Override
+    public List<Contrato> findByPersonaId(Long personaId) {
+        return repository.findByPersonaId(personaId);
     }
 }
