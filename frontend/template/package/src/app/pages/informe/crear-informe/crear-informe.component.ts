@@ -216,11 +216,16 @@ export class CrearInformeComponent implements OnInit {
           change: (field, event) => {
             // Obtener el valor del proyecto seleccionado
             const value: number = field.formControl?.value;
-            this.loadContratoOptions(value);
+            if (value !== -1) { // Solo cargar contratos si no es "No aplica"
+              this.loadContratoOptions(value);
+            } else {
+              // Cargar contratos con "No aplica"
+              this.loadContratosNoAplica();
+            }
             console.log('Proyecto seleccionado:', value);
           },
           placeholder: 'Seleccione proyecto',
-          required: true,
+          required: false,
           appearance: 'outline',
           floatLabel: 'always',
           attributes: {
@@ -312,7 +317,7 @@ export class CrearInformeComponent implements OnInit {
   }
 
   private loadProyectoOptions() {
-// Obtener el ID de la persona desde el token
+    // Obtener el ID de la persona desde el token
     const personaId = this.authService.getPersonaId();
 
     if (personaId) {
@@ -321,7 +326,11 @@ export class CrearInformeComponent implements OnInit {
         data => {
           const field = this.fields.find(f => f.key === 'proyecto');
           if (field && field.templateOptions) {
-            field.templateOptions.options = data;
+            // Agregar la opción "No aplica" al inicio de la lista
+            field.templateOptions.options = [
+              { id: -1, nombre: 'No aplica' },
+              ...data
+            ];
           }
         },
         error => console.error('Error al cargar proyectos de la persona:', error)
@@ -351,6 +360,28 @@ export class CrearInformeComponent implements OnInit {
     }
   }
 
+  private loadContratosNoAplica() {
+    // Obtener el ID de la persona desde el token
+    const personaId = this.authService.getPersonaId();
+
+    if (personaId) {
+      // Llamamos al servicio para obtener contratos sin proyecto
+      this.contratoService.findVisibles(personaId).subscribe(
+        (data: any[]) => {
+          // Filtrar solo los contratos que no tienen proyecto
+          const contratosSinProyecto = data.filter((contrato: any) => !contrato.proyecto);
+          const field = this.fields.find(f => f.key === 'contrato');
+          if (field && field.templateOptions) {
+            field.templateOptions.options = contratosSinProyecto;
+          }
+        },
+        (error: any) => console.error('Error al cargar contratos sin proyecto:', error)
+      );
+    } else {
+      console.error('No se pudo obtener el ID de la persona');
+    }
+  }
+
   closeDialog(): void {
     this.dialogRef.close();
   }
@@ -363,8 +394,14 @@ export class CrearInformeComponent implements OnInit {
     const modelData = { ...this.model };
     this.isLoading = true;
 
+    // Solo asignar proyecto si no es "No aplica"
+    if (this.model.proyecto !== -1) {
+      modelData.proyecto = { id: this.model.proyecto };
+    } else {
+      modelData.proyecto = null;
+    }
+
     modelData.cuentaCobro = { id: this.model.cuentaCobro };
-    modelData.proyecto = { id: this.model.proyecto };
     modelData.contrato = { id: this.model.contrato };
 
     const uploadOperations: Observable<void>[] = [];

@@ -213,4 +213,11 @@ export class ContratoService {
     return this.httpClient.get<any>(url, {headers});
   }
 
+  // Método para obtener contratos por persona
+  findByPersonaId(personaId: number): Observable<Contrato[]> {
+    const url = `${this.baseUrl}/contratos/persona/${personaId}`;
+    const headers = new HttpHeaders().set('Accion', 'findAll').set('Objeto', 'Contrato');
+    return this.httpClient.get<Contrato[]>(url, {headers});
+  }
+
 }

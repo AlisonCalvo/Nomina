@@ -19,8 +19,6 @@ import Nomina.entity.services.ContratoService;
 import Nomina.entity.entities.Contrato;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Map;
-import java.util.Optional;
 import Nomina.entity.services.impl.NotificacionEmailServiceImpl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -142,6 +140,18 @@ public class ContratoController {
     public ResponseEntity<List<CuentaCobro>> obtenerCuentasCobroPorContrato(@PathVariable String username,@PathVariable Long contratoId) {
         List<CuentaCobro> cuentas = service.obtenerCuentasCobroPorContrato(username, contratoId);
         return ResponseEntity.ok(cuentas);
+    }
+
+    /**
+     * Obtiene los contratos asociados a una persona específica.
+     *
+     * @param personaId Identificador de la persona
+     * @return ResponseEntity con la lista de contratos asociados a la persona
+     */
+    @GetMapping("/persona/{personaId}")
+    public ResponseEntity<List<Contrato>> obtenerContratosPorPersona(@PathVariable Long personaId) {
+        List<Contrato> contratos = service.findByPersonaId(personaId);
+        return ResponseEntity.ok(contratos);
     }
 
     /**
