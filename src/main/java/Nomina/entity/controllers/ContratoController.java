@@ -143,6 +143,18 @@ public class ContratoController {
     }
 
     /**
+     * Obtiene los contratos asociados a una persona específica.
+     *
+     * @param personaId Identificador de la persona
+     * @return ResponseEntity con la lista de contratos asociados a la persona
+     */
+    @GetMapping("/persona/{personaId}")
+    public ResponseEntity<List<Contrato>> obtenerContratosPorPersona(@PathVariable Long personaId) {
+        List<Contrato> contratos = service.findByPersonaId(personaId);
+        return ResponseEntity.ok(contratos);
+    }
+
+    /**
      * Endpoint para obtener de los contratos el numero de pagos y la cantidad de cuentas de cobro que tiene asociadas
      * @param id
      * @return
