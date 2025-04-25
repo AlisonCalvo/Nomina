@@ -613,23 +613,23 @@ export class ActualizarCuentaCobroComponent implements OnInit {
   onSubmit() {
     // 1. Acciones previas
     try {
-    this.preUpdate(this.model);
+      this.preUpdate(this.model);
     } catch (error) {
       console.error('Error en preUpdate:', error);
       this.isLoading = false;
       return;
     }
 
-    const modelData = { ...this.model,};
+    const modelData = {...this.model,};
     this.isLoading = true;
 
     // Convertir ID a objetos para las relaciones
     if (modelData.contrato) {
-      modelData.contrato = { id: modelData.contrato };
+      modelData.contrato = {id: modelData.contrato};
     }
 
     if (modelData.informe) {
-      modelData.informe = { id: modelData.informe };
+      modelData.informe = {id: modelData.informe};
     }
 
     // Limpiar valor de monto a cobrar si es necesario (convertir de formato moneda a número)
