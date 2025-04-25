@@ -118,6 +118,38 @@ public class RoleServiceImpl implements RoleService {
 
             // Asignar los roles hijos al rol padre
             rolPadre.getRolesHijos().addAll(rolesHijos);
+
+            // Para cada rol hijo, copiar sus permisos al rol padre
+            for (Rol rolHijo : rolesHijos) {
+                // Obtener los permisos del rol hijo
+                List<AccionObjetoDTO> permisosHijo = getPermisosPorRolOUsuario(rolHijo.getId(), -1L);
+                
+                // Para cada permiso del rol hijo, crear o actualizar el permiso en el rol padre
+                for (AccionObjetoDTO permisoHijo : permisosHijo) {
+                    // Buscar el AccionObjeto correspondiente usando la acción y el objeto
+                    AccionObjeto accionObjeto = accionObjetoRepository.findByAccionNombreAndObjetoNombreObjeto(
+                        permisoHijo.getAccion(), 
+                        permisoHijo.getObjeto()
+                    ).orElseThrow(() -> new ObjectNotFoundException("Acción-Objeto no encontrada"));
+
+                    // Buscar si ya existe un privilegio para esta acción-objeto en el rol padre
+                    Optional<Privilegio> privilegioExistente = privilegioRepository.findByRolAndAccionObjeto(rolPadre, accionObjeto);
+                    
+                    if (privilegioExistente.isPresent()) {
+                        // Si existe, actualizar el estado de autorización
+                        Privilegio privilegio = privilegioExistente.get();
+                        privilegio.setAutorizado(privilegio.getAutorizado() || permisoHijo.isAutorizado());
+                        privilegioRepository.save(privilegio);
+                    } else {
+                        // Si no existe, crear uno nuevo
+                        Privilegio nuevoPrivilegio = new Privilegio();
+                        nuevoPrivilegio.setRol(rolPadre);
+                        nuevoPrivilegio.setAccionObjeto(accionObjeto);
+                        nuevoPrivilegio.setAutorizado(permisoHijo.isAutorizado());
+                        privilegioRepository.save(nuevoPrivilegio);
+                    }
+                }
+            }
         }
 
         // Guardar el rol padre con sus hijos

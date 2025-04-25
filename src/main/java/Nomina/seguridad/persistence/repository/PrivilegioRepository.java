@@ -1,6 +1,8 @@
 package Nomina.seguridad.persistence.repository;
 
 import Nomina.seguridad.persistence.entities.Privilegio;
+import Nomina.seguridad.persistence.entities.Rol;
+import Nomina.seguridad.persistence.entities.AccionObjeto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PrivilegioRepository extends JpaRepository<Privilegio, Long> {
@@ -35,4 +38,6 @@ public interface PrivilegioRepository extends JpaRepository<Privilegio, Long> {
     @Modifying
     @Query("DELETE FROM Privilegio p WHERE p.rol.id = :rolId")
     void deleteByRolId(@Param("rolId") Long rolId);
+
+    Optional<Privilegio> findByRolAndAccionObjeto(Rol rol, AccionObjeto accionObjeto);
 }

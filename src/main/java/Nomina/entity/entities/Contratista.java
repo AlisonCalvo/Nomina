@@ -17,7 +17,6 @@ public class Contratista extends Persona {
     private String numeroTarjetaProfesional;
     private String experienciaProfesional;
     private String telefonoAdicional;
-    private String firmaDigital;
 
     public Contratista() {}
 }

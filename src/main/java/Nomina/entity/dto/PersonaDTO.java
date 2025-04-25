@@ -125,6 +125,5 @@ public class PersonaDTO {
     private String experienciaProfesional; // Para Gerente y Contratista
     private String numeroTarjetaProfesional; // Para Contratista y Contador
     private String telefonoAdicional; // Solo para Contratista
-    private String firmaDigital; // Solo para Contratista
 
 }

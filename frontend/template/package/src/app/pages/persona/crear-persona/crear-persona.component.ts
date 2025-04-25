@@ -598,18 +598,6 @@ export class CrearPersonaComponent implements OnInit {
         hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA' && model.tipoPersona !== 'CONTADOR'
       },
       {
-        key: 'firmaDigital',
-        type: 'input',
-        className: 'field-container',
-        templateOptions: {
-          label: 'firmaDigital',
-          placeholder: 'Ingrese firmaDigital',
-          appearance: 'outline',
-          floatLabel: 'always'
-        },
-        hideExpression: (model) => model.tipoPersona !== 'CONTRATISTA'
-      },
-      {
         key: 'necesitaAcceso',
         type: 'checkbox',
         templateOptions: {

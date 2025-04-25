@@ -77,7 +77,6 @@ export interface PersonaDTO {
   experienciaProfesional?: string;
   numeroTarjetaProfesional?: string;
   telefonoAdicional?: string;
-  firmaDigital?: string;
 }
 
 /**
