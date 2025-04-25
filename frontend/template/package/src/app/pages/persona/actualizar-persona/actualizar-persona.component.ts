@@ -62,7 +62,6 @@ interface PersonaModel {
   experienciaProfesional?: string | null;
   numeroTarjetaProfesional?: string | null;
   telefonoAdicional?: string | null;
-  firmaDigital?: string | null;
 }
 
 /**
@@ -193,7 +192,6 @@ export class ActualizarPersonaComponent implements OnInit {
           experienciaProfesional: this.data.experienciaProfesional,
           numeroTarjetaProfesional: this.data.numeroTarjetaProfesional,
           telefonoAdicional: this.data.telefonoAdicional,
-          firmaDigital: this.data.firmaDigital,
         };
 
         // Copia del modelo original para detectar cambios
@@ -220,7 +218,6 @@ export class ActualizarPersonaComponent implements OnInit {
           experienciaProfesional: this.data.experienciaProfesional,
           numeroTarjetaProfesional: this.data.numeroTarjetaProfesional,
           telefonoAdicional: this.data.telefonoAdicional,
-          firmaDigital: this.data.firmaDigital,
         };
       } catch (error) {
         console.error('Error al procesar datos:', error);
@@ -355,17 +352,14 @@ export class ActualizarPersonaComponent implements OnInit {
               this.model.experienciaProfesional = this.model.experienciaProfesional || '';
               this.model.numeroTarjetaProfesional = null;
               this.model.telefonoAdicional = null;
-              this.model.firmaDigital = null;
             } else if (field.formControl?.value === 'CONTRATISTA') {
               this.model.experienciaProfesional = this.model.experienciaProfesional || '';
               this.model.numeroTarjetaProfesional = this.model.numeroTarjetaProfesional || '';
               this.model.telefonoAdicional = this.model.telefonoAdicional || '';
-              this.model.firmaDigital = this.model.firmaDigital || '';
             } else if (field.formControl?.value === 'CONTADOR') {
               this.model.experienciaProfesional = null;
               this.model.numeroTarjetaProfesional = this.model.numeroTarjetaProfesional || '';
               this.model.telefonoAdicional = null;
-              this.model.firmaDigital = null;
             }
           }
         },
@@ -800,29 +794,6 @@ export class ActualizarPersonaComponent implements OnInit {
         }
       },
       {
-        key: 'firmaDigital',
-        type: 'input',
-        className: 'field-container',
-        templateOptions: {
-          label: 'Firma Digital',
-          placeholder: 'Ingrese firma digital',
-          appearance: 'outline',
-          floatLabel: 'always',
-          attributes: {
-            'class': 'modern-input'
-          },
-        },
-        validation: {
-          messages: {
-            required: 'La firma digital es obligatoria para contratistas.'
-          }
-        },
-        hideExpression: (model: any) => model.tipoPersona !== 'CONTRATISTA',
-        expressionProperties: {
-          'templateOptions.required': 'model.tipoPersona === "CONTRATISTA"',
-        }
-      },
-      {
         key: 'creador',
         type: 'input',
         className: 'field-container',
@@ -915,20 +886,17 @@ export class ActualizarPersonaComponent implements OnInit {
       // Quitar campos no aplicables
       modelData.numeroTarjetaProfesional = null;
       modelData.telefonoAdicional = null;
-      modelData.firmaDigital = null;
     } else if (modelData.tipoPersona === 'CONTRATISTA') {
       // Asegurar que todos los campos de contratista estén presentes
       modelData.experienciaProfesional = modelData.experienciaProfesional || '';
       modelData.numeroTarjetaProfesional = modelData.numeroTarjetaProfesional || '';
       modelData.telefonoAdicional = modelData.telefonoAdicional || '';
-      modelData.firmaDigital = modelData.firmaDigital || '';
     } else if (modelData.tipoPersona === 'CONTADOR') {
       // Asegurar que numeroTarjetaProfesional esté presente para contadores
       modelData.numeroTarjetaProfesional = modelData.numeroTarjetaProfesional || '';
       // Quitar campos no aplicables
       modelData.experienciaProfesional = null;
       modelData.telefonoAdicional = null;
-      modelData.firmaDigital = null;
     }
 
     const uploadOperations: Observable<void>[] = [];
@@ -1063,7 +1031,6 @@ export class ActualizarPersonaComponent implements OnInit {
       if (!model.experienciaProfesional || model.experienciaProfesional.trim() === '') camposRequeridos.push('Experiencia Profesional');
       if (!model.numeroTarjetaProfesional || model.numeroTarjetaProfesional.trim() === '') camposRequeridos.push('Número de Tarjeta Profesional');
       if (!model.telefonoAdicional || model.telefonoAdicional.trim() === '') camposRequeridos.push('Teléfono Adicional');
-      if (!model.firmaDigital || model.firmaDigital.trim() === '') camposRequeridos.push('Firma Digital');
 
       if (camposRequeridos.length > 0) {
         this.snackBar.open(`Campos requeridos para Contratista: ${camposRequeridos.join(', ')}`, 'Cerrar', {

@@ -98,7 +98,6 @@ public class PersonaServiceImpl implements PersonaService {
                 contratista.setNumeroTarjetaProfesional(dto.getNumeroTarjetaProfesional());
                 contratista.setExperienciaProfesional(dto.getExperienciaProfesional());
                 contratista.setTelefonoAdicional(dto.getTelefonoAdicional());
-                contratista.setFirmaDigital(dto.getFirmaDigital());
                 persona = contratista;
                 break;
             case "CONTADOR":
@@ -225,7 +224,6 @@ public class PersonaServiceImpl implements PersonaService {
                     ((Contratista) persona).setNumeroTarjetaProfesional(dto.getNumeroTarjetaProfesional());
                     ((Contratista) persona).setExperienciaProfesional(dto.getExperienciaProfesional());
                     ((Contratista) persona).setTelefonoAdicional(dto.getTelefonoAdicional());
-                    ((Contratista) persona).setFirmaDigital(dto.getFirmaDigital());
                     break;
                 case "CONTADOR":
                     persona = new Contador();
@@ -329,7 +327,6 @@ public class PersonaServiceImpl implements PersonaService {
             ((Contratista) persona).setNumeroTarjetaProfesional(dto.getNumeroTarjetaProfesional());
             ((Contratista) persona).setExperienciaProfesional(dto.getExperienciaProfesional());
             ((Contratista) persona).setTelefonoAdicional(dto.getTelefonoAdicional());
-            ((Contratista) persona).setFirmaDigital(dto.getFirmaDigital());
         } else if (persona instanceof Contador) {
             ((Contador) persona).setNumeroTarjetaProfesional(dto.getNumeroTarjetaProfesional());
         }
@@ -356,9 +353,6 @@ public class PersonaServiceImpl implements PersonaService {
                 }
                 if (dto.getTelefonoAdicional() == null || dto.getTelefonoAdicional().trim().isEmpty()) {
                     camposFaltantes.add("Teléfono Adicional");
-                }
-                if (dto.getFirmaDigital() == null || dto.getFirmaDigital().trim().isEmpty()) {
-                    camposFaltantes.add("Firma Digital");
                 }
                 
                 if (!camposFaltantes.isEmpty()) {
