@@ -8,17 +8,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import Nomina.entity.dto.CuentaCobroDTO;
 import Nomina.entity.entities.Contrato;
 import Nomina.entity.entities.CuentaCobro;
 import Nomina.entity.entities.Informe;
 import Nomina.entity.entities.Persona;
+import Nomina.seguridad.persistence.entities.Usuario;
 import Nomina.entity.repositories.ContratoRepository;
 import Nomina.entity.repositories.CuentaCobroRepository;
+import Nomina.seguridad.persistence.repository.UserRepository;
 import Nomina.entity.services.CuentaCobroService;
 import Nomina.seguridad.Interceptor.HibernateFilterActivator;
 import Nomina.seguridad.Interceptor.SecurityContextPersonalizado;
+import Nomina.seguridad.service.RoleService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,12 +52,18 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
 
     @Autowired
     private SecurityContextPersonalizado securityContextPersonalizado;
-
+    
     @Autowired
     private NotificacionEmailServiceImpl notificacionEmailService;
-
+    
     @Autowired
     private ContratoRepository contratoRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RoleService roleService;
 
     /**
      * Constructor que inicializa el servicio con su repositorio correspondiente.
@@ -112,7 +122,14 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
                 e.printStackTrace();
             }
         }
-        return repository.save(entity);
+        
+        // Guardar la entidad
+        CuentaCobro cuentaCobroGuardada = repository.save(entity);
+        
+        // Enviar notificación al gerente
+        enviarNotificacionCreacionCuentaCobro(cuentaCobroGuardada);
+        
+        return cuentaCobroGuardada;
     }
 
     /**
@@ -158,6 +175,8 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
             // Verificar si el estado cambió a aprobado
             if (!estadoAnterior && cuentaCobro.isEstado()) {
                 cuentaCobro.setFechaAprobacion(LocalDateTime.now());
+                // Enviar notificación al contador cuando se aprueba la cuenta de cobro
+                enviarNotificacionAprobacionCuentaCobro(cuentaCobro);
             }
 
             // Manejar el contrato - Si el DTO tiene un contrato, lo usamos; de lo contrario, mantenemos el actual
@@ -182,7 +201,6 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
                     System.err.println("Error al enviar la notificación: " + e.getMessage());
                 }
             }
-
             return cuentaCobroActualizada;
         } catch (Exception e) {
             System.err.println("Error al actualizar la entidad CuentaCobro: " + e.getMessage());
@@ -190,7 +208,6 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
             throw new RuntimeException("Error al actualizar la entidad CuentaCobro: " + e.getMessage(), e);
         }
     }
-
     /**
      * Envía una notificación por correo electrónico cuando el pago de una cuenta de cobro se ha realizado.
      *
@@ -198,24 +215,18 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
      */
     private void enviarNotificacionPagoRealizado(CuentaCobro cuentaCobro) {
         try {
-            System.out.println("Iniciando envío de notificación para cuenta de cobro ID: " + cuentaCobro.getId());
-
             // Validar que la cuenta de cobro tenga un contrato asociado
             Contrato contrato = cuentaCobro.getContrato();
             if (contrato == null) {
                 System.err.println("Error: La cuenta de cobro ID " + cuentaCobro.getId() + " no tiene contrato asociado");
                 return;
             }
-            System.out.println("Contrato asociado a la cuenta de cobro: " + contrato.getId());
-
             // Validar que el contrato tenga una persona asociada
             Persona persona = contrato.getPersona();
             if (persona == null) {
                 System.err.println("Error: El contrato ID " + contrato.getId() + " no tiene persona asociada");
                 return;
             }
-            System.out.println("Persona asociada al contrato: " + persona.getId() + " - " + persona.getCorreo());
-
             // Validar que la persona tenga un email
             String email = persona.getCorreo();
             if (email == null || email.isEmpty()) {
@@ -242,9 +253,6 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
             rootNode.put("Nombre", persona.getNombre());
             rootNode.put("Documento", persona.getNumeroDocumento());
 
-            System.out.println("Enviando email a: " + email);
-            System.out.println("Contenido de la notificación: " + rootNode.toString());
-
             // Enviar el email de manera asíncrona
             CompletableFuture<String> future = notificacionEmailService.sendNotificationEmailAsync(
                     email,
@@ -259,12 +267,10 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
                 String fechaFormateada = now.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                 cuentaCobro.setNotificacionPago(fechaFormateada);
                 repository.save(cuentaCobro);
-                System.out.println("Cuenta de cobro actualizada con fecha de notificación");
             }).exceptionally(ex -> {
                 System.err.println("Error al enviar notificación por email: " + ex.getMessage());
                 return null;
             });
-
         } catch (Exception e) {
             System.err.println("Error grave al enviar notificación: " + e.getMessage());
             e.printStackTrace();
@@ -336,5 +342,111 @@ public class CuentaCobroServiceImpl implements CuentaCobroService {
     @Override
     public List<CuentaCobro> findByInforme(Informe informe) {
         return repository.findByInforme(informe);
+    }
+
+    /**
+     * Envía una notificación por correo electrónico cuando se crea una nueva cuenta de cobro.
+     *
+     * @param cuentaCobro La cuenta de cobro recién creada
+     */
+    private void enviarNotificacionCreacionCuentaCobro(CuentaCobro cuentaCobro) {
+        try {
+            // Buscar usuarios con rol GERENTE
+            List<Usuario> gerentes = userRepository.findAll().stream()
+                    .filter(usuario -> usuario.getRoles().stream()
+                            .anyMatch(rol -> "GERENTE".equals(rol.getNombre())))
+                    .collect(Collectors.toList());
+
+            if (gerentes.isEmpty()) {
+                System.err.println("No se encontraron gerentes para enviar la notificación");
+                return;
+            }
+
+            // Crear el objeto JSON para la notificación
+            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectNode rootNode = objectMapper.createObjectNode();
+
+            // Agregar información de la cuenta de cobro
+            rootNode.put("ID Cuenta Cobro", String.valueOf(cuentaCobro.getId()));
+            rootNode.put("Creador de la cuenta de cobro", String.valueOf(cuentaCobro.getCreador()));
+            rootNode.put("Fecha", cuentaCobro.getFecha() != null ?
+                    cuentaCobro.getFecha().toString() : "No disponible");
+            rootNode.put("Valor", String.valueOf(cuentaCobro.getMontoCobrar()));
+            rootNode.put("Detalle", cuentaCobro.getDetalle());
+            rootNode.put("Estado", cuentaCobro.isEstado() ? "Aprobada" : "Pendiente de aprobación");
+
+            // Enviar notificación a cada gerente
+            for (Usuario gerente : gerentes) {
+                if (gerente.getCorreo() != null && !gerente.getCorreo().isEmpty()) {
+                    CompletableFuture<String> future = notificacionEmailService.sendNotificationEmailAsync(
+                            gerente.getCorreo(),
+                            "Nueva Cuenta de Cobro Creada - #" + cuentaCobro.getId(),
+                            rootNode);
+
+                    future.thenAccept(result -> {
+                    }).exceptionally(ex -> {
+                        System.err.println("Error al enviar notificación a gerente: " + ex.getMessage());
+                        return null;
+                    });
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al enviar notificación de creación: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Envía una notificación por correo electrónico cuando una cuenta de cobro es aprobada.
+     *
+     * @param cuentaCobro La cuenta de cobro aprobada
+     */
+    private void enviarNotificacionAprobacionCuentaCobro(CuentaCobro cuentaCobro) {
+        try {
+            // Buscar usuarios con rol CONTADOR
+            List<Usuario> contadores = userRepository.findAll().stream()
+                    .filter(usuario -> usuario.getRoles().stream()
+                            .anyMatch(rol -> "CONTADOR".equals(rol.getNombre())))
+                    .collect(Collectors.toList());
+
+            if (contadores.isEmpty()) {
+                System.err.println("No se encontraron contadores para enviar la notificación");
+                return;
+            }
+
+            // Crear el objeto JSON para la notificación
+            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectNode rootNode = objectMapper.createObjectNode();
+
+            // Agregar información de la cuenta de cobro
+            rootNode.put("ID Cuenta Cobro", String.valueOf(cuentaCobro.getId()));
+            rootNode.put("Creador de la cuenta de cobro", String.valueOf(cuentaCobro.getCreador()));
+            rootNode.put("Fecha", cuentaCobro.getFecha() != null ?
+                    cuentaCobro.getFecha().toString() : "No disponible");
+            rootNode.put("Valor", String.valueOf(cuentaCobro.getMontoCobrar()));
+            rootNode.put("Detalle", cuentaCobro.getDetalle());
+            rootNode.put("Estado", "Aprobada");
+            rootNode.put("Fecha Aprobación", cuentaCobro.getFechaAprobacion() != null ?
+                    cuentaCobro.getFechaAprobacion().toString() : "No disponible");
+
+            // Enviar notificación a cada contador
+            for (Usuario contador : contadores) {
+                if (contador.getCorreo() != null && !contador.getCorreo().isEmpty()) {
+                    CompletableFuture<String> future = notificacionEmailService.sendNotificationEmailAsync(
+                            contador.getCorreo(),
+                            "Cuenta de Cobro Aprobada - #" + cuentaCobro.getId(),
+                            rootNode);
+
+                    future.thenAccept(result -> {
+                    }).exceptionally(ex -> {
+                        System.err.println("Error al enviar notificación a contador: " + ex.getMessage());
+                        return null;
+                    });
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al enviar notificación de aprobación: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
