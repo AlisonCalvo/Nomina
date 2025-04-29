@@ -250,7 +250,7 @@ export class CrearProyectoComponent implements OnInit {
           },
           rows: 5,
           minLength: 5,
-          maxLength: 250
+          maxLength: 2000
         },
         validation: {
           messages: {
@@ -360,8 +360,10 @@ export class CrearProyectoComponent implements OnInit {
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
+          readonly: true,
           attributes: {
-            'class': 'modern-input'
+            'class': 'modern-input',
+            'readonly': 'true'
           }
         },
         validators: {
@@ -390,6 +392,7 @@ export class CrearProyectoComponent implements OnInit {
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
+          readonly: true,
           attributes: {
             'class': 'modern-input'
           }
@@ -499,7 +502,7 @@ export class CrearProyectoComponent implements OnInit {
             'class': 'modern-input'
           },
           rows: 3,
-          maxLength: 500
+          maxLength: 2000
         }
       },
       {

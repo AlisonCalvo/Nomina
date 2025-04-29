@@ -273,6 +273,7 @@ export class CrearContratoComponent implements OnInit {
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
+          readonly: true,
           attributes: {
             'class': 'modern-input'
           }
@@ -303,6 +304,7 @@ export class CrearContratoComponent implements OnInit {
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
+          readonly: true,
           attributes: {
             'class': 'modern-input'
           }
@@ -496,7 +498,7 @@ export class CrearContratoComponent implements OnInit {
             'class': 'modern-input'
           },
           rows: 3,
-          maxLength: 500
+          maxLength: 2000
         }
       },
       {

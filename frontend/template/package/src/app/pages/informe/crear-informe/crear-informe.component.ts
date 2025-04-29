@@ -132,6 +132,7 @@ export class CrearInformeComponent implements OnInit {
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
+          readonly: true,
           attributes: {
             'class': 'modern-input'
           }

@@ -163,7 +163,7 @@ export class CrearDocumentoComponent implements OnInit {
           },
           rows: 5,
           minLength: 4,
-          maxLength: 250
+          maxLength: 2000
         },
         validation: {
           messages: {

@@ -179,6 +179,7 @@ public class Proyecto implements Serializable {
      *
      * Restricciones: Opcional
      */
+    @FilePath(type = "text")
     @Column(name="observaciones", nullable=true)
     private String observaciones;
 

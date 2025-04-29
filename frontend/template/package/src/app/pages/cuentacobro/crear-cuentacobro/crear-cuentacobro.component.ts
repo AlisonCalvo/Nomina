@@ -235,6 +235,7 @@ export class CrearCuentaCobroComponent implements OnInit {
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
+          readonly: true,
           attributes: {
             'class': 'modern-input'
           }
@@ -302,7 +303,7 @@ export class CrearCuentaCobroComponent implements OnInit {
           },
           rows: 5,
           minLength:10,
-          maxLength: 500
+          maxLength: 2000
         },
         validation: {
           messages: {
@@ -461,7 +462,7 @@ export class CrearCuentaCobroComponent implements OnInit {
             'class': 'modern-input'
           },
           rows: 3,
-          maxLength: 500
+          maxLength: 2000
         },
         validation: {
           messages: {

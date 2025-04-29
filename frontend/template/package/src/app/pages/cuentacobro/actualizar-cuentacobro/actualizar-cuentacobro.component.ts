@@ -376,6 +376,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           required: true,
           appearance: 'outline',
           floatLabel: 'always',
+          readonly: true,
           attributes: {
             'class': 'modern-input'
           }
@@ -443,7 +444,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
           },
           rows: 5,
           minLength:10,
-          maxLength: 500
+          maxLength: 2000
         },
         validation: {
           messages: {
@@ -598,7 +599,7 @@ export class ActualizarCuentaCobroComponent implements OnInit {
             'class': 'modern-input'
           },
           rows: 3,
-          maxLength: 500
+          maxLength: 2000
         },
         validation: {
           messages: {
